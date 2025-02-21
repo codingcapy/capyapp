@@ -6,32 +6,46 @@ import { mightFail } from "might-fail";
 import { HTTPException } from "hono/http-exception";
 import { db } from "../db";
 
-export const usersRouter = new Hono().post(
-  "/",
-  zValidator(
-    "json",
-    createInsertSchema(usersTable).omit({
-      userId: true,
-      createdAt: true,
-    })
-  ),
-  async (c) => {
-    const insertValues = c.req.valid("json");
-    const { error: userInsertError, result: userInsertResult } =
-      await mightFail(
-        db
-          .insert(usersTable)
-          .values({ ...insertValues })
-          .returning()
-      );
+export const usersRouter = new Hono()
+  .post(
+    "/",
+    zValidator(
+      "json",
+      createInsertSchema(usersTable).omit({
+        userId: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { error: userInsertError, result: userInsertResult } =
+        await mightFail(
+          db
+            .insert(usersTable)
+            .values({ ...insertValues })
+            .returning()
+        );
 
-    if (userInsertError) {
-      console.log("Error while creating user");
+      if (userInsertError) {
+        console.log("Error while creating user");
+        throw new HTTPException(500, {
+          message: "Error while creating user",
+          cause: userInsertResult,
+        });
+      }
+      return c.json({ user: userInsertResult[0] }, 200);
+    }
+  )
+  .get(async (c) => {
+    const { error: usersQueryError, result: usersQueryResult } =
+      await mightFail(db.select().from(usersTable));
+
+    if (usersQueryError) {
       throw new HTTPException(500, {
-        message: "Error while creating user",
-        cause: userInsertResult,
+        message: "Error while fetching users",
+        cause: usersQueryError,
       });
     }
-    return c.json({ user: userInsertResult[0] }, 200);
-  }
-);
+
+    return c.json({ users: usersQueryResult }, 200);
+  });
