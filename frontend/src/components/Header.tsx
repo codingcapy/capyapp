@@ -46,19 +46,31 @@ export default function Header() {
             className={`${navVisible ? "visible" : ""} md:flex`}
             id="main-nav"
           >
-            <div className="mx-2 text-center py-2 md:py-1">About</div>
-            <div className="mx-2 text-center py-2 md:py-1">Contact</div>
-            <div className="md:hidden mx-2 text-center py-2">Login</div>
-            <div className="md:hidden mx-2 text-center py-2">Signup</div>
+            <Link to="/about">
+              <div className="mx-2 text-center py-2 md:py-1">About</div>
+            </Link>
+            <Link to="/contact">
+              <div className="mx-2 text-center py-2 md:py-1">Contact</div>
+            </Link>
+            <Link to="/login">
+              <div className="md:hidden mx-2 text-center py-2">Login</div>
+            </Link>
+            <Link to="/signup">
+              <div className="md:hidden mx-2 text-center py-2">Signup</div>
+            </Link>
           </div>
         </div>
         <div className="md:flex">
-          <div className="hidden md:block mx-2 text-center py-2 md:py-1">
-            Login
-          </div>
-          <div className="hidden md:block mx-2 text-center py-1 px-3 border rounded">
-            Signup
-          </div>
+          <Link to="/login">
+            <div className="hidden md:block mx-2 text-center py-2 md:py-1">
+              Login
+            </div>
+          </Link>
+          <Link to="/signup">
+            <div className="hidden md:block mx-2 text-center py-1 px-3 border rounded hover:bg-white hover:text-black ease-in-out duration-300">
+              Signup
+            </div>
+          </Link>
         </div>
       </div>
     </header>
