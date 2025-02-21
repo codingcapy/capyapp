@@ -29,7 +29,9 @@ export default function Header() {
             <Link to="/">
               <div className="flex">
                 <img src="/capyness.png" alt="" className="w-[30px] h-auto" />
-                <div className="ml-5 mr-2 text-center py-2 md:py-1">Home</div>
+                <div className="hidden md:block ml-5 mr-2 text-center py-2 md:py-1">
+                  Home
+                </div>
               </div>
             </Link>
             <button
