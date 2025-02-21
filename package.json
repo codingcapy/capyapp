@@ -1,0 +1,19 @@
+{
+  "name": "capyapp",
+  "module": "index.ts",
+  "scripts": {
+    "start": "bun --watch index.ts",
+    "install-server": "bun i",
+    "start-server": "bun start"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "hono": "^4.7.2"
+  }
+}
