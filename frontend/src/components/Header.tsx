@@ -40,8 +40,10 @@ export default function Header() {
           >
             <div className="mx-2 text-center py-2 md:py-0">About</div>
             <div className="mx-2 text-center py-2 md:py-0">Contact</div>
-            <div className="mx-2 text-center py-2 md:py-0">Login</div>
-            <div className="mx-2 text-center py-2 md:py-0">Signup</div>
+            <div className="md:hidden mx-2 text-center py-2 md:py-0">Login</div>
+            <div className="md:hidden mx-2 text-center py-2 md:py-0">
+              Signup
+            </div>
           </div>
         </div>
         <div className="md:flex">
