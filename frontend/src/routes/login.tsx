@@ -27,9 +27,11 @@ function RouteComponent() {
                 placeholder="Password"
                 className="mx-auto border p-2 my-2 md:w-[300px]"
               />
-              <button className="py-2 px-5 my-3 text-2xl tracking-widest bg-cyan-600 w-[200px] md:w-[300px] mx-auto">
-                LOGIN
-              </button>
+              <Link to="/dashboard" className="mx-auto">
+                <button className="py-2 px-5 my-5 text-2xl tracking-widest bg-cyan-600 w-[200px] md:w-[300px] mx-auto cursor-pointer">
+                  LOGIN
+                </button>
+              </Link>
               <div className="mx-auto">
                 Don't have an accountt?{" "}
                 <Link to="/signup" className="font-bold">

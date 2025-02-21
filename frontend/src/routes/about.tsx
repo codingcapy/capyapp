@@ -10,7 +10,7 @@ function RouteComponent() {
   return (
     <div className="flex flex-col min-h-screen bg-[#040406]">
       <Header />
-      <main className="flex-1 text-white max-w-[800px] mx-auto">
+      <main className="flex-1 text-white max-w-[800px] mx-auto p-3">
         <h1 className=" relative z-2 pt-20 pb-10 text-center text-4xl md:text-6xl font-bold">
           About
         </h1>

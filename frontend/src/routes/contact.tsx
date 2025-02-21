@@ -19,11 +19,11 @@ function RouteComponent() {
           <input
             type="text"
             placeholder="Email"
-            className="mx-auto border p-2 my-2 md:w-[400px]"
+            className="mx-auto border p-2 my-2 w-[300px] md:w-[400px]"
           />
           <textarea
             placeholder="Your message"
-            className="mx-auto border p-2 my-2 md:w-[400px]"
+            className="mx-auto border p-2 my-2 w-[300px] md:w-[400px]"
             rows={10}
           />
           <button className="py-2 px-5 my-3 text-2xl tracking-widest bg-cyan-600 w-[200px] md:w-[300px] mx-auto">
