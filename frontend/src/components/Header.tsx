@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export default function Header() {
@@ -25,7 +26,12 @@ export default function Header() {
       <div className="md:flex justify-between">
         <div className="md:flex">
           <div className="flex justify-between">
-            <div className="mx-2 text-center py-2 md:py-0">Home</div>
+            <Link to="/">
+              <div className="flex">
+                <img src="/capyness.png" alt="" className="w-[30px] h-auto" />
+                <div className="ml-5 mr-2 text-center py-2 md:py-1">Home</div>
+              </div>
+            </Link>
             <button
               id="hamburger-menu"
               className="text-3xl md:hidden text-[#8778D7]"
@@ -38,19 +44,17 @@ export default function Header() {
             className={`${navVisible ? "visible" : ""} md:flex`}
             id="main-nav"
           >
-            <div className="mx-2 text-center py-2 md:py-0">About</div>
-            <div className="mx-2 text-center py-2 md:py-0">Contact</div>
-            <div className="md:hidden mx-2 text-center py-2 md:py-0">Login</div>
-            <div className="md:hidden mx-2 text-center py-2 md:py-0">
-              Signup
-            </div>
+            <div className="mx-2 text-center py-2 md:py-1">About</div>
+            <div className="mx-2 text-center py-2 md:py-1">Contact</div>
+            <div className="md:hidden mx-2 text-center py-2">Login</div>
+            <div className="md:hidden mx-2 text-center py-2">Signup</div>
           </div>
         </div>
         <div className="md:flex">
-          <div className="hidden md:block mx-2 text-center py-2 md:py-0">
+          <div className="hidden md:block mx-2 text-center py-2 md:py-1">
             Login
           </div>
-          <div className="hidden md:block mx-2 text-center py-2 md:py-0">
+          <div className="hidden md:block mx-2 text-center py-1 px-3 border rounded">
             Signup
           </div>
         </div>
