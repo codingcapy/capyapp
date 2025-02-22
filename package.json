@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/pg": "^8.11.11",
     "argon2": "^0.41.1",
     "dotenv": "^16.4.7",
@@ -23,6 +24,7 @@
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
     "hono": "^4.7.2",
+    "jsonwebtoken": "^9.0.2",
     "might-fail": "^0.7.3",
     "pg": "^8.13.3"
   }

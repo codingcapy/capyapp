@@ -18,12 +18,6 @@ async function hashPassword(password: string) {
   return `${salt}:${derivedKey.toString("hex")}`;
 }
 
-async function verifyPassword(hash: string, password: string) {
-  const [salt, key] = hash.split(":");
-  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
-  return derivedKey.toString("hex") === key;
-}
-
 export const usersRouter = new Hono()
   .post(
     "/",

@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useCreateUserMutation } from "../lib/api/user";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useAuthStore from "../store/AuthStore";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
@@ -12,6 +13,13 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { mutate: createUser } = useCreateUserMutation();
   const [notification, setNotification] = useState("");
+  const { loginService, authLoading, user } = useAuthStore((state) => state);
+
+  useEffect(() => {
+    if (!!user) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [user]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,7 +37,7 @@ function RouteComponent() {
     createUser(
       { username, email, password },
       {
-        onSuccess: () => navigate({ to: "/dashboard" }),
+        onSuccess: () => loginService(email, password),
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       }
     );

@@ -1,16 +1,17 @@
 import axios from "axios";
 import { create } from "zustand";
 import { setSession } from "../services/jwt.service";
+import { User } from "../../../schemas/users";
 
 const useAuthStore = create<{
   isBloggerLoggedIn: boolean;
   setIsBloggerLoggedIn: (isLoggedIn: boolean) => void;
-  user: any;
+  user: User | null;
   authLoading: boolean;
   tokenLoading: boolean;
-  setUser: (args: any) => void;
+  setUser: (args: User) => void;
   logoutService: () => void;
-  loginService: (username: any, password: any) => void;
+  loginService: (email: string, password: string) => void;
 }>((set, get) => ({
   isBloggerLoggedIn: false,
   setIsBloggerLoggedIn: (state: boolean) => set({ isBloggerLoggedIn: state }),
@@ -22,13 +23,13 @@ const useAuthStore = create<{
     setSession(null);
     set({ user: null, authLoading: false, tokenLoading: false });
   },
-  loginService: async (username, password) => {
+  loginService: async (email, password) => {
     set({ authLoading: true });
     try {
       const res = await axios.post(
         `https://capyapp-production.up.railway.app/api/v0/user/login`,
         {
-          username,
+          email,
           password,
         }
       );
