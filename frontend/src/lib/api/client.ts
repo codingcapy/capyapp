@@ -10,6 +10,7 @@ export type ArgumentTypes<F extends Function> = F extends (
 export type ExtractData<T> =
   T extends ClientResponse<infer Data, any, any> ? Data : never;
 
-export const client = hc<ApiRoutes>(
-  "https://capyapp-production.up.railway.app"
-);
+const devServer = "http://localhost:3333";
+const prodServer = "https://capyapp-production.up.railway.app";
+
+export const client = hc<ApiRoutes>(devServer);

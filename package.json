@@ -17,6 +17,7 @@
   "dependencies": {
     "@hono/zod-validator": "^0.4.3",
     "@types/pg": "^8.11.11",
+    "argon2": "^0.41.1",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.4",
     "drizzle-orm": "^0.39.3",

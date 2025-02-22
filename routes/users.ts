@@ -7,6 +7,22 @@ import { HTTPException } from "hono/http-exception";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derivedKey.toString("hex")}`;
+}
+
+async function verifyPassword(hash: string, password: string) {
+  const [salt, key] = hash.split(":");
+  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+  return derivedKey.toString("hex") === key;
+}
 
 export const usersRouter = new Hono()
   .post(
@@ -39,14 +55,17 @@ export const usersRouter = new Hono()
           409
         );
       }
+      const encrypted = await hashPassword(insertValues.password);
       const userId = randomUUIDv7();
       const { error: userInsertError, result: userInsertResult } =
         await mightFail(
           db
             .insert(usersTable)
             .values({
-              ...insertValues,
               userId: userId,
+              username: insertValues.username,
+              email: insertValues.email,
+              password: encrypted,
             })
             .returning()
         );
