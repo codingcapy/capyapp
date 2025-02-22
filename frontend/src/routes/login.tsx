@@ -1,12 +1,38 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useEffect, useState } from "react";
+import useAuthStore from "../store/AuthStore";
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [message, setMessage] = useState("");
+  const { loginService, authLoading, user } = useAuthStore((state) => state);
+
+  useEffect(() => {
+    if (!!user) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [user]);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = (e.target as HTMLFormElement).email.value;
+    const password = (e.target as HTMLFormElement).password.value;
+    loginService(email, password);
+    if (authLoading) setLoadingMessage("Loading...");
+    if (!user) {
+      setTimeout(() => {
+        setMessage("Whoops, that's not it!");
+      }, 700);
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -16,22 +42,29 @@ function RouteComponent() {
             <h1 className=" relative z-2 pt-20 pb-10 text-center text-4xl md:text-6xl font-bold">
               Login
             </h1>
-            <form action="" className="relative z-2 flex flex-col mx-auto">
+            <form
+              onSubmit={handleSubmit}
+              className="relative z-2 flex flex-col mx-auto"
+            >
               <input
-                type="text"
+                type="email"
                 placeholder="Email"
                 className="mx-auto border p-2 my-2 md:w-[300px]"
+                id="email"
+                name="email"
+                required
               />
               <input
-                type="text"
+                type="password"
                 placeholder="Password"
                 className="mx-auto border p-2 my-2 md:w-[300px]"
+                id="password"
+                name="password"
+                required
               />
-              <Link to="/dashboard" className="mx-auto">
-                <button className="py-2 px-5 my-5 text-2xl tracking-widest bg-cyan-600 w-[200px] md:w-[300px] mx-auto cursor-pointer">
-                  LOGIN
-                </button>
-              </Link>
+              <button className="py-2 px-5 my-5 text-2xl tracking-widest bg-cyan-600 w-[200px] md:w-[300px] mx-auto cursor-pointer">
+                LOGIN
+              </button>
               <div className="mx-auto">
                 Don't have an accountt?{" "}
                 <Link to="/signup" className="font-bold">

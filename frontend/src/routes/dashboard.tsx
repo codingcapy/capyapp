@@ -6,6 +6,8 @@ import {
   IoChatbubbleEllipsesOutline,
 } from "react-icons/io5";
 import { FaUserFriends } from "react-icons/fa";
+import useAuthStore from "../store/AuthStore";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
@@ -13,9 +15,15 @@ export const Route = createFileRoute("/dashboard")({
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const { user, logoutService } = useAuthStore((state) => state);
+
+  useEffect(() => {
+    if (!user) navigate({ to: "/" });
+  }, []);
 
   function handleLogout() {
-    navigate({ to: "/" });
+    logoutService();
+    navigate({ to: "/login" });
   }
 
   return (
