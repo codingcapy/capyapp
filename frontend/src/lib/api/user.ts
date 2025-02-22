@@ -14,10 +14,10 @@ type SerializeUser = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.users.$get>>
 >["users"][number];
 
-function mapSerializedBookingToSchema(SerializedBooking: SerializeUser): User {
+function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
   return {
-    ...SerializedBooking,
-    createdAt: new Date(SerializedBooking.createdAt),
+    ...SerializedUser,
+    createdAt: new Date(SerializedUser.createdAt),
   };
 }
 
@@ -29,7 +29,7 @@ async function createUser(args: CreateUserArgs) {
   }
   const result = await res.json();
   console.log("Parsed API Response:", result);
-  return mapSerializedBookingToSchema(result.user);
+  return mapSerializedUserToSchema(result.user);
 }
 
 export const useCreateUserMutation = () => {
@@ -43,3 +43,17 @@ export const useCreateUserMutation = () => {
     },
   });
 };
+
+async function getAllUsers() {
+  const res = await client.api.v0.users.$get();
+  if (!res.ok) {
+    throw new Error("Failed to get all Users");
+  }
+  const { users } = await res.json();
+  return users.map(mapSerializedUserToSchema);
+}
+
+export const getAllUsersQueryOptions = queryOptions({
+  queryKey: ["Users"],
+  queryFn: getAllUsers,
+});
