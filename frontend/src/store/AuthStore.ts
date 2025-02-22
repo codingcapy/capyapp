@@ -4,8 +4,6 @@ import { setSession } from "../services/jwt.service";
 import { User } from "../../../schemas/users";
 
 const useAuthStore = create<{
-  isBloggerLoggedIn: boolean;
-  setIsBloggerLoggedIn: (isLoggedIn: boolean) => void;
   user: User | null;
   authLoading: boolean;
   tokenLoading: boolean;
@@ -13,8 +11,6 @@ const useAuthStore = create<{
   logoutService: () => void;
   loginService: (email: string, password: string) => void;
 }>((set, get) => ({
-  isBloggerLoggedIn: false,
-  setIsBloggerLoggedIn: (state: boolean) => set({ isBloggerLoggedIn: state }),
   user: null,
   authLoading: false,
   tokenLoading: true,

@@ -52,7 +52,6 @@ export const useCreateUserMutation = (onError?: (message: string) => void) => {
   return useMutation({
     mutationFn: createUser,
     onSettled: (args) => {
-      console.log(args);
       if (!args) return console.log(args, "create args, returning");
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },

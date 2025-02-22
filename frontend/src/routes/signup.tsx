@@ -11,6 +11,7 @@ export const Route = createFileRoute("/signup")({
 
 function RouteComponent() {
   const navigate = useNavigate();
+  const [loadingNotification, setLoadingNotification] = useState("");
   const { mutate: createUser } = useCreateUserMutation();
   const [notification, setNotification] = useState("");
   const { loginService, authLoading, user } = useAuthStore((state) => state);
@@ -26,9 +27,6 @@ function RouteComponent() {
     const username = (e.target as HTMLFormElement).username.value;
     const email = (e.target as HTMLFormElement).email.value;
     const password = (e.target as HTMLFormElement).password.value;
-    console.log(username);
-    console.log(email);
-    console.log(password);
     if (username.length > 32)
       return setNotification("Username too long! Max character limit is 32");
     if (email.length > 255) return setNotification("Email too long!");
@@ -37,7 +35,10 @@ function RouteComponent() {
     createUser(
       { username, email, password },
       {
-        onSuccess: () => loginService(email, password),
+        onSuccess: () => {
+          loginService(email, password);
+          if (authLoading) setLoadingNotification("Loading...");
+        },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       }
     );
@@ -89,8 +90,9 @@ function RouteComponent() {
                   Login
                 </Link>
               </div>
-              <div className="text-red-400 text-center">{notification}</div>
             </form>
+            <div className="text-red-400 text-center">{notification}</div>
+            <div className="text-center">{loadingNotification}</div>
           </div>
         </div>
       </main>

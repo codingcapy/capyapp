@@ -10,8 +10,8 @@ export const Route = createFileRoute("/login")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [message, setMessage] = useState("");
+  const [loadingNotification, setLoadingNotification] = useState("");
+  const [notification, setNotification] = useState("");
   const { loginService, authLoading, user } = useAuthStore((state) => state);
 
   useEffect(() => {
@@ -25,10 +25,10 @@ function RouteComponent() {
     const email = (e.target as HTMLFormElement).email.value;
     const password = (e.target as HTMLFormElement).password.value;
     loginService(email, password);
-    if (authLoading) setLoadingMessage("Loading...");
+    if (authLoading) setLoadingNotification("Loading...");
     if (!user) {
       setTimeout(() => {
-        setMessage("Whoops, that's not it!");
+        setNotification("Invalid login credentials");
       }, 700);
     }
   }
@@ -72,6 +72,8 @@ function RouteComponent() {
                 </Link>
               </div>
             </form>
+            <div className="text-red-400 text-center">{notification}</div>
+            <div className="text-center">{loadingNotification}</div>
           </div>
         </div>
       </main>
