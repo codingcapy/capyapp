@@ -26,7 +26,7 @@ const useAuthStore = create<{
     set({ authLoading: true });
     try {
       const res = await axios.post(
-        `https://atlo.onrender.com/api/v0/user/login`,
+        `https://capyapp-production.up.railway.app/api/v0/user/login`,
         {
           username,
           password,

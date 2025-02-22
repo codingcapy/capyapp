@@ -45,7 +45,7 @@ export const usersRouter = new Hono()
         );
       if (emailQueryError) {
         throw new HTTPException(500, {
-          message: "Error while fetching users",
+          message: "Error while fetching user",
           cause: emailQueryResult,
         });
       }

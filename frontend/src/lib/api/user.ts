@@ -24,7 +24,8 @@ function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
 async function createUser(args: CreateUserArgs) {
   const res = await client.api.v0.users.$post({ json: args });
   if (!res.ok) {
-    let errorMessage = "Error creating user"; // Default error message
+    let errorMessage =
+      "There was an issue creating your account :( We'll look into it ASAP!";
     try {
       const errorResponse = await res.json();
       if (
