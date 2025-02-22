@@ -1,4 +1,4 @@
-import { User } from "../../../../schema/users";
+import { User } from "../../../../schemas/users";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import {
   queryOptions,
@@ -24,15 +24,29 @@ function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
 async function createUser(args: CreateUserArgs) {
   const res = await client.api.v0.users.$post({ json: args });
   if (!res.ok) {
-    console.log("Error creating user");
-    throw new Error("Error creating user");
+    let errorMessage = "Error creating user"; // Default error message
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
   }
   const result = await res.json();
-  console.log("Parsed API Response:", result);
+  if (!result.user) {
+    throw new Error("Invalid response from server");
+  }
   return mapSerializedUserToSchema(result.user);
 }
 
-export const useCreateUserMutation = () => {
+export const useCreateUserMutation = (onError?: (message: string) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createUser,
@@ -40,6 +54,11 @@ export const useCreateUserMutation = () => {
       console.log(args);
       if (!args) return console.log(args, "create args, returning");
       queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
     },
   });
 };
