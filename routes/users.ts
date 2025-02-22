@@ -5,11 +5,8 @@ import { users as usersTable } from "../schemas/users";
 import { mightFail } from "might-fail";
 import { HTTPException } from "hono/http-exception";
 import { db } from "../db";
-import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
-
-const saltRounds = 6;
 
 export const usersRouter = new Hono()
   .post(
@@ -43,16 +40,13 @@ export const usersRouter = new Hono()
         );
       }
       const userId = randomUUIDv7();
-      const encrypted = await bcrypt.hash(insertValues.password, saltRounds);
       const { error: userInsertError, result: userInsertResult } =
         await mightFail(
           db
             .insert(usersTable)
             .values({
+              ...insertValues,
               userId: userId,
-              username: insertValues.username,
-              email: insertValues.email,
-              password: encrypted,
             })
             .returning()
         );
