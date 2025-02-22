@@ -1,12 +1,33 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useCreateUserMutation } from "../lib/api/user";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
+  const { mutate: createUser } = useCreateUserMutation();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const username = (e.target as HTMLFormElement).username.value;
+    const email = (e.target as HTMLFormElement).email.value;
+    const password = (e.target as HTMLFormElement).password.value;
+    console.log(username);
+    console.log(email);
+    console.log(password);
+    createUser(
+      { username, email, password },
+      {
+        onSuccess: () => navigate({ to: "/dashboard" }),
+        onError: (error) => console.error("Creating user failed:", error),
+      }
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -16,7 +37,10 @@ function RouteComponent() {
             <h1 className=" relative z-2 pt-20 pb-10 text-center text-4xl md:text-6xl font-bold">
               Sign Up
             </h1>
-            <form action="" className="relative z-2 flex flex-col mx-auto">
+            <form
+              onSubmit={handleSubmit}
+              className="relative z-2 flex flex-col mx-auto"
+            >
               <input
                 type="text"
                 placeholder="Username"
