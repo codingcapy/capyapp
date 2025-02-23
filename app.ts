@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { usersRouter } from "./routes/users";
 import { userRouter } from "./routes/user";
+import { userFriendsRouter } from "./routes/friends";
 
 const app = new Hono();
 
@@ -13,7 +14,8 @@ app.use("*", cors());
 const apiRoutes = app
   .basePath("/api/v0")
   .route("/users", usersRouter)
-  .route("/user", userRouter);
+  .route("/user", userRouter)
+  .route("/friends", userFriendsRouter);
 
 app.use("/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/*", async (c) => {

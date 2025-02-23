@@ -4,7 +4,6 @@ import { createRouter, Link, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import Auth from "./components/auth/Auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Header from "./components/Header";
 
 export const queryClient = new QueryClient();
 
