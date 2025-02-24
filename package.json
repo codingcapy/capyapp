@@ -2,7 +2,7 @@
   "name": "capyapp",
   "module": "index.ts",
   "scripts": {
-    "start": "bun --watch index.ts",
+    "start": "bun --watch app.ts",
     "install-server": "bun i",
     "start-server": "bun start"
   },

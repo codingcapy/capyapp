@@ -5,6 +5,9 @@ import { logger } from "hono/logger";
 import { usersRouter } from "./routes/users";
 import { userRouter } from "./routes/user";
 import { userFriendsRouter } from "./routes/friends";
+import { Server as SocketServer } from "socket.io";
+import { serve } from "@hono/node-server";
+import { attachSocketEventListeners } from "./ws";
 
 const app = new Hono();
 
@@ -30,3 +33,19 @@ app.get("/*", async (c) => {
 
 export type ApiRoutes = typeof apiRoutes;
 export default app;
+
+const PORT = parseInt(process.env.PORT!) || 3333;
+
+const server = serve({
+  port: PORT,
+  fetch: app.fetch,
+});
+
+const io = new SocketServer(server, {
+  path: "/ws",
+  serveClient: false,
+});
+
+attachSocketEventListeners(io);
+
+console.log("Server running on port", PORT);
