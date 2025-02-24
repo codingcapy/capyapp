@@ -43,7 +43,7 @@ const useAuthStore = create<{
   loginWithToken: async () => {
     try {
       const res = await axios.post(
-        `https://atlo.onrender.com/api/v0/user/validation`
+        `https://capyapp-production.up.railway.app/api/v0/user/validation`
       );
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);
