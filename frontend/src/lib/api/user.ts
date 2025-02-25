@@ -14,7 +14,7 @@ type SerializeUser = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.users.$get>>
 >["users"][number];
 
-function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
+export function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
   return {
     ...SerializedUser,
     createdAt: new Date(SerializedUser.createdAt),

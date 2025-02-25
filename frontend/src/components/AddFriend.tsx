@@ -2,13 +2,12 @@ import { FaUserFriends } from "react-icons/fa";
 import { useCreateFriendMutation } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 
 export default function AddFriend() {
   const { mutate: createFriend } = useCreateFriendMutation();
   const { user } = useAuthStore();
   const [notification, setNotification] = useState("");
-  const navigate = useNavigate();
+  const [successNotification, setSuccessNotification] = useState("");
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -18,7 +17,8 @@ export default function AddFriend() {
       { userEmail: user!.email, friendEmail: email },
       {
         onSuccess: () => {
-          navigate({ to: "/dashboard" });
+          setNotification("");
+          setSuccessNotification("Friend added successfully!");
         },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       }
@@ -45,6 +45,7 @@ export default function AddFriend() {
         </button>
       </form>
       <div className="text-red-400 text-center">{notification}</div>
+      <div className="text-green-400 text-center">{successNotification}</div>
     </div>
   );
 }

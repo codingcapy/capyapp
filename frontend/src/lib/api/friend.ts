@@ -4,10 +4,29 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ArgumentTypes, client } from "./client";
+import { User } from "../../../../schemas/users";
 
 type CreateFriendArgs = ArgumentTypes<
   typeof client.api.v0.friends.$post
 >[0]["json"];
+
+type Friend = Omit<User, "password">;
+
+type SerializeFriend = {
+  userId: string;
+  username: string;
+  email: string;
+  createdAt: string;
+};
+
+export function mapSerializedFriendToSchema(
+  SerializedFriend: SerializeFriend
+): Friend {
+  return {
+    ...SerializedFriend,
+    createdAt: new Date(SerializedFriend.createdAt),
+  };
+}
 
 async function createFriend(args: CreateFriendArgs) {
   const res = await client.api.v0.friends.$post({ json: args });
@@ -61,3 +80,21 @@ export const getAllUsersQueryOptions = queryOptions({
   queryKey: ["friends"],
   queryFn: getAllFriends,
 });
+
+async function getFriendsByEmail(email: string) {
+  const res = await client.api.v0.friends[":userEmail"].$get({
+    param: { userEmail: email.toString() },
+  });
+
+  if (!res.ok) {
+    throw new Error("Error getting friends by userEmail");
+  }
+  const { friends } = await res.json();
+  return friends.map((friend) => mapSerializedFriendToSchema(friend));
+}
+
+export const getFriendsByIdQueryOptions = (email: string) =>
+  queryOptions({
+    queryKey: ["friends", email],
+    queryFn: () => getFriendsByEmail(email),
+  });
