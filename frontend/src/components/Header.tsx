@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import useAuthStore from "../store/AuthStore";
+import { CgProfile } from "react-icons/cg";
 
 export default function Header() {
   const [navVisible, setNavVisible] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     function handleResize() {
@@ -52,25 +55,53 @@ export default function Header() {
             <Link to="/contact">
               <div className="mx-2 text-center py-2 md:py-1">Contact</div>
             </Link>
-            <Link to="/login">
-              <div className="md:hidden mx-2 text-center py-2">Login</div>
-            </Link>
-            <Link to="/signup">
-              <div className="md:hidden mx-2 text-center py-2">Signup</div>
-            </Link>
+            {!user && (
+              <Link to="/login">
+                <div className="md:hidden mx-2 text-center py-2">Login</div>
+              </Link>
+            )}
+            {!user && (
+              <Link to="/signup">
+                <div className="md:hidden mx-2 text-center py-2">Signup</div>
+              </Link>
+            )}
+            {user && (
+              <Link to="/signup">
+                <div className="md:hidden flex flex-col">
+                  <div className="flex mx-auto">
+                    <CgProfile size={25} className="" />
+                    <div className="ml-2 text-xl">{user && user.username}</div>
+                  </div>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
         <div className="md:flex">
-          <Link to="/login">
-            <div className="hidden md:block mx-2 text-center py-2 md:py-1">
-              Login
-            </div>
-          </Link>
-          <Link to="/signup">
-            <div className="hidden md:block mx-2 text-center py-1 px-3 border rounded hover:bg-white hover:text-black ease-in-out duration-300">
-              Signup
-            </div>
-          </Link>
+          {!user && (
+            <Link to="/login">
+              <div className="hidden md:block mx-2 text-center py-2 md:py-1">
+                Login
+              </div>
+            </Link>
+          )}
+          {!user && (
+            <Link to="/signup">
+              <div className="hidden md:block mx-2 text-center py-1 px-3 border rounded hover:bg-white hover:text-black ease-in-out duration-300">
+                Signup
+              </div>
+            </Link>
+          )}
+
+          {user && (
+            <Link to="/dashboard">
+              {" "}
+              <div className="hidden md:flex">
+                <CgProfile size={25} className="" />
+                <div className="ml-2 text-xl">{user && user.username}</div>
+              </div>
+            </Link>
+          )}
         </div>
       </div>
     </header>
