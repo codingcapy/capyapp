@@ -6,33 +6,46 @@ import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
 
-export const userFriendsRouter = new Hono().post(
-  "/",
-  zValidator(
-    "json",
-    createInsertSchema(userFriendsTable).omit({
-      userFriendId: true,
-      createdAt: true,
-      blocked: true,
-      muted: true,
-    })
-  ),
-  async (c) => {
-    const insertValues = c.req.valid("json");
-    const { error: userFriendInsertError, result: userFriendInsertResult } =
-      await mightFail(
-        db
-          .insert(userFriendsTable)
-          .values({ ...insertValues })
-          .returning()
-      );
-    if (userFriendInsertError) {
-      console.log("Error while creating user");
+export const userFriendsRouter = new Hono()
+  .post(
+    "/",
+    zValidator(
+      "json",
+      createInsertSchema(userFriendsTable).omit({
+        userFriendId: true,
+        createdAt: true,
+        blocked: true,
+        muted: true,
+      })
+    ),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { error: userFriendInsertError, result: userFriendInsertResult } =
+        await mightFail(
+          db
+            .insert(userFriendsTable)
+            .values({ ...insertValues })
+            .returning()
+        );
+      if (userFriendInsertError) {
+        console.log("Error while creating user");
+        throw new HTTPException(500, {
+          message: "Error while creating user",
+          cause: userFriendInsertResult,
+        });
+      }
+      return c.json({ user: userFriendInsertResult[0] }, 200);
+    }
+  )
+  .get(async (c) => {
+    const { error: userFriendsQueryError, result: userFriendsQueryResult } =
+      await mightFail(db.select().from(userFriendsTable));
+
+    if (userFriendsQueryError) {
       throw new HTTPException(500, {
-        message: "Error while creating user",
-        cause: userFriendInsertResult,
+        message: "Error while fetching user_friends",
+        cause: userFriendsQueryError,
       });
     }
-    return c.json({ user: userFriendInsertResult[0] }, 200);
-  }
-);
+    return c.json({ users: userFriendsQueryResult }, 200);
+  });
