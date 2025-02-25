@@ -12,6 +12,7 @@ import Friends from "../components/Friends";
 import Chats from "../components/Chats";
 import Messages from "../components/Messages";
 import Profile from "../components/Profile";
+import AddFriend from "../components/AddFriend";
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
@@ -28,6 +29,7 @@ function RouteComponent() {
     window.innerWidth > 760 ? true : false
   );
   const [showProfile, setShowProfile] = useState(false);
+  const [showAddFriend, setShowAddFriend] = useState(false);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -60,13 +62,20 @@ function RouteComponent() {
   function clickedProfile() {
     setShowMessages(false);
     setShowProfile(true);
+    setShowAddFriend(false);
+  }
+
+  function clickedAddFriend() {
+    setShowMessages(false);
+    setShowProfile(false);
+    setShowAddFriend(true);
   }
 
   return (
     <div className="flex flex-col bg-[#040406] text-white min-h-screen">
       <main className="flex-1 relative z-0">
         <div className="md:flex">
-          {showFriends && <Friends />}
+          {showFriends && <Friends clickedAddFriend={clickedAddFriend} />}
           <div
             className="hidden md:flex fixed bottom-0 left-0 cursor-pointer p-10 bg-[#040406] w-[14%]"
             onClick={handleLogout}
@@ -77,6 +86,7 @@ function RouteComponent() {
           {showChats && <Chats />}
           {showMessages && <Messages />}
           {showProfile && <Profile />}
+          {showAddFriend && <AddFriend />}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto">
             <div className="flex p-10 md:py-5 md:px-7" onClick={clickedProfile}>
               <CgProfile size={25} className="" />

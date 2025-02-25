@@ -15,6 +15,13 @@
       "when": 1740244691877,
       "tag": "0001_remarkable_kulan_gath",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740456683187,
+      "tag": "0002_equal_puff_adder",
+      "breakpoints": true
     }
   ]
 }

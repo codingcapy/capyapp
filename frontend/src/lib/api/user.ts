@@ -66,13 +66,13 @@ export const useCreateUserMutation = (onError?: (message: string) => void) => {
 async function getAllUsers() {
   const res = await client.api.v0.users.$get();
   if (!res.ok) {
-    throw new Error("Failed to get all Users");
+    throw new Error("Failed to get all users");
   }
   const { users } = await res.json();
   return users.map(mapSerializedUserToSchema);
 }
 
 export const getAllUsersQueryOptions = queryOptions({
-  queryKey: ["Users"],
+  queryKey: ["users"],
   queryFn: getAllUsers,
 });
