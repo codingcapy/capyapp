@@ -36,7 +36,7 @@ function RouteComponent() {
     data: friends,
     isLoading,
     error,
-  } = useQuery(getFriendsByEmailQueryOptions(user!.email));
+  } = useQuery(getFriendsByEmailQueryOptions(user?.email || ""));
 
   useEffect(() => console.log(friends), [friends]);
 
