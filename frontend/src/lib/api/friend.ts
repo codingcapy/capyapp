@@ -10,7 +10,7 @@ type CreateFriendArgs = ArgumentTypes<
   typeof client.api.v0.friends.$post
 >[0]["json"];
 
-type Friend = Omit<User, "password">;
+export type Friend = Omit<User, "password">;
 
 type SerializeFriend = {
   userId: string;
@@ -76,7 +76,7 @@ async function getAllFriends() {
   return users;
 }
 
-export const getAllUsersQueryOptions = queryOptions({
+export const getAllFriendsQueryOptions = queryOptions({
   queryKey: ["friends"],
   queryFn: getAllFriends,
 });
@@ -93,7 +93,7 @@ async function getFriendsByEmail(email: string) {
   return friends.map((friend) => mapSerializedFriendToSchema(friend));
 }
 
-export const getFriendsByIdQueryOptions = (email: string) =>
+export const getFriendsByEmailQueryOptions = (email: string) =>
   queryOptions({
     queryKey: ["friends", email],
     queryFn: () => getFriendsByEmail(email),

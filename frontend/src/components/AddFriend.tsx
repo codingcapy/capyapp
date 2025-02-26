@@ -1,18 +1,25 @@
 import { FaUserFriends } from "react-icons/fa";
-import { useCreateFriendMutation } from "../lib/api/friend";
+import { Friend, useCreateFriendMutation } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import { useState } from "react";
 
-export default function AddFriend() {
+export default function AddFriend(props: { friends: Friend[] | undefined }) {
   const { mutate: createFriend } = useCreateFriendMutation();
   const { user } = useAuthStore();
   const [notification, setNotification] = useState("");
   const [successNotification, setSuccessNotification] = useState("");
+  const { friends } = props;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = (e.target as HTMLFormElement).email.value;
     if (user && email == user.email) return setNotification("That's yourself!");
+    friends?.forEach((friend) => {
+      if (user && friend.email == email) {
+        setNotification("This person is already your friend");
+        throw new Error("existing friend");
+      }
+    });
     createFriend(
       { userEmail: user!.email, friendEmail: email },
       {

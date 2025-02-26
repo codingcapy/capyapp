@@ -13,6 +13,8 @@ import Chats from "../components/Chats";
 import Messages from "../components/Messages";
 import Profile from "../components/Profile";
 import AddFriend from "../components/AddFriend";
+import { getFriendsByEmailQueryOptions } from "../lib/api/friend";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
@@ -30,6 +32,13 @@ function RouteComponent() {
   );
   const [showProfile, setShowProfile] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
+  const {
+    data: friends,
+    isLoading,
+    error,
+  } = useQuery(getFriendsByEmailQueryOptions(user!.email));
+
+  useEffect(() => console.log(friends), [friends]);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -75,7 +84,9 @@ function RouteComponent() {
     <div className="flex flex-col bg-[#040406] text-white min-h-screen">
       <main className="flex-1 relative z-0">
         <div className="md:flex">
-          {showFriends && <Friends clickedAddFriend={clickedAddFriend} />}
+          {showFriends && (
+            <Friends clickedAddFriend={clickedAddFriend} friends={friends} />
+          )}
           <div
             className="hidden md:flex fixed bottom-0 left-0 cursor-pointer p-10 bg-[#040406] w-[14%]"
             onClick={handleLogout}
@@ -86,7 +97,7 @@ function RouteComponent() {
           {showChats && <Chats />}
           {showMessages && <Messages />}
           {showProfile && <Profile />}
-          {showAddFriend && <AddFriend />}
+          {showAddFriend && <AddFriend friends={friends} />}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto">
             <div className="flex p-10 md:py-5 md:px-7" onClick={clickedProfile}>
               <CgProfile size={25} className="" />
