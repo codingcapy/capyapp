@@ -2,6 +2,9 @@ import { FaUserFriends } from "react-icons/fa";
 import { Friend, useCreateFriendMutation } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import { useState } from "react";
+import io from "socket.io-client";
+
+const socket = io("https://capyapp-production.up.railway.app");
 
 export default function AddFriend(props: { friends: Friend[] | undefined }) {
   const { mutate: createFriend } = useCreateFriendMutation();
@@ -26,6 +29,7 @@ export default function AddFriend(props: { friends: Friend[] | undefined }) {
         onSuccess: () => {
           setNotification("");
           setSuccessNotification("Friend added successfully!");
+          socket.emit("friend", email);
         },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       }

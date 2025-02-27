@@ -57,7 +57,7 @@ export const useCreateFriendMutation = (
     mutationFn: createFriend,
     onSettled: (args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"], args });
     },
     onError: (error) => {
       if (onError) {
@@ -93,8 +93,8 @@ async function getFriendsByEmail(email: string) {
   return friends.map((friend) => mapSerializedFriendToSchema(friend));
 }
 
-export const getFriendsByEmailQueryOptions = (email: string) =>
+export const getFriendsByEmailQueryOptions = (args: string) =>
   queryOptions({
-    queryKey: ["friends", email],
-    queryFn: () => getFriendsByEmail(email),
+    queryKey: ["friends", args],
+    queryFn: () => getFriendsByEmail(args),
   });

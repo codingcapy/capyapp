@@ -15,6 +15,10 @@ import Profile from "../components/Profile";
 import AddFriend from "../components/AddFriend";
 import { getFriendsByEmailQueryOptions } from "../lib/api/friend";
 import { useQuery } from "@tanstack/react-query";
+import io from "socket.io-client";
+import { Friend } from "../lib/api/friend";
+
+const socket = io("https://capyapp-production.up.railway.app");
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
