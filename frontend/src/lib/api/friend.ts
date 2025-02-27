@@ -47,6 +47,9 @@ async function createFriend(args: CreateFriendArgs) {
     }
     throw new Error(errorMessage);
   }
+  const result = await res.json();
+  console.log("Parsed API Response:", result);
+  return result.user.userEmail;
 }
 
 export const useCreateFriendMutation = (
