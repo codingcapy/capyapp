@@ -17,6 +17,7 @@ import { getFriendsByEmailQueryOptions } from "../lib/api/friend";
 import { useQuery } from "@tanstack/react-query";
 import io from "socket.io-client";
 import { Friend } from "../lib/api/friend";
+import FriendProfile from "../components/FriendProfile";
 
 const socket = io("https://capyapp-production.up.railway.app");
 
@@ -36,6 +37,8 @@ function RouteComponent() {
   );
   const [showProfile, setShowProfile] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
+  const [friend, setFriend] = useState<Friend | null>(null);
+  const [showFriend, setShowFriend] = useState(false);
   const {
     data: friends,
     isLoading,
@@ -58,6 +61,7 @@ function RouteComponent() {
     setShowMessages(false);
     setShowChats(false);
     setShowProfile(false);
+    setShowFriend(false);
   }
   function tappedChats() {
     setShowFriends(false);
@@ -76,12 +80,25 @@ function RouteComponent() {
     setShowMessages(false);
     setShowProfile(true);
     setShowAddFriend(false);
+    setShowFriend(false);
   }
 
   function clickedAddFriend() {
     setShowMessages(false);
     setShowProfile(false);
     setShowAddFriend(true);
+    setShowFriend(false);
+    setShowProfile(false);
+  }
+
+  function clickedFriend(currentFriend: Friend) {
+    setFriend(currentFriend);
+    setShowMessages(false);
+    setShowAddFriend(false);
+    setShowFriend(true);
+    setShowProfile(false);
+    setShowFriends(window.innerWidth < 760 ? false : true);
+    setShowChats(window.innerWidth < 760 ? false : true);
   }
 
   return (
@@ -89,7 +106,11 @@ function RouteComponent() {
       <main className="flex-1 relative z-0">
         <div className="md:flex">
           {showFriends && (
-            <Friends clickedAddFriend={clickedAddFriend} friends={friends} />
+            <Friends
+              clickedAddFriend={clickedAddFriend}
+              clickedFriend={clickedFriend}
+              friends={friends}
+            />
           )}
           <div
             className="hidden md:flex fixed bottom-0 left-0 cursor-pointer p-10 bg-[#040406] w-[14%]"
@@ -102,8 +123,12 @@ function RouteComponent() {
           {showMessages && <Messages />}
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}
+          {showFriend && <FriendProfile friend={friend} />}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto">
-            <div className="flex p-10 md:py-5 md:px-7" onClick={clickedProfile}>
+            <div
+              className="flex p-10 md:py-5 md:px-7 cursor-pointer"
+              onClick={clickedProfile}
+            >
               <CgProfile size={25} className="" />
               <div className="ml-2 text-xl">{user && user.username}</div>
             </div>
