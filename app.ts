@@ -8,6 +8,7 @@ import { userFriendsRouter } from "./routes/friends";
 import { Server as SocketServer } from "socket.io";
 import { serve } from "@hono/node-server";
 import { attachSocketEventListeners } from "./ws";
+import { userChatsRouter } from "./routes/chats";
 
 const app = new Hono();
 
@@ -18,7 +19,8 @@ const apiRoutes = app
   .basePath("/api/v0")
   .route("/users", usersRouter)
   .route("/user", userRouter)
-  .route("/friends", userFriendsRouter);
+  .route("/friends", userFriendsRouter)
+  .route("/chats", userChatsRouter);
 
 app.use("/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/*", async (c) => {

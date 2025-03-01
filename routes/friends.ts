@@ -7,7 +7,6 @@ import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
 import { eq } from "drizzle-orm";
-import z from "zod";
 
 export const userFriendsRouter = new Hono()
   .post(
