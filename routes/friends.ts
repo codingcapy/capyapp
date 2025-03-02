@@ -30,9 +30,9 @@ export const userFriendsRouter = new Hono()
             .returning()
         );
       if (userFriendInsertError) {
-        console.log("Error while creating user");
+        console.log("Error while creating friend");
         throw new HTTPException(500, {
-          message: "Error while creating user",
+          message: "Error while creating friend",
           cause: userFriendInsertResult,
         });
       }
