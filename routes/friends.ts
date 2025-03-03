@@ -39,18 +39,6 @@ export const userFriendsRouter = new Hono()
       return c.json({ user: userFriendInsertResult[0] }, 200);
     }
   )
-  .get(async (c) => {
-    const { error: userFriendsQueryError, result: userFriendsQueryResult } =
-      await mightFail(db.select().from(userFriendsTable));
-
-    if (userFriendsQueryError) {
-      throw new HTTPException(500, {
-        message: "Error while fetching user_friends",
-        cause: userFriendsQueryError,
-      });
-    }
-    return c.json({ users: userFriendsQueryResult }, 200);
-  })
   .get("/:userEmail", async (c) => {
     const userEmailString = c.req.param("userEmail");
     if (!userEmailString) {

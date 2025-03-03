@@ -70,20 +70,6 @@ export const useCreateFriendMutation = (
   });
 };
 
-async function getAllFriends() {
-  const res = await client.api.v0.friends.$get();
-  if (!res.ok) {
-    throw new Error("Failed to get all friends");
-  }
-  const { users } = await res.json();
-  return users;
-}
-
-export const getAllFriendsQueryOptions = queryOptions({
-  queryKey: ["friends"],
-  queryFn: getAllFriends,
-});
-
 async function getFriendsByEmail(email: string) {
   const res = await client.api.v0.friends[":userEmail"].$get({
     param: { userEmail: email.toString() },
