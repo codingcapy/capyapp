@@ -30,7 +30,7 @@ async function createChat(args: CreateChatArgs) {
   }
   const result = await res.json();
   console.log("Parsed API Response:", result);
-  return result.user.userId;
+  return result;
 }
 
 export const useCreateChatMutation = (onError?: (message: string) => void) => {
@@ -55,13 +55,13 @@ async function getChatsByUserId(userId: string) {
   });
 
   if (!res.ok) {
-    throw new Error("Error getting vhats by userId");
+    throw new Error("Error getting chats by userId");
   }
   const { chats } = await res.json();
   return chats;
 }
 
-export const getChatsByEmailQueryOptions = (args: string) =>
+export const getChatsByUserIdQueryOptions = (args: string) =>
   queryOptions({
     queryKey: ["chats", args],
     queryFn: () => getChatsByUserId(args),

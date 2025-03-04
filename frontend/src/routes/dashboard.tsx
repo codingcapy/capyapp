@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import io from "socket.io-client";
 import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
+import { getChatsByUserIdQueryOptions } from "../lib/api/chat";
 
 const socket = io("https://capyapp-production.up.railway.app");
 
@@ -39,13 +40,16 @@ function RouteComponent() {
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [friend, setFriend] = useState<Friend | null>(null);
   const [showFriend, setShowFriend] = useState(false);
+  const { data: friends } = useQuery(
+    getFriendsByEmailQueryOptions(user?.email || "")
+  );
   const {
-    data: friends,
+    data: chats,
     isLoading,
     error,
-  } = useQuery(getFriendsByEmailQueryOptions(user?.email || ""));
+  } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
 
-  useEffect(() => console.log(friends), [friends]);
+  useEffect(() => console.log(chats), [chats]);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });

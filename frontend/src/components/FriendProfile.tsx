@@ -4,6 +4,10 @@ import profilePic from "/capypaul01.jpg";
 
 export default function FriendProfile(props: { friend: Friend | null }) {
   const { friend } = props;
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+  }
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
       <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">

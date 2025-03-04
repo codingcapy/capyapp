@@ -13,36 +13,36 @@ export const userChatsRouter = new Hono()
     "/",
     zValidator(
       "json",
-      createInsertSchema(userChatsTable).omit({
-        userChatId: true,
+      createInsertSchema(chatsTable).omit({
+        chatId: true,
         createdAt: true,
       })
     ),
     async (c) => {
       const insertValues = c.req.valid("json");
-      const { error: userChatInsertError, result: userChatInsertResult } =
+      const { error: chatInsertError, result: chatInsertResult } =
         await mightFail(
           db
-            .insert(userChatsTable)
+            .insert(chatsTable)
             .values({ ...insertValues })
             .returning()
         );
-      if (userChatInsertError) {
+      if (chatInsertError) {
         console.log("Error while creating chat");
         throw new HTTPException(500, {
           message: "Error while creating chat",
-          cause: userChatInsertResult,
+          cause: chatInsertResult,
         });
       }
-      return c.json({ user: userChatInsertResult[0] }, 200);
+      return c.json({ user: chatInsertResult[0] }, 200);
     }
   )
   .get("/:userId", async (c) => {
-    const userIdString = c.req.param("userId");
-    if (!userIdString) {
+    const userId = c.req.param("userId");
+    if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
     }
-    const { result: userChatsQueryResult, error: userChatsQueryError } =
+    const { result: chatsQueryResult, error: chatsQueryError } =
       await mightFail(
         db
           .select({
@@ -52,13 +52,13 @@ export const userChatsRouter = new Hono()
           })
           .from(userChatsTable)
           .innerJoin(chatsTable, eq(userChatsTable.chatId, chatsTable.chatId))
-          .where(eq(userChatsTable.userId, userIdString))
+          .where(eq(userChatsTable.userId, userId))
       );
-    if (userChatsQueryError) {
+    if (chatsQueryError) {
       throw new HTTPException(500, {
         message: "Error occurred when fetching user chats.",
-        cause: userChatsQueryError,
+        cause: chatsQueryError,
       });
     }
-    return c.json({ chats: userChatsQueryResult });
+    return c.json({ chats: chatsQueryResult });
   });

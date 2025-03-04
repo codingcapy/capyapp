@@ -26,6 +26,7 @@ export default function Friends(props: {
           <div
             onClick={() => clickedFriend(friend)}
             className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
+            key={friend.userId}
           >
             <img src={profilePic} className="w-[40px] rounded-full" />
             <div className="ml-2 py-2">{friend.username}</div>
