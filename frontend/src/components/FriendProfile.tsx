@@ -1,10 +1,11 @@
 import { Friend } from "../lib/api/friend";
 import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
+import useAuthStore from "../store/AuthStore";
 
 export default function FriendProfile(props: { friend: Friend | null }) {
   const { friend } = props;
-
+  const { user } = useAuthStore();
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
   }

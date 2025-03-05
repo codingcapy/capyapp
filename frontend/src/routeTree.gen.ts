@@ -10,168 +10,203 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as SignupImport } from './routes/signup'
-import { Route as LoginImport } from './routes/login'
-import { Route as DashboardImport } from './routes/dashboard'
-import { Route as ContactImport } from './routes/contact'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
+import { Route as rootRoute } from "./routes/__root";
+import { Route as DashboardImport } from "./routes/dashboard";
+import { Route as HeaderImport } from "./routes/_header";
+import { Route as IndexImport } from "./routes/index";
+import { Route as HeaderSignupImport } from "./routes/_header.signup";
+import { Route as HeaderLoginImport } from "./routes/_header.login";
+import { Route as HeaderContactImport } from "./routes/_header.contact";
+import { Route as HeaderAboutImport } from "./routes/_header.about";
 
 // Create/Update Routes
 
-const SignupRoute = SignupImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const LoginRoute = LoginImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const DashboardRoute = DashboardImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+  id: "/dashboard",
+  path: "/dashboard",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
-const ContactRoute = ContactImport.update({
-  id: '/contact',
-  path: '/contact',
+const HeaderRoute = HeaderImport.update({
+  id: "/_header",
   getParentRoute: () => rootRoute,
-} as any)
-
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const IndexRoute = IndexImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
+
+const HeaderSignupRoute = HeaderSignupImport.update({
+  id: "/signup",
+  path: "/signup",
+  getParentRoute: () => HeaderRoute,
+} as any);
+
+const HeaderLoginRoute = HeaderLoginImport.update({
+  id: "/login",
+  path: "/login",
+  getParentRoute: () => HeaderRoute,
+} as any);
+
+const HeaderContactRoute = HeaderContactImport.update({
+  id: "/contact",
+  path: "/contact",
+  getParentRoute: () => HeaderRoute,
+} as any);
+
+const HeaderAboutRoute = HeaderAboutImport.update({
+  id: "/about",
+  path: "/about",
+  getParentRoute: () => HeaderRoute,
+} as any);
 
 // Populate the FileRoutesByPath interface
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactImport
-      parentRoute: typeof rootRoute
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardImport
-      parentRoute: typeof rootRoute
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupImport
-      parentRoute: typeof rootRoute
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/_header": {
+      id: "/_header";
+      path: "";
+      fullPath: "";
+      preLoaderRoute: typeof HeaderImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/dashboard": {
+      id: "/dashboard";
+      path: "/dashboard";
+      fullPath: "/dashboard";
+      preLoaderRoute: typeof DashboardImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/_header/about": {
+      id: "/_header/about";
+      path: "/about";
+      fullPath: "/about";
+      preLoaderRoute: typeof HeaderAboutImport;
+      parentRoute: typeof HeaderImport;
+    };
+    "/_header/contact": {
+      id: "/_header/contact";
+      path: "/contact";
+      fullPath: "/contact";
+      preLoaderRoute: typeof HeaderContactImport;
+      parentRoute: typeof HeaderImport;
+    };
+    "/_header/login": {
+      id: "/_header/login";
+      path: "/login";
+      fullPath: "/login";
+      preLoaderRoute: typeof HeaderLoginImport;
+      parentRoute: typeof HeaderImport;
+    };
+    "/_header/signup": {
+      id: "/_header/signup";
+      path: "/signup";
+      fullPath: "/signup";
+      preLoaderRoute: typeof HeaderSignupImport;
+      parentRoute: typeof HeaderImport;
+    };
   }
 }
 
 // Create and export the route tree
 
+interface HeaderRouteChildren {
+  HeaderAboutRoute: typeof HeaderAboutRoute;
+  HeaderContactRoute: typeof HeaderContactRoute;
+  HeaderLoginRoute: typeof HeaderLoginRoute;
+  HeaderSignupRoute: typeof HeaderSignupRoute;
+}
+
+const HeaderRouteChildren: HeaderRouteChildren = {
+  HeaderAboutRoute: HeaderAboutRoute,
+  HeaderContactRoute: HeaderContactRoute,
+  HeaderLoginRoute: HeaderLoginRoute,
+  HeaderSignupRoute: HeaderSignupRoute,
+};
+
+const HeaderRouteWithChildren =
+  HeaderRoute._addFileChildren(HeaderRouteChildren);
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
+  "/": typeof IndexRoute;
+  "": typeof HeaderRouteWithChildren;
+  "/dashboard": typeof DashboardRoute;
+  "/about": typeof HeaderAboutRoute;
+  "/contact": typeof HeaderContactRoute;
+  "/login": typeof HeaderLoginRoute;
+  "/signup": typeof HeaderSignupRoute;
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
+  "/": typeof IndexRoute;
+  "": typeof HeaderRouteWithChildren;
+  "/dashboard": typeof DashboardRoute;
+  "/about": typeof HeaderAboutRoute;
+  "/contact": typeof HeaderContactRoute;
+  "/login": typeof HeaderLoginRoute;
+  "/signup": typeof HeaderSignupRoute;
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
+  __root__: typeof rootRoute;
+  "/": typeof IndexRoute;
+  "/_header": typeof HeaderRouteWithChildren;
+  "/dashboard": typeof DashboardRoute;
+  "/_header/about": typeof HeaderAboutRoute;
+  "/_header/contact": typeof HeaderContactRoute;
+  "/_header/login": typeof HeaderLoginRoute;
+  "/_header/signup": typeof HeaderSignupRoute;
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/dashboard' | '/login' | '/signup'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/dashboard' | '/login' | '/signup'
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths:
+    | "/"
+    | ""
+    | "/dashboard"
+    | "/about"
+    | "/contact"
+    | "/login"
+    | "/signup";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "" | "/dashboard" | "/about" | "/contact" | "/login" | "/signup";
   id:
-    | '__root__'
-    | '/'
-    | '/about'
-    | '/contact'
-    | '/dashboard'
-    | '/login'
-    | '/signup'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/_header"
+    | "/dashboard"
+    | "/_header/about"
+    | "/_header/contact"
+    | "/_header/login"
+    | "/_header/signup";
+  fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  ContactRoute: typeof ContactRoute
-  DashboardRoute: typeof DashboardRoute
-  LoginRoute: typeof LoginRoute
-  SignupRoute: typeof SignupRoute
+  IndexRoute: typeof IndexRoute;
+  HeaderRoute: typeof HeaderRouteWithChildren;
+  DashboardRoute: typeof DashboardRoute;
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  ContactRoute: ContactRoute,
+  HeaderRoute: HeaderRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  LoginRoute: LoginRoute,
-  SignupRoute: SignupRoute,
-}
+};
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
 /* ROUTE_MANIFEST_START
 {
@@ -180,30 +215,40 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about",
-        "/contact",
-        "/dashboard",
-        "/login",
-        "/signup"
+        "/_header",
+        "/dashboard"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/about": {
-      "filePath": "about.tsx"
-    },
-    "/contact": {
-      "filePath": "contact.tsx"
+    "/_header": {
+      "filePath": "_header.tsx",
+      "children": [
+        "/_header/about",
+        "/_header/contact",
+        "/_header/login",
+        "/_header/signup"
+      ]
     },
     "/dashboard": {
       "filePath": "dashboard.tsx"
     },
-    "/login": {
-      "filePath": "login.tsx"
+    "/_header/about": {
+      "filePath": "_header.about.tsx",
+      "parent": "/_header"
     },
-    "/signup": {
-      "filePath": "signup.tsx"
+    "/_header/contact": {
+      "filePath": "_header.contact.tsx",
+      "parent": "/_header"
+    },
+    "/_header/login": {
+      "filePath": "_header.login.tsx",
+      "parent": "/_header"
+    },
+    "/_header/signup": {
+      "filePath": "_header.signup.tsx",
+      "parent": "/_header"
     }
   }
 }
