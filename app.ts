@@ -9,6 +9,7 @@ import { Server as SocketServer } from "socket.io";
 import { serve } from "@hono/node-server";
 import { attachSocketEventListeners } from "./ws";
 import { userChatsRouter } from "./routes/chats";
+import { messagesRouter } from "./routes/messages";
 
 const app = new Hono();
 
@@ -20,7 +21,8 @@ const apiRoutes = app
   .route("/users", usersRouter)
   .route("/user", userRouter)
   .route("/friends", userFriendsRouter)
-  .route("/chats", userChatsRouter);
+  .route("/chats", userChatsRouter)
+  .route("/messages", messagesRouter);
 
 app.use("/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/*", async (c) => {

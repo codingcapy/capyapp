@@ -23,7 +23,7 @@ export function assertIsParsableInt(id: string): number {
   return parsedId;
 }
 
-export const userChatsRouter = new Hono()
+export const messagesRouter = new Hono()
   .post(
     "/",
     zValidator(
