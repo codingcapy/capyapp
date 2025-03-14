@@ -22,6 +22,20 @@ export const userFriendsRouter = new Hono()
     ),
     async (c) => {
       const insertValues = c.req.valid("json");
+      const { error: userQueryError, result: userQueryResult } =
+        await mightFail(
+          db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.email, insertValues.friendEmail))
+        );
+      if (userQueryError)
+        throw new HTTPException(500, {
+          message: "Error while creating friend",
+          cause: userQueryResult,
+        });
+      if (userQueryResult.length < 1)
+        return c.json({ message: "Error creating friend" }, 500);
       const { error: userFriendInsertError, result: userFriendInsertResult } =
         await mightFail(
           db
@@ -30,6 +44,23 @@ export const userFriendsRouter = new Hono()
             .returning()
         );
       if (userFriendInsertError) {
+        console.log("Error while creating friend");
+        throw new HTTPException(500, {
+          message: "Error while creating friend",
+          cause: userFriendInsertResult,
+        });
+      }
+      const { error: userFriendInsertError2, result: userFriendInsertResult2 } =
+        await mightFail(
+          db
+            .insert(userFriendsTable)
+            .values({
+              userEmail: insertValues.friendEmail,
+              friendEmail: insertValues.userEmail,
+            })
+            .returning()
+        );
+      if (userFriendInsertError2) {
         console.log("Error while creating friend");
         throw new HTTPException(500, {
           message: "Error while creating friend",

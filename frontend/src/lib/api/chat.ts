@@ -3,11 +3,23 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ArgumentTypes, client } from "./client";
+import { ArgumentTypes, client, ExtractData } from "./client";
+import { Chat } from "../../../../schemas/chats";
 
 type CreateChatArgs = ArgumentTypes<
   typeof client.api.v0.chats.$post
 >[0]["json"];
+
+type SerializeChat = ExtractData<
+  Awaited<ReturnType<typeof client.api.v0.chats.$get>>
+>["chats"][number];
+
+export function mapSerializedChatToSchema(SerializedChat: SerializeChat): Chat {
+  return {
+    ...SerializedChat,
+    createdAt: new Date(SerializedChat.createdAt),
+  };
+}
 
 async function createChat(args: CreateChatArgs) {
   const res = await client.api.v0.chats.$post({ json: args });
@@ -58,7 +70,7 @@ async function getChatsByUserId(userId: string) {
     throw new Error("Error getting chats by userId");
   }
   const { chats } = await res.json();
-  return chats;
+  return chats.map(mapSerializedChatToSchema);
 }
 
 export const getChatsByUserIdQueryOptions = (args: string) =>

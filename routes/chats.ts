@@ -89,4 +89,15 @@ export const userChatsRouter = new Hono()
       });
     }
     return c.json({ chats: chatsQueryResult });
+  })
+  .get(async (c) => {
+    const { result: chatsQueryResult, error: chatsQueryError } =
+      await mightFail(db.select().from(chatsTable));
+    if (chatsQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching user chats.",
+        cause: chatsQueryError,
+      });
+    }
+    return c.json({ chats: chatsQueryResult });
   });

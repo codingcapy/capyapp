@@ -123,7 +123,7 @@ function RouteComponent() {
             <IoExitOutline size={25} />
             <div className="ml-3">Logout</div>
           </div>
-          {showChats && <Chats />}
+          {showChats && <Chats chats={chats} />}
           {showMessages && <Messages />}
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}

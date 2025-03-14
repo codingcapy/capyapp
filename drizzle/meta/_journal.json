@@ -22,6 +22,13 @@
       "when": 1740456683187,
       "tag": "0002_equal_puff_adder",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1741914549219,
+      "tag": "0003_boring_karen_page",
+      "breakpoints": true
     }
   ]
 }

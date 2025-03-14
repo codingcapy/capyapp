@@ -34,7 +34,6 @@ export default function AddFriend(props: { friends: Friend[] | undefined }) {
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       }
     );
-    createFriend({ userEmail: email, friendEmail: user!.email });
   }
 
   return (
