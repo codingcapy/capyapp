@@ -2,8 +2,11 @@ import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 
-export default function Chats(props: { chats: Chat[] | undefined }) {
-  const { chats } = props;
+export default function Chats(props: {
+  chats: Chat[] | undefined;
+  clickedChat: () => void;
+}) {
+  const { chats, clickedChat } = props;
 
   return (
     <div className="relative md:w-[15%] md:border-r md:h-screen overflow-auto">
@@ -11,12 +14,13 @@ export default function Chats(props: { chats: Chat[] | undefined }) {
         <IoChatbubbleEllipsesOutline size={25} className="" />
         <div className="ml-2 text-xl">Chats</div>
       </div>
-      <div className="p-5 pt-[120px]">
+      <div className="p-5 pt-[60px]">
         {chats !== undefined &&
           chats.map((chat) => (
             <div
               key={chat.chatId}
               className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
+              onClick={clickedChat}
             >
               <img src={profilePic} className="w-[40px] rounded-full" />
               <div className="ml-2 py-2">{chat.title}</div>

@@ -66,18 +66,23 @@ function RouteComponent() {
     setShowChats(false);
     setShowProfile(false);
     setShowFriend(false);
+    setShowAddFriend(false);
   }
   function tappedChats() {
     setShowFriends(false);
     setShowMessages(false);
     setShowChats(true);
     setShowProfile(false);
+    setShowFriend(false);
+    setShowAddFriend(false);
   }
   function tappedProfile() {
     setShowFriends(false);
     setShowMessages(false);
     setShowChats(false);
     setShowProfile(true);
+    setShowFriend(false);
+    setShowAddFriend(false);
   }
 
   function clickedProfile() {
@@ -93,6 +98,8 @@ function RouteComponent() {
     setShowAddFriend(true);
     setShowFriend(false);
     setShowProfile(false);
+    setShowFriends(window.innerWidth < 760 ? false : true);
+    setShowChats(window.innerWidth < 760 ? false : true);
   }
 
   function clickedFriend(currentFriend: Friend) {
@@ -100,6 +107,15 @@ function RouteComponent() {
     setShowMessages(false);
     setShowAddFriend(false);
     setShowFriend(true);
+    setShowProfile(false);
+    setShowFriends(window.innerWidth < 760 ? false : true);
+    setShowChats(window.innerWidth < 760 ? false : true);
+  }
+
+  function clickedChat() {
+    setShowMessages(true);
+    setShowAddFriend(false);
+    setShowFriend(false);
     setShowProfile(false);
     setShowFriends(window.innerWidth < 760 ? false : true);
     setShowChats(window.innerWidth < 760 ? false : true);
@@ -123,7 +139,7 @@ function RouteComponent() {
             <IoExitOutline size={25} />
             <div className="ml-3">Logout</div>
           </div>
-          {showChats && <Chats chats={chats} />}
+          {showChats && <Chats chats={chats} clickedChat={clickedChat} />}
           {showMessages && <Messages />}
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}
