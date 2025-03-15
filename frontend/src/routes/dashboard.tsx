@@ -19,6 +19,7 @@ import io from "socket.io-client";
 import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
 import { getChatsByUserIdQueryOptions } from "../lib/api/chat";
+import { Chat } from "../../../schemas/chats";
 
 const socket = io("https://capyapp-production.up.railway.app");
 
@@ -39,6 +40,7 @@ function RouteComponent() {
   const [showProfile, setShowProfile] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
   const [friend, setFriend] = useState<Friend | null>(null);
+  const [chat, setChat] = useState<Chat | null>(null);
   const [showFriend, setShowFriend] = useState(false);
   const { data: friends } = useQuery(
     getFriendsByEmailQueryOptions(user?.email || "")
@@ -112,7 +114,8 @@ function RouteComponent() {
     setShowChats(window.innerWidth < 760 ? false : true);
   }
 
-  function clickedChat() {
+  function clickedChat(currentChat: Chat) {
+    setChat(currentChat);
     setShowMessages(true);
     setShowAddFriend(false);
     setShowFriend(false);

@@ -4,7 +4,7 @@ import profilePic from "/capypaul01.jpg";
 
 export default function Chats(props: {
   chats: Chat[] | undefined;
-  clickedChat: () => void;
+  clickedChat: (currentChat: Chat) => void;
 }) {
   const { chats, clickedChat } = props;
 
@@ -20,7 +20,7 @@ export default function Chats(props: {
             <div
               key={chat.chatId}
               className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
-              onClick={clickedChat}
+              onClick={() => clickedChat(chat)}
             >
               <img src={profilePic} className="w-[40px] rounded-full" />
               <div className="ml-2 py-2">{chat.title}</div>

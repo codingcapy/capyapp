@@ -1,6 +1,11 @@
 import { IoChatbubbleOutline } from "react-icons/io5";
+import { LuSendHorizontal } from "react-icons/lu";
 
 export default function Messages() {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+  }
+
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
       <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
@@ -121,6 +126,17 @@ export default function Messages() {
         Croissant lemon drops liquorice icing gummies lollipop soufflé. Oat cake
         donut cotton candy dragée pastry icing cheesecake. Topping tootsie roll
         candy canes jelly danish.
+      </div>
+      <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[55%] h-[70px] md:h-[100px] bg-[#040406] ">
+        <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
+          <input
+            type="text"
+            className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
+          />
+          <button>
+            <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
+          </button>
+        </form>
       </div>
     </div>
   );
