@@ -143,7 +143,9 @@ function RouteComponent() {
             <div className="ml-3">Logout</div>
           </div>
           {showChats && <Chats chats={chats} clickedChat={clickedChat} />}
-          {showMessages && <Messages />}
+          {showMessages && (
+            <Messages chat={chat} user={user} friends={friends} />
+          )}
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}
           {showFriend && <FriendProfile friend={friend} />}
