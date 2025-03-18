@@ -79,7 +79,7 @@ async function getMessagesByChatId(chatId: string) {
   return messages.map(mapSerializedMessageToSchema);
 }
 
-export const getMessagesByUserIdQueryOptions = (args: string) =>
+export const getMessagesByChatIdQueryOptions = (args: string) =>
   queryOptions({
     queryKey: ["messages", args],
     queryFn: () => getMessagesByChatId(args),
