@@ -59,7 +59,7 @@ export default function Messages(props: {
               )}
             </div>
           ))}
-        <div ref={lastMessageRef} />;
+        <div ref={lastMessageRef} />
       </div>
       <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[55%] h-[70px] md:h-[100px] bg-[#040406] ">
         <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
