@@ -10,6 +10,7 @@ import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
 import { useState } from "react";
 import MessageComponent from "./MessageComponent";
+import MessageFriend from "./MessageFriend";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -22,6 +23,7 @@ export default function Messages(props: {
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const [notification, setNotification] = useState("");
+  const [messageContent, setMessageContent] = useState("");
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,19 +32,24 @@ export default function Messages(props: {
       return setNotification("Your message is too long!");
     if (!user || !chat) return;
     createMessage({ content, chatId: chat.chatId, userId: user.userId });
+    setMessageContent("");
   }
 
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
       <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
         <IoChatbubbleOutline size={25} className="" />
-        <div className="ml-2 text-xl">Messages</div>
+        <div className="ml-2 text-xl">{!chat ? "Messages" : chat.title}</div>
       </div>
-      <div className="pt-[120px]">
+      <div className="pt-[70px]">
         {messages !== undefined &&
           messages.map((message) => (
             <div className="text-white " key={message.messageId}>
-              <MessageComponent message={message} friends={friends || []} />
+              {user && message.userId === user.userId ? (
+                <MessageComponent message={message} friends={friends || []} />
+              ) : (
+                <MessageFriend message={message} friends={friends || []} />
+              )}
             </div>
           ))}
       </div>
@@ -53,6 +60,8 @@ export default function Messages(props: {
             type="text"
             className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
             name="messagecontent"
+            value={messageContent}
+            onChange={(e) => setMessageContent(e.target.value)}
           />
           <button>
             <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />

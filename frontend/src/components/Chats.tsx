@@ -14,7 +14,7 @@ export default function Chats(props: {
         <IoChatbubbleEllipsesOutline size={25} className="" />
         <div className="ml-2 text-xl">Chats</div>
       </div>
-      <div className="p-5 pt-[60px]">
+      <div className="p-5 pt-[70px]">
         {chats !== undefined &&
           chats.map((chat) => (
             <div
