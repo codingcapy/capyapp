@@ -8,7 +8,7 @@ import {
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 
@@ -24,6 +24,7 @@ export default function Messages(props: {
   const { mutate: createMessage } = useCreateMessageMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
+  const lastMessageRef = useRef<HTMLDivElement>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,13 +36,19 @@ export default function Messages(props: {
     setMessageContent("");
   }
 
+  useEffect(() => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
       <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
         <IoChatbubbleOutline size={25} className="" />
         <div className="ml-2 text-xl">{!chat ? "Messages" : chat.title}</div>
       </div>
-      <div className="pt-[70px]">
+      <div className="pt-[70px] pb-[110px] md:pb-[100px]">
         {messages !== undefined &&
           messages.map((message) => (
             <div className="text-white " key={message.messageId}>
@@ -52,8 +59,8 @@ export default function Messages(props: {
               )}
             </div>
           ))}
+        <div ref={lastMessageRef} />;
       </div>
-      <div className="p-5"></div>
       <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[55%] h-[70px] md:h-[100px] bg-[#040406] ">
         <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
           <input
