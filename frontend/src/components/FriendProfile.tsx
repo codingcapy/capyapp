@@ -32,19 +32,6 @@ export default function FriendProfile(props: { friend: Friend | null }) {
         >
           Start chat
         </button>
-        <div className="">
-          Cheesecake sesame snaps gingerbread liquorice brownie. Jelly
-          shortbread cake chocolate lemon drops shortbread tart. Caramels
-          tootsie roll shortbread bear claw gingerbread. Dragée jelly soufflé
-          muffin jelly. Dessert donut pie powder pastry chocolate cake
-          marshmallow bear claw. Cupcake candy brownie bonbon lollipop icing
-          cotton candy oat cake toffee. Fruitcake soufflé pie tart candy.
-          Marshmallow gingerbread jelly fruitcake marzipan shortbread
-          marshmallow jelly muffin. Candy ice cream cake gummies marzipan.
-          Gingerbread donut pie cookie bear claw apple pie sesame snaps jelly-o.
-          Tart cheesecake cookie icing cupcake sweet candy canes shortbread
-          liquorice. Brownie bear claw jujubes soufflé gummi
-        </div>
       </div>
     </div>
   );
