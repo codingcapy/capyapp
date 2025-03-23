@@ -84,4 +84,35 @@ export const usersRouter = new Hono()
       });
     }
     return c.json({ users: usersQueryResult }, 200);
-  });
+  })
+  .post(
+    "/update/profilepic/:userId",
+    zValidator(
+      "json",
+      createInsertSchema(usersTable).omit({
+        userId: true,
+        username: true,
+        email: true,
+        password: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const { userId: userId } = c.req.param();
+      const updateValues = c.req.valid("json");
+      const { error: queryError, result: neUserResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ ...updateValues })
+          .where(eq(usersTable.userId, userId))
+          .returning()
+      );
+      if (queryError) {
+        throw new HTTPException(500, {
+          message: "Error updating users table",
+          cause: queryError,
+        });
+      }
+      return c.json({ newUser: neUserResult[0] }, 200);
+    }
+  );

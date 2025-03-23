@@ -14,6 +14,10 @@ type SerializeUser = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.users.$get>>
 >["users"][number];
 
+type UpdateProfilePicArgs = ArgumentTypes<typeof updateFunc>[0];
+
+const updateFunc = client.api.v0.users.update.profilepic[":userId"].$post;
+
 export function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
   return {
     ...SerializedUser,
@@ -76,3 +80,32 @@ export const getAllUsersQueryOptions = queryOptions({
   queryKey: ["users"],
   queryFn: getAllUsers,
 });
+
+async function updateProfilePic(args: UpdateProfilePicArgs) {
+  const res = await client.api.v0.users.update.profilepic[":userId"].$post({
+    param: { userId: args.param.userId.toString() },
+    json: args.json,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating user.");
+  }
+  const { newUser } = await res.json();
+  console.log(newUser);
+  return mapSerializedUserToSchema(newUser);
+}
+
+export const useUpdateProfilePicMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateProfilePic,
+    onSettled: (newUser) => {
+      if (!newUser) return;
+      queryClient.invalidateQueries({
+        queryKey: ["users", newUser.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    },
+  });
+};
