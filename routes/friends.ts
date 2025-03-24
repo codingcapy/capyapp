@@ -82,6 +82,7 @@ export const userFriendsRouter = new Hono()
             userId: usersTable.userId,
             username: usersTable.username,
             email: usersTable.email,
+            profilePic: usersTable.profilePic,
             createdAt: usersTable.createdAt,
           })
           .from(userFriendsTable)

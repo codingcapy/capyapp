@@ -2,10 +2,12 @@ import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
 import { useState } from "react";
+import { useUpdateProfilePicMutation } from "../lib/api/user";
 
 export default function Profile() {
   const { user } = useAuthStore();
   const [preview, setPreview] = useState<string | null>(null);
+  const { mutate: updateProfilePic } = useUpdateProfilePicMutation();
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -13,6 +15,10 @@ export default function Profile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
+        updateProfilePic({
+          profilePic: (reader.result as string) || "",
+          userId: (user && user.userId) || "",
+        });
       };
       reader.readAsDataURL(file);
     }

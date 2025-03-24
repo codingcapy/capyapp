@@ -14,9 +14,9 @@ type SerializeUser = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.users.$get>>
 >["users"][number];
 
-type UpdateProfilePicArgs = ArgumentTypes<typeof updateFunc>[0];
+type UpdateProfilePicArgs = ArgumentTypes<typeof updateFunc>[0]["json"];
 
-const updateFunc = client.api.v0.users.update.profilepic[":userId"].$post;
+const updateFunc = client.api.v0.users.update.profilepic.$post;
 
 export function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
   return {
@@ -82,9 +82,8 @@ export const getAllUsersQueryOptions = queryOptions({
 });
 
 async function updateProfilePic(args: UpdateProfilePicArgs) {
-  const res = await client.api.v0.users.update.profilepic[":userId"].$post({
-    param: { userId: args.param.userId.toString() },
-    json: args.json,
+  const res = await client.api.v0.users.update.profilepic.$post({
+    json: args,
   });
   if (!res.ok) {
     throw new Error("Error updating user.");

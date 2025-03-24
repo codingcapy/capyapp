@@ -86,11 +86,10 @@ export const usersRouter = new Hono()
     return c.json({ users: usersQueryResult }, 200);
   })
   .post(
-    "/update/profilepic/:userId",
+    "/update/profilepic",
     zValidator(
       "json",
       createInsertSchema(usersTable).omit({
-        userId: true,
         username: true,
         email: true,
         password: true,
@@ -98,13 +97,12 @@ export const usersRouter = new Hono()
       })
     ),
     async (c) => {
-      const { userId: userId } = c.req.param();
       const updateValues = c.req.valid("json");
-      const { error: queryError, result: neUserResult } = await mightFail(
+      const { error: queryError, result: newUserResult } = await mightFail(
         db
           .update(usersTable)
           .set({ ...updateValues })
-          .where(eq(usersTable.userId, userId))
+          .where(eq(usersTable.userId, updateValues.userId))
           .returning()
       );
       if (queryError) {
@@ -113,6 +111,6 @@ export const usersRouter = new Hono()
           cause: queryError,
         });
       }
-      return c.json({ newUser: neUserResult[0] }, 200);
+      return c.json({ newUser: newUserResult[0] }, 200);
     }
   );

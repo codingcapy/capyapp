@@ -16,6 +16,7 @@ type SerializeFriend = {
   userId: string;
   username: string;
   email: string;
+  profilePic: string | null;
   createdAt: string;
 };
 
