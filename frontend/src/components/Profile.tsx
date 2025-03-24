@@ -12,6 +12,10 @@ export default function Profile() {
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 100 * 1024) {
+        alert("File size exceeds 100KB. Please upload a smaller file.");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
@@ -32,7 +36,13 @@ export default function Profile() {
       </div>
       <div className="p-5 pt-[70px]">
         <img
-          src={preview ? preview : profilePic}
+          src={
+            user && user.profilePic
+              ? user.profilePic
+              : preview
+                ? preview
+                : profilePic
+          }
           className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2"
         />
         <div className="mb-5">

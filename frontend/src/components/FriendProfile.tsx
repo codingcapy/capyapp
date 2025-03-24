@@ -23,7 +23,7 @@ export default function FriendProfile(props: { friend: Friend | null }) {
       </div>
       <div className="p-5 pt-[100px]">
         <img
-          src={profilePic}
+          src={friend?.profilePic ? friend.profilePic : profilePic}
           className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2"
         />
         <button
