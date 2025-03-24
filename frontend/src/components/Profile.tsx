@@ -43,7 +43,7 @@ export default function Profile() {
                 ? preview
                 : profilePic
           }
-          className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2"
+          className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2 mb-5"
         />
         <div className="mb-5">
           <label className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">

@@ -12,14 +12,16 @@ export default function Friends(props: {
   return (
     <div className="relative md:w-[15%] md:border-r md:h-screen overflow-auto">
       <div
-        className="fixed top-0 left-0 bg-[#040406] p-5 w-screen md:w-[14%]"
+        className="fixed top-0 left-0 bg-[#040406] px-5 pt-5 w-screen md:w-[14%]"
         onClick={clickedAddFriend}
       >
         <div className="flex">
           <FaUserFriends size={25} className="" />
           <div className="ml-2 text-xl">Friends</div>
         </div>
-        <div className="pt-5 cursor-pointer">+ Add a friend</div>
+        <div className="py-3 my-2 cursor-pointer hover:bg-slate-600 transition-all ease duration-300">
+          + Add a friend
+        </div>
       </div>
       <div className="p-5 pt-[120px]">
         {friends?.map((friend) => (

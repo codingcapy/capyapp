@@ -11,6 +11,9 @@ import { Friend } from "../lib/api/friend";
 import { useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
+import { io } from "socket.io-client";
+
+const socket = io("https://capyapp-production.up.railway.app");
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -32,7 +35,17 @@ export default function Messages(props: {
     if (content.length > 25000)
       return setNotification("Your message is too long!");
     if (!user || !chat) return;
-    createMessage({ content, chatId: chat.chatId, userId: user.userId });
+    createMessage(
+      { content, chatId: chat.chatId, userId: user.userId },
+      {
+        onSuccess: () =>
+          socket.emit("message", {
+            content,
+            chatId: chat.chatId,
+            userId: user.userId,
+          }),
+      }
+    );
     setMessageContent("");
   }
 
@@ -44,9 +57,16 @@ export default function Messages(props: {
 
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
-      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
-        <IoChatbubbleOutline size={25} className="" />
-        <div className="ml-2 text-xl">{!chat ? "Messages" : chat.title}</div>
+      <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] px-5 pt-5 w-screen md:w-[54%]">
+        <div className="flex">
+          <IoChatbubbleOutline size={25} className="" />
+          <div className="ml-2 text-xl">{!chat ? "Messages" : chat.title}</div>
+        </div>
+        {chat && (
+          <div className="py-3 my-2 cursor-pointer hover:bg-slate-600 transition-all ease duration-300">
+            + Invite a friend
+          </div>
+        )}
       </div>
       <div className="pt-[70px] pb-[110px] md:pb-[100px]">
         {messages !== undefined &&

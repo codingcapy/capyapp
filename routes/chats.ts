@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { createInsertSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { userChats as userChatsTable } from "../schemas/userchats";
+import { messages as messagesTable } from "../schemas/messages";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
@@ -100,4 +101,47 @@ export const userChatsRouter = new Hono()
       });
     }
     return c.json({ chats: chatsQueryResult });
-  });
+  })
+  .post(
+    "/add",
+    zValidator("json", createInsertSchema(userChatsTable)),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { error: userChatInsertError, result: userChatInsertResult } =
+        await mightFail(
+          db
+            .insert(userChatsTable)
+            .values({
+              userId: insertValues.userId,
+              chatId: insertValues.chatId,
+            })
+            .returning()
+        );
+      if (userChatInsertError) {
+        console.log("Error while creating user chat for user");
+        throw new HTTPException(500, {
+          message: "Error while creating user chat",
+          cause: userChatInsertError,
+        });
+      }
+      const { error: messageInsertError, result: messageInsertResult } =
+        await mightFail(
+          db
+            .insert(messagesTable)
+            .values({
+              userId: insertValues.userId,
+              chatId: insertValues.chatId,
+              content: "has entered the chat",
+            })
+            .returning()
+        );
+      if (messageInsertError) {
+        console.log("Error while creating chat");
+        throw new HTTPException(500, {
+          message: "Error while creating chat",
+          cause: messageInsertResult,
+        });
+      }
+      return c.json({ user: userChatInsertResult[0] }, 200);
+    }
+  );

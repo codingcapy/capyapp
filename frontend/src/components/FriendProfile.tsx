@@ -3,6 +3,9 @@ import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
 import { useCreateChatMutation } from "../lib/api/chat";
+import { io } from "socket.io-client";
+
+const socket = io("https://capyapp-production.up.railway.app");
 
 export default function FriendProfile(props: { friend: Friend | null }) {
   const { friend } = props;
@@ -13,7 +16,10 @@ export default function FriendProfile(props: { friend: Friend | null }) {
     const title = `${user && user.username}, ${friend && friend.username}`;
     const userId = user!.userId;
     const friendId = friend!.userId;
-    createChat({ title, userId, friendId });
+    createChat(
+      { title, userId, friendId },
+      { onSuccess: () => socket.emit("chat", { title, userId, friendId }) }
+    );
   }
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
