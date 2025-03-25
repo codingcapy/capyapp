@@ -49,6 +49,11 @@ export default function Messages(props: {
     setMessageContent("");
   }
 
+  function handleInvite(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = (e.target as HTMLFormElement).messagecontent.value;
+  }
+
   useEffect(() => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: "smooth" });

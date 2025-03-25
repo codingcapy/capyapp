@@ -3,6 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { userChats as userChatsTable } from "../schemas/userchats";
 import { messages as messagesTable } from "../schemas/messages";
+import { users as usersTable } from "../schemas/users";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
@@ -14,6 +15,11 @@ const createChatSchema = z.object({
   title: z.string(),
   userId: z.string(),
   friendId: z.string(),
+});
+
+const addFriendSchema = z.object({
+  email: z.string(),
+  chatId: z.string(),
 });
 
 export const userChatsRouter = new Hono()
@@ -102,46 +108,56 @@ export const userChatsRouter = new Hono()
     }
     return c.json({ chats: chatsQueryResult });
   })
-  .post(
-    "/add",
-    zValidator("json", createInsertSchema(userChatsTable)),
-    async (c) => {
-      const insertValues = c.req.valid("json");
-      const { error: userChatInsertError, result: userChatInsertResult } =
-        await mightFail(
-          db
-            .insert(userChatsTable)
-            .values({
-              userId: insertValues.userId,
-              chatId: insertValues.chatId,
-            })
-            .returning()
-        );
-      if (userChatInsertError) {
-        console.log("Error while creating user chat for user");
-        throw new HTTPException(500, {
-          message: "Error while creating user chat",
-          cause: userChatInsertError,
-        });
-      }
-      const { error: messageInsertError, result: messageInsertResult } =
-        await mightFail(
-          db
-            .insert(messagesTable)
-            .values({
-              userId: insertValues.userId,
-              chatId: insertValues.chatId,
-              content: "has entered the chat",
-            })
-            .returning()
-        );
-      if (messageInsertError) {
-        console.log("Error while creating chat");
-        throw new HTTPException(500, {
-          message: "Error while creating chat",
-          cause: messageInsertResult,
-        });
-      }
-      return c.json({ user: userChatInsertResult[0] }, 200);
+  .post("/add", zValidator("json", addFriendSchema), async (c) => {
+    const insertValues = c.req.valid("json");
+    const { error: userQueryError, result: userQueryResult } = await mightFail(
+      db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.email, insertValues.email))
+    );
+    if (userQueryError) {
+      throw new HTTPException(500, {
+        message: "Error while fetching users",
+        cause: userQueryError,
+      });
     }
-  );
+    if (userQueryResult.length < 1)
+      return c.json({ message: "Error creating friend" }, 500);
+    const { error: userChatInsertError, result: userChatInsertResult } =
+      await mightFail(
+        db
+          .insert(userChatsTable)
+          .values({
+            userId: userQueryResult[0].userId,
+            chatId: Number(insertValues.chatId),
+          })
+          .returning()
+      );
+    if (userChatInsertError) {
+      console.log("Error while creating user chat for user");
+      throw new HTTPException(500, {
+        message: "Error while creating user chat",
+        cause: userChatInsertError,
+      });
+    }
+    const { error: messageInsertError, result: messageInsertResult } =
+      await mightFail(
+        db
+          .insert(messagesTable)
+          .values({
+            userId: "notification",
+            chatId: Number(insertValues.chatId),
+            content: userQueryResult[0].username + " has entered the chat",
+          })
+          .returning()
+      );
+    if (messageInsertError) {
+      console.log("Error while creating chat");
+      throw new HTTPException(500, {
+        message: "Error while creating chat",
+        cause: messageInsertResult,
+      });
+    }
+    return c.json({ user: userChatInsertResult[0] }, 200);
+  });
