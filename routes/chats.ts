@@ -19,7 +19,7 @@ const createChatSchema = z.object({
 
 const addFriendSchema = z.object({
   email: z.string(),
-  chatId: z.string(),
+  chatId: z.number(),
 });
 
 export const userChatsRouter = new Hono()
@@ -160,4 +160,29 @@ export const userChatsRouter = new Hono()
       });
     }
     return c.json({ user: userChatInsertResult[0] }, 200);
-  });
+  })
+  .post(
+    "/update",
+    zValidator("json", createInsertSchema(chatsTable)),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      if (insertValues.chatId === undefined) {
+        throw new HTTPException(400, { message: "chatId is required" });
+      }
+      const { error: updateChatTitleError, result: newChatTitleResult } =
+        await mightFail(
+          db
+            .update(chatsTable)
+            .set({ title: insertValues.title })
+            .where(eq(chatsTable.chatId, insertValues.chatId))
+            .returning()
+        );
+      if (updateChatTitleError) {
+        throw new HTTPException(500, {
+          message: "Error updating chat title",
+          cause: updateChatTitleError,
+        });
+      }
+      return c.json({ user: newChatTitleResult[0] }, 200);
+    }
+  );

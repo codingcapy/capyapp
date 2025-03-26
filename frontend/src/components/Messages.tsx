@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import { io } from "socket.io-client";
+import { useInviteFriendMutation } from "../lib/api/chat";
 
 const socket = io("https://capyapp-production.up.railway.app");
 
@@ -25,9 +26,11 @@ export default function Messages(props: {
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
   const { mutate: createMessage } = useCreateMessageMutation();
+  const { mutate: inviteFriend } = useInviteFriendMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const [editMode, setEditMode] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,6 +55,11 @@ export default function Messages(props: {
   function handleInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = (e.target as HTMLFormElement).messagecontent.value;
+    if (!chat) return;
+    inviteFriend({
+      email: email,
+      chatId: chat.chatId,
+    });
   }
 
   useEffect(() => {
@@ -68,9 +76,34 @@ export default function Messages(props: {
           <div className="ml-2 text-xl">{!chat ? "Messages" : chat.title}</div>
         </div>
         {chat && (
-          <div className="py-3 my-2 cursor-pointer hover:bg-slate-600 transition-all ease duration-300">
+          <div
+            onClick={() => setEditMode(!editMode)}
+            className="py-3 my-2 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
+          >
             + Invite a friend
           </div>
+        )}
+        {editMode && (
+          <form className="p-2 flex flex-col w-[300px]">
+            <label htmlFor="email" className="font-bold text-xl">
+              Add friend
+            </label>
+            <input
+              className="bg-gray-800 rounded p-1 outline-none my-3"
+              type="email"
+              name="email"
+              placeholder="Type the email of a friend"
+              required
+            />
+            <div className="my-1">
+              <button className="border border-cyan-600 text-cyan-600 font-bold px-2 py-2 rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
+                Add friend
+              </button>
+              <button onClick={() => setEditMode(false)} className="ml-2">
+                Cancel
+              </button>
+            </div>
+          </form>
         )}
       </div>
       <div className="pt-[70px] pb-[110px] md:pb-[100px]">
@@ -86,20 +119,22 @@ export default function Messages(props: {
           ))}
         <div ref={lastMessageRef} />
       </div>
-      <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[55%] h-[70px] md:h-[100px] bg-[#040406] ">
-        <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
-          <input
-            type="text"
-            className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
-            name="messagecontent"
-            value={messageContent}
-            onChange={(e) => setMessageContent(e.target.value)}
-          />
-          <button>
-            <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
-          </button>
-        </form>
-      </div>
+      {chat && (
+        <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] ">
+          <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
+            <input
+              type="text"
+              className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
+              name="messagecontent"
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
+            />
+            <button>
+              <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
