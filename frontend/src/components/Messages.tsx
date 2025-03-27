@@ -30,7 +30,9 @@ export default function Messages(props: {
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
-  const [editMode, setEditMode] = useState(false);
+  const [addFriendMode, setAddFriendMode] = useState(false);
+  const [addFriendNotification, setAddFriendNotification] = useState("");
+  const [replyMode, setReplyMode] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -77,13 +79,13 @@ export default function Messages(props: {
         </div>
         {chat && (
           <div
-            onClick={() => setEditMode(!editMode)}
+            onClick={() => setAddFriendMode(!addFriendMode)}
             className="py-3 my-2 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
           >
             + Invite a friend
           </div>
         )}
-        {editMode && (
+        {addFriendMode && (
           <form className="p-2 flex flex-col w-[300px]">
             <label htmlFor="email" className="font-bold text-xl">
               Add friend
@@ -99,29 +101,70 @@ export default function Messages(props: {
               <button className="border border-cyan-600 text-cyan-600 font-bold px-2 py-2 rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
                 Add friend
               </button>
-              <button onClick={() => setEditMode(false)} className="ml-2">
+              <button onClick={() => setAddFriendMode(false)} className="ml-2">
                 Cancel
               </button>
             </div>
           </form>
         )}
+        <div className="text-red-400">{addFriendNotification}</div>
       </div>
-      <div className="pt-[70px] pb-[110px] md:pb-[100px]">
+      <div
+        className={`pt-[70px] pb-[110px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
+      >
         {messages !== undefined &&
           messages.map((message) => (
             <div className="text-white " key={message.messageId}>
               {user && message.userId === user.userId ? (
-                <MessageComponent message={message} friends={friends || []} />
+                <MessageComponent
+                  message={message}
+                  friends={friends || []}
+                  replyMode={replyMode}
+                  setReplyMode={setReplyMode}
+                />
               ) : (
-                <MessageFriend message={message} friends={friends || []} />
+                <MessageFriend
+                  message={message}
+                  friends={friends || []}
+                  replyMode={replyMode}
+                  setReplyMode={setReplyMode}
+                />
               )}
             </div>
           ))}
         <div ref={lastMessageRef} />
       </div>
-      {chat && (
+      <div className="text-red-400">{notification}</div>
+      {chat && !replyMode && (
         <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] ">
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
+            <input
+              type="text"
+              className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
+              name="messagecontent"
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
+            />
+            <button>
+              <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
+            </button>
+          </form>
+        </div>
+      )}
+      {chat && replyMode && (
+        <div
+          className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] ${replyMode ? "md:bottom-8" : "md:bottom-0"} md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] `}
+        >
+          <div className="flex justify-between px-6 pb-2 bg-gray-700">
+            <div className="pt-2">Replying to </div>
+            <div
+              onClick={() => setReplyMode(false)}
+              className="cursor-pointer pt-1"
+            >
+              x
+            </div>
+          </div>
+          <form className={`flex ${replyMode ? "mx-5 mt-3" : "m-5"} w-[100%]`}>
             <input
               type="text"
               className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
