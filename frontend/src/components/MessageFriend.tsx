@@ -15,7 +15,7 @@ export default function MessageFriend(props: {
   });
 
   return (
-    <div className="p-3 flex hover:bg-slate-600 transition-all ease duration-300 group">
+    <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group">
       <img src={profilePic} className="w-[40px] h-[40px] rounded-full mr-2" />
       <div className="w-[100%]">
         <div className="flex justify-between">

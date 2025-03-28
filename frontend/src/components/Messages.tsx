@@ -153,7 +153,7 @@ export default function Messages(props: {
       )}
       {chat && replyMode && (
         <div
-          className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] ${replyMode ? "md:bottom-8" : "md:bottom-0"} md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] `}
+          className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] ${replyMode ? "md:h-[132px]" : "md:h-[100px]"} bg-[#040406] `}
         >
           <div className="flex justify-between px-6 pb-2 bg-gray-700">
             <div className="pt-2">Replying to </div>
