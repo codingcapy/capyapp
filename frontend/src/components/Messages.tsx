@@ -13,6 +13,7 @@ import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import { io } from "socket.io-client";
 import { useInviteFriendMutation } from "../lib/api/chat";
+import { FaEllipsis } from "react-icons/fa6";
 
 const socket = io("https://capyapp-production.up.railway.app");
 
@@ -33,6 +34,7 @@ export default function Messages(props: {
   const [addFriendMode, setAddFriendMode] = useState(false);
   const [addFriendNotification, setAddFriendNotification] = useState("");
   const [replyMode, setReplyMode] = useState(false);
+  const [menuMode, setMenuMode] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,12 +73,28 @@ export default function Messages(props: {
   }, [messages]);
 
   return (
-    <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
-      <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] px-5 pt-5 w-screen md:w-[54%]">
-        <div className="flex">
-          <IoChatbubbleOutline size={25} className="" />
-          <div className="ml-2 text-xl">{!chat ? "Messages" : chat.title}</div>
+    <div className="md:w-[55%] md:border-r md:h-screen overflow-auto relative">
+      <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] px-5 pt-5 w-screen md:w-[53.9%]">
+        <div className="flex justify-between">
+          <div className="flex">
+            <IoChatbubbleOutline size={25} className="" />
+            <div className="ml-2 text-xl">
+              {!chat ? "Messages" : chat.title}
+            </div>
+          </div>
+          {chat && (
+            <FaEllipsis
+              className="mt-1"
+              onClick={() => setMenuMode(!menuMode)}
+            />
+          )}
         </div>
+        {menuMode && (
+          <div className="absolute top-10 right-0 bg-black px-10 pb-5">
+            <div className="py-5 text-red-400 cursor-pointer">Leave group</div>
+            <div className="text-xl">Participants</div>
+          </div>
+        )}
         {chat && (
           <div
             onClick={() => setAddFriendMode(!addFriendMode)}
