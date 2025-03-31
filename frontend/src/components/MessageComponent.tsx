@@ -44,7 +44,7 @@ export default function MessageComponent(props: {
     <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group">
       {deleteMode && (
         <div>
-          <form className="absolute top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col">
+          <form className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col">
             <div className="text-lg font-bold">Delete message</div>
             <div className="text-sm mb-10">
               Are you sure you want to delete this message?
@@ -64,7 +64,7 @@ export default function MessageComponent(props: {
               </div>
             </div>
           </form>
-          <div className="absolute top-0 left-0 bg-black opacity-50 w-screen h-screen z-0"></div>
+          <div className="fixed top-0 left-0 bg-black opacity-50 w-screen h-screen z-0"></div>
         </div>
       )}
       <img

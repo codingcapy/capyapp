@@ -35,6 +35,7 @@ export default function Messages(props: {
   const [addFriendNotification, setAddFriendNotification] = useState("");
   const [replyMode, setReplyMode] = useState(false);
   const [menuMode, setMenuMode] = useState(false);
+  const [leaveMode, setLeaveMode] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -91,8 +92,38 @@ export default function Messages(props: {
         </div>
         {menuMode && (
           <div className="absolute top-10 right-0 bg-black px-10 pb-5">
-            <div className="py-5 text-red-400 cursor-pointer">Leave group</div>
+            <div
+              onClick={() => setLeaveMode(true)}
+              className="py-5 text-red-400 cursor-pointer"
+            >
+              Leave chat
+            </div>
             <div className="text-xl">Participants</div>
+          </div>
+        )}
+        {leaveMode && (
+          <div>
+            <form className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col">
+              <div className="text-lg font-bold">Leave chat</div>
+              <div className="text-sm mb-10">
+                Are you sure you want to leave this chat?
+              </div>
+              <div className="flex justify-between text-sm">
+                <div></div>
+                <div>
+                  <button
+                    onClick={() => setLeaveMode(false)}
+                    className="px-3 py-2 bg-gray-800 mr-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button className="px-3 py-2 bg-red-500 ml-2 text-sm rounded">
+                    Leave
+                  </button>
+                </div>
+              </div>
+            </form>
+            <div className="fixed top-0 left-0 bg-black opacity-50 w-screen h-screen z-0"></div>
           </div>
         )}
         {chat && (
