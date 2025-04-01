@@ -1,13 +1,18 @@
 import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUpdateProfilePicMutation } from "../lib/api/user";
 
 export default function Profile() {
   const { user } = useAuthStore();
   const [preview, setPreview] = useState<string | null>(null);
   const { mutate: updateProfilePic } = useUpdateProfilePicMutation();
+  const [editUsernameMode, setEditUsernameMode] = useState(false);
+  const [usernameContent, setUsernameContent] = useState(
+    (user && user.username) || ""
+  );
+  const usernameInputRef = useRef<HTMLInputElement | null>(null);
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -27,6 +32,22 @@ export default function Profile() {
       reader.readAsDataURL(file);
     }
   }
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      usernameInputRef.current &&
+      !usernameInputRef.current.contains(event.target as Node)
+    ) {
+      setEditUsernameMode(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
@@ -56,10 +77,35 @@ export default function Profile() {
             />
           </label>
         </div>
-        <p className="my-1 md:my-3">Username: {user && user.username}</p>
-        <p className="my-1 md:my-3">
-          Member Since: {user && user.createdAt.toString().slice(0, 10)}
-        </p>
+        <div className="my-10">
+          <div className="text-2xl font-bold">Your Account</div>
+          {!editUsernameMode && (
+            <p
+              onClick={() => setEditUsernameMode(true)}
+              className="my-1 md:my-3 cursor-pointer"
+            >
+              Username: {user && user.username}
+            </p>
+          )}
+          {editUsernameMode && (
+            <input
+              type="text"
+              ref={usernameInputRef}
+              className="px-2 py-1 mt-2 border"
+              value={usernameContent}
+              onChange={(e) => setUsernameContent(e.target.value)}
+            />
+          )}
+          <p className="my-1 md:my-3">
+            Member Since: {user && user.createdAt.toString().slice(0, 10)}
+          </p>
+        </div>
+        <div className="my-10">
+          <div className="text-2xl font-bold mt-5">Authentication</div>
+          <div className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[185px] rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300 cursor-pointer">
+            Change Password
+          </div>
+        </div>
       </div>
     </div>
   );
