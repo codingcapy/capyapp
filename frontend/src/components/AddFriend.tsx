@@ -49,6 +49,7 @@ export default function AddFriend(props: { friends: Friend[] | undefined }) {
           className="border p-2"
           id="email"
           name="email"
+          required
         />
         <button className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
           Add

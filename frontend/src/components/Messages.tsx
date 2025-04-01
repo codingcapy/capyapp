@@ -159,28 +159,30 @@ export default function Messages(props: {
         <div className="text-red-400">{addFriendNotification}</div>
       </div>
       <div
-        className={`pt-[70px] pb-[110px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
+        className={`pt-[100px] pb-[110px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
       >
         {messages !== undefined &&
-          messages.map((message) => (
-            <div className="text-white " key={message.messageId}>
-              {user && message.userId === user.userId ? (
-                <MessageComponent
-                  message={message}
-                  friends={friends || []}
-                  replyMode={replyMode}
-                  setReplyMode={setReplyMode}
-                />
-              ) : (
-                <MessageFriend
-                  message={message}
-                  friends={friends || []}
-                  replyMode={replyMode}
-                  setReplyMode={setReplyMode}
-                />
-              )}
-            </div>
-          ))}
+          messages
+            .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+            .map((message) => (
+              <div className="text-white " key={message.messageId}>
+                {user && message.userId === user.userId ? (
+                  <MessageComponent
+                    message={message}
+                    friends={friends || []}
+                    replyMode={replyMode}
+                    setReplyMode={setReplyMode}
+                  />
+                ) : (
+                  <MessageFriend
+                    message={message}
+                    friends={friends || []}
+                    replyMode={replyMode}
+                    setReplyMode={setReplyMode}
+                  />
+                )}
+              </div>
+            ))}
         <div ref={lastMessageRef} />
       </div>
       <div className="text-red-400">{notification}</div>
