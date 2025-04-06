@@ -10,17 +10,22 @@ export default function MessageFriend(props: {
   setReplyMode: (state: boolean) => void;
 }) {
   const { message, friends, setReplyMode } = props;
-  const friendname = friends.map((friend) => {
-    if (friend.userId === message.userId) return friend.username;
+  const friend = friends.map((friend) => {
+    if (friend.userId === message.userId) return friend;
   });
 
   return (
     <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group">
-      <img src={profilePic} className="w-[40px] h-[40px] rounded-full mr-2" />
+      <img
+        src={(friend[0] !== undefined && friend[0].profilePic) || profilePic}
+        className="w-[40px] h-[40px] rounded-full mr-2"
+      />
       <div className="w-[100%]">
         <div className="flex justify-between">
           <div className="flex">
-            <div className="font-bold px-1">{friendname}</div>
+            <div className="font-bold px-1">
+              {(friend[0] !== undefined && friend[0].username) || ""}
+            </div>
             <div className="pl-2 text-gray-400">
               on {message.createdAt.toString().slice(0, 25)}
             </div>
