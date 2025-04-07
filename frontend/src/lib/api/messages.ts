@@ -23,6 +23,10 @@ export function mapSerializedMessageToSchema(
   };
 }
 
+type DeleteMessageArgs = ArgumentTypes<
+  typeof client.api.v0.messages.delete.$post
+>[0]["json"];
+
 async function createMessage(args: CreateMessageArgs) {
   const res = await client.api.v0.messages.$post({ json: args });
   if (!res.ok) {
@@ -84,3 +88,31 @@ export const getMessagesByChatIdQueryOptions = (args: string) =>
     queryKey: ["messages", args],
     queryFn: () => getMessagesByChatId(args),
   });
+
+async function deleteMessage(args: DeleteMessageArgs) {
+  const res = await client.api.v0.messages.delete.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating user.");
+  }
+  const { newMessage } = await res.json();
+  console.log(newMessage);
+  return mapSerializedMessageToSchema(newMessage);
+}
+
+export const useDeleteMessageMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteMessage,
+    onSettled: (newMessage) => {
+      if (!newMessage) return;
+      queryClient.invalidateQueries({
+        queryKey: ["messages", newMessage.messageId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["messages"],
+      });
+    },
+  });
+};

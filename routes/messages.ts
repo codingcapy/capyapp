@@ -88,4 +88,35 @@ export const messagesRouter = new Hono()
       });
     }
     return c.json({ messages: messagesQueryResult });
-  });
+  })
+  .post(
+    "/delete",
+    zValidator(
+      "json",
+      createInsertSchema(messagesTable).omit({
+        chatId: true,
+        userId: true,
+        content: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const deleteValues = c.req.valid("json");
+      const { error: messageDeleteError, result: messageDeleteResult } =
+        await mightFail(
+          db
+            .update(messagesTable)
+            .set({ content: "[this message has been deleted]" })
+            .where(eq(messagesTable.messageId, Number(deleteValues.messageId)))
+            .returning()
+        );
+      if (messageDeleteError) {
+        console.log("Error while creating chat");
+        throw new HTTPException(500, {
+          message: "Error while creating chat",
+          cause: messageDeleteResult,
+        });
+      }
+      return c.json({ newMessage: messageDeleteResult[0] }, 200);
+    }
+  );

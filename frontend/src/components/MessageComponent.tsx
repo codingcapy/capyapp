@@ -6,6 +6,7 @@ import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
 import { useEffect, useState } from "react";
+import { useDeleteMessageMutation } from "../lib/api/messages";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -21,6 +22,7 @@ export default function MessageComponent(props: {
   const username = user && user.username.toString();
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
+  const { mutate: deleteMessage } = useDeleteMessageMutation();
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -38,13 +40,18 @@ export default function MessageComponent(props: {
 
   function handleDelete(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    deleteMessage({ messageId: (message && message.messageId) || 0 });
+    setDeleteMode(false);
   }
 
   return (
     <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group">
       {deleteMode && (
         <div>
-          <form className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col">
+          <form
+            onSubmit={handleDelete}
+            className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col"
+          >
             <div className="text-lg font-bold">Delete message</div>
             <div className="text-sm mb-10">
               Are you sure you want to delete this message?
@@ -58,7 +65,10 @@ export default function MessageComponent(props: {
                 >
                   Cancel
                 </button>
-                <button className="px-3 py-2 bg-red-500 ml-2 text-sm rounded">
+                <button
+                  type="submit"
+                  className="px-3 py-2 bg-red-500 ml-2 text-sm rounded"
+                >
                   Delete
                 </button>
               </div>
