@@ -10,6 +10,14 @@ type CreateMessageArgs = ArgumentTypes<
   typeof client.api.v0.messages.$post
 >[0]["json"];
 
+type DeleteMessageArgs = ArgumentTypes<
+  typeof client.api.v0.messages.delete.$post
+>[0]["json"];
+
+type UpdateMessageArgs = ArgumentTypes<
+  typeof client.api.v0.messages.update.$post
+>[0]["json"];
+
 type SerializeMessage = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.messages.$get>>
 >["messages"][number];
@@ -22,10 +30,6 @@ export function mapSerializedMessageToSchema(
     createdAt: new Date(SerializedMessage.createdAt),
   };
 }
-
-type DeleteMessageArgs = ArgumentTypes<
-  typeof client.api.v0.messages.delete.$post
->[0]["json"];
 
 async function createMessage(args: CreateMessageArgs) {
   const res = await client.api.v0.messages.$post({ json: args });
@@ -105,6 +109,34 @@ export const useDeleteMessageMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteMessage,
+    onSettled: (newMessage) => {
+      if (!newMessage) return;
+      queryClient.invalidateQueries({
+        queryKey: ["messages", newMessage.messageId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["messages"],
+      });
+    },
+  });
+};
+
+async function updateMessage(args: UpdateMessageArgs) {
+  const res = await client.api.v0.messages.update.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating user.");
+  }
+  const { newMessage } = await res.json();
+  console.log(newMessage);
+  return mapSerializedMessageToSchema(newMessage);
+}
+
+export const useUpdateMessageMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateMessage,
     onSettled: (newMessage) => {
       if (!newMessage) return;
       queryClient.invalidateQueries({

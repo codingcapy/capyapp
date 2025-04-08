@@ -6,7 +6,10 @@ import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { useDeleteMessageMutation } from "../lib/api/messages";
+import {
+  useDeleteMessageMutation,
+  useUpdateMessageMutation,
+} from "../lib/api/messages";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -16,13 +19,14 @@ export default function MessageComponent(props: {
 }) {
   const { user } = useAuthStore();
   const { message, friends, replyMode, setReplyMode } = props;
-  const friendname = friends.map((friend) => {
-    if (friend.userId === message.replyUserId) return friend.username;
-  });
+  const friendname = friends.filter(
+    (friend) => friend.userId === message.replyUserId
+  );
   const username = user && user.username.toString();
   const [editMode, setEditMode] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const { mutate: deleteMessage } = useDeleteMessageMutation();
+  const { mutate: updateMessage } = useUpdateMessageMutation();
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -42,6 +46,16 @@ export default function MessageComponent(props: {
     e.preventDefault();
     deleteMessage({ messageId: (message && message.messageId) || 0 });
     setDeleteMode(false);
+  }
+
+  function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const messageContent = (e.target as HTMLFormElement).content.value;
+    updateMessage({
+      messageId: (message && message.messageId) || 0,
+      content: messageContent,
+    });
+    setEditMode(false);
   }
 
   return (
@@ -112,19 +126,24 @@ export default function MessageComponent(props: {
           </div>
         </div>
         {editMode ? (
-          <div>
+          <form onSubmit={handleUpdate}>
             <input
               type="text"
+              name="content"
               className="bg-gray-900 border border-gray-500 rounded w-[98%] px-2"
             />
-            <div
-              onClick={() => setEditMode(false)}
-              className="cursor-pointer text-xs"
-            >
-              escape to <span className="text-cyan-600">cancel</span> • enter to{" "}
-              <span className="text-cyan-600">submit</span>
+            <div className="text-xs flex">
+              <div className="text-xs mr-1">escape to</div>
+              <button
+                onClick={() => setEditMode(false)}
+                className="text-cyan-600 cursor-pointer"
+              >
+                cancel
+              </button>
+              <div className="mx-1">• enter to</div>
+              <button className="text-cyan-600 cursor-pointer">submit</button>
             </div>
-          </div>
+          </form>
         ) : (
           <div className="overflow-wrap break-word">{message.content}</div>
         )}

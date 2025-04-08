@@ -119,4 +119,34 @@ export const messagesRouter = new Hono()
       }
       return c.json({ newMessage: messageDeleteResult[0] }, 200);
     }
+  )
+  .post(
+    "/update",
+    zValidator(
+      "json",
+      createInsertSchema(messagesTable).omit({
+        chatId: true,
+        userId: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const updateValues = c.req.valid("json");
+      const { error: messageUpdateError, result: messageUpdateResult } =
+        await mightFail(
+          db
+            .update(messagesTable)
+            .set({ content: updateValues.content })
+            .where(eq(messagesTable.messageId, Number(updateValues.messageId)))
+            .returning()
+        );
+      if (messageUpdateError) {
+        console.log("Error while creating chat");
+        throw new HTTPException(500, {
+          message: "Error while creating chat",
+          cause: messageUpdateResult,
+        });
+      }
+      return c.json({ newMessage: messageUpdateResult[0] }, 200);
+    }
   );
