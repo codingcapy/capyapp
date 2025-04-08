@@ -48,6 +48,10 @@ const server = serve({
 const io = new SocketServer(server, {
   path: "/ws",
   serveClient: false,
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
 });
 
 attachSocketEventListeners(io);

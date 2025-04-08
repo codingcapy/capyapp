@@ -4,6 +4,7 @@ import { Chat } from "../../../schemas/chats";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
+  mapSerializedMessageToSchema,
   useCreateMessageMutation,
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
@@ -15,7 +16,10 @@ import { io } from "socket.io-client";
 import { useInviteFriendMutation } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
 
-const socket = io("https://capyapp-production.up.railway.app");
+const socket = io("https://capyapp-production.up.railway.app", {
+  path: "/ws",
+  transports: ["websocket", "polling"],
+});
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -36,6 +40,7 @@ export default function Messages(props: {
   const [replyMode, setReplyMode] = useState(false);
   const [menuMode, setMenuMode] = useState(false);
   const [leaveMode, setLeaveMode] = useState(false);
+  const [liveMessages, setLiveMessages] = useState<any[]>([]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -51,6 +56,7 @@ export default function Messages(props: {
             content,
             chatId: chat.chatId,
             userId: user.userId,
+            createdAt: new Date().toISOString(),
           }),
       }
     );
@@ -68,10 +74,31 @@ export default function Messages(props: {
   }
 
   useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to socket", socket.id);
+    });
+    socket.on("message", (data) => {
+      console.log("💬 message from server:", data);
+      setLiveMessages((prev) => [
+        ...prev,
+        mapSerializedMessageToSchema(data.body),
+      ]);
+    });
+    return () => {
+      socket.off("connect");
+      socket.off("message");
+    };
+  }, []);
+
+  useEffect(() => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, liveMessages]);
+
+  const allMessages = [...(messages || []), ...liveMessages].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto relative">
@@ -159,30 +186,28 @@ export default function Messages(props: {
         <div className="text-red-400">{addFriendNotification}</div>
       </div>
       <div
-        className={`pt-[100px] pb-[110px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
+        className={`pt-[100px] pb-[150px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
       >
-        {messages !== undefined &&
-          messages
-            .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-            .map((message) => (
-              <div className="text-white " key={message.messageId}>
-                {user && message.userId === user.userId ? (
-                  <MessageComponent
-                    message={message}
-                    friends={friends || []}
-                    replyMode={replyMode}
-                    setReplyMode={setReplyMode}
-                  />
-                ) : (
-                  <MessageFriend
-                    message={message}
-                    friends={friends || []}
-                    replyMode={replyMode}
-                    setReplyMode={setReplyMode}
-                  />
-                )}
-              </div>
-            ))}
+        {allMessages.map((message, i) => (
+          <div className="text-white" key={message.messageId || `live-${i}`}>
+            {user && message.userId === user.userId ? (
+              <MessageComponent
+                message={message}
+                friends={friends || []}
+                replyMode={replyMode}
+                setReplyMode={setReplyMode}
+              />
+            ) : (
+              <MessageFriend
+                message={message}
+                friends={friends || []}
+                replyMode={replyMode}
+                setReplyMode={setReplyMode}
+              />
+            )}
+          </div>
+        ))}
+
         <div ref={lastMessageRef} />
       </div>
       <div className="text-red-400">{notification}</div>
