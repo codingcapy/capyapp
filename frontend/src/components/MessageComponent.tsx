@@ -24,6 +24,7 @@ export default function MessageComponent(props: {
   );
   const username = user && user.username.toString();
   const [editMode, setEditMode] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
   const [deleteMode, setDeleteMode] = useState(false);
   const { mutate: deleteMessage } = useDeleteMessageMutation();
   const { mutate: updateMessage } = useUpdateMessageMutation();
@@ -130,18 +131,23 @@ export default function MessageComponent(props: {
             <input
               type="text"
               name="content"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
               className="bg-gray-900 border border-gray-500 rounded w-[98%] px-2"
             />
             <div className="text-xs flex">
               <div className="text-xs mr-1">escape to</div>
               <button
+                type="button"
                 onClick={() => setEditMode(false)}
                 className="text-cyan-600 cursor-pointer"
               >
                 cancel
               </button>
               <div className="mx-1">• enter to</div>
-              <button className="text-cyan-600 cursor-pointer">submit</button>
+              <button type="submit" className="text-cyan-600 cursor-pointer">
+                submit
+              </button>
             </div>
           </form>
         ) : (
