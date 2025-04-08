@@ -2,16 +2,22 @@ import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
 import { useEffect, useRef, useState } from "react";
-import { useUpdateProfilePicMutation } from "../lib/api/user";
+import {
+  useUpdatePasswordMutation,
+  useUpdateProfilePicMutation,
+} from "../lib/api/user";
 
 export default function Profile() {
   const { user } = useAuthStore();
   const [preview, setPreview] = useState<string | null>(null);
   const { mutate: updateProfilePic } = useUpdateProfilePicMutation();
+  const { mutate: updatePassword } = useUpdatePasswordMutation();
   const [editUsernameMode, setEditUsernameMode] = useState(false);
+  const [editPasswordMode, setEditPasswordMode] = useState(false);
   const [usernameContent, setUsernameContent] = useState(
     (user && user.username) || ""
   );
+  const [successNotification, setSuccessNotification] = useState("");
   const usernameInputRef = useRef<HTMLInputElement | null>(null);
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -31,6 +37,17 @@ export default function Profile() {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  function handleUpdatePassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newPassword = (e.target as HTMLFormElement).password.value;
+    updatePassword({
+      userId: (user && user.userId) || "",
+      password: newPassword,
+    });
+    setSuccessNotification("Password updated successfully!");
+    setEditPasswordMode(false);
   }
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -102,9 +119,46 @@ export default function Profile() {
         </div>
         <div className="my-10">
           <div className="text-2xl font-bold mt-5">Authentication</div>
-          <div className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[185px] rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300 cursor-pointer">
-            Change Password
-          </div>
+          {!editPasswordMode && (
+            <div>
+              <div
+                onClick={() => setEditPasswordMode(true)}
+                className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[185px] rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300 cursor-pointer"
+              >
+                Change Password
+              </div>
+              <div className="text-green-400 text-center">
+                {successNotification}
+              </div>
+            </div>
+          )}
+          {editPasswordMode && (
+            <form onSubmit={handleUpdatePassword} className="flex flex-col">
+              <label htmlFor="" className="pt-5">
+                Enter new password
+              </label>
+              <input
+                type="password"
+                name="password"
+                className="px-2 py-1 mt-2 border max-w-[300px]"
+              />
+              <div className="flex">
+                <button
+                  type="button"
+                  className="w-[100px] text-cyan-500 cursor-pointer"
+                  onClick={() => setEditPasswordMode(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[100px] rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300 cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>

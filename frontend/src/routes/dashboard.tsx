@@ -152,6 +152,8 @@ function RouteComponent() {
               chat={chat}
               user={user}
               friends={friends}
+              friend={friend}
+              setFriend={setFriend}
               liveMessages={liveMessages}
               setLiveMessages={setLiveMessages}
             />

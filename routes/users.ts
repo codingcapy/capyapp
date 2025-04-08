@@ -113,4 +113,33 @@ export const usersRouter = new Hono()
       }
       return c.json({ newUser: newUserResult[0] }, 200);
     }
+  )
+  .post(
+    "/update/password",
+    zValidator(
+      "json",
+      createInsertSchema(usersTable).omit({
+        username: true,
+        email: true,
+        profilePic: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const updateValues = c.req.valid("json");
+      const { error: queryError, result: newUserResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ ...updateValues })
+          .where(eq(usersTable.userId, updateValues.userId))
+          .returning()
+      );
+      if (queryError) {
+        throw new HTTPException(500, {
+          message: "Error updating users table",
+          cause: queryError,
+        });
+      }
+      return c.json({ newUser: newUserResult[0] }, 200);
+    }
   );

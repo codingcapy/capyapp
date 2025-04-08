@@ -22,6 +22,8 @@ export default function Messages(props: {
   chat: Chat | null;
   user: User | null;
   friends: Friend[] | undefined;
+  friend: Friend | null;
+  setFriend: (state: Friend | null) => void;
   liveMessages: Message[];
   setLiveMessages: Dispatch<
     SetStateAction<
@@ -37,7 +39,15 @@ export default function Messages(props: {
     >
   >;
 }) {
-  const { chat, user, friends, liveMessages, setLiveMessages } = props;
+  const {
+    chat,
+    user,
+    friends,
+    liveMessages,
+    setLiveMessages,
+    friend,
+    setFriend,
+  } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -200,6 +210,7 @@ export default function Messages(props: {
               <MessageComponent
                 message={message}
                 friends={friends || []}
+                setFriend={setFriend}
                 replyMode={replyMode}
                 setReplyMode={setReplyMode}
               />
@@ -207,6 +218,7 @@ export default function Messages(props: {
               <MessageFriend
                 message={message}
                 friends={friends || []}
+                setFriend={setFriend}
                 replyMode={replyMode}
                 setReplyMode={setReplyMode}
               />
@@ -238,7 +250,10 @@ export default function Messages(props: {
           className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] ${replyMode ? "md:h-[132px]" : "md:h-[100px]"} bg-[#040406] `}
         >
           <div className="flex justify-between px-6 pb-2 bg-gray-700">
-            <div className="pt-2">Replying to </div>
+            <div className="pt-2">
+              Replying to{" "}
+              <span className="font-bold">{friend && friend.username}</span>
+            </div>
             <div
               onClick={() => setReplyMode(false)}
               className="cursor-pointer pt-1"

@@ -14,11 +14,12 @@ import {
 export default function MessageComponent(props: {
   message: Message;
   friends: Friend[];
+  setFriend: (state: Friend | null) => void;
   replyMode: boolean;
   setReplyMode: (state: boolean) => void;
 }) {
   const { user } = useAuthStore();
-  const { message, friends, replyMode, setReplyMode } = props;
+  const { message, friends, replyMode, setReplyMode, setFriend } = props;
   const friendname = friends.filter(
     (friend) => friend.userId === message.replyUserId
   );
@@ -107,7 +108,10 @@ export default function MessageComponent(props: {
           </div>
           <div className="flex">
             <div
-              onClick={() => setReplyMode(true)}
+              onClick={() => {
+                setReplyMode(true);
+                setFriend(user);
+              }}
               className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
             >
               <FaReply size={20} className="" />

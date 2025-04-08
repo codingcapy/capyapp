@@ -7,10 +7,11 @@ import { FaReply } from "react-icons/fa";
 export default function MessageFriend(props: {
   message: Message;
   friends: Friend[];
+  setFriend: (state: Friend) => void;
   replyMode: boolean;
   setReplyMode: (state: boolean) => void;
 }) {
-  const { message, friends, setReplyMode } = props;
+  const { message, friends, setReplyMode, setFriend } = props;
   const friend = friends.filter((friend) => friend.userId === message.userId);
 
   return (
@@ -30,7 +31,10 @@ export default function MessageFriend(props: {
             </div>
           </div>
           <div
-            onClick={() => setReplyMode(true)}
+            onClick={() => {
+              setReplyMode(true);
+              setFriend(friend[0]);
+            }}
             className="cursor-pointer px-2 pr-5 hidden group-hover:flex opacity-100 transition-opacity"
           >
             <FaReply size={20} className="" />
