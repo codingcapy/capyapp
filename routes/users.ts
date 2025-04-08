@@ -127,10 +127,11 @@ export const usersRouter = new Hono()
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
+      const encrypted = await hashPassword(updateValues.password);
       const { error: queryError, result: newUserResult } = await mightFail(
         db
           .update(usersTable)
-          .set({ ...updateValues })
+          .set({ password: encrypted })
           .where(eq(usersTable.userId, updateValues.userId))
           .returning()
       );
