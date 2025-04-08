@@ -17,8 +17,8 @@ export default function Profile() {
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 100 * 1024) {
-        alert("File size exceeds 100KB. Please upload a smaller file.");
+      if (file.size > 150 * 1024) {
+        alert("File size exceeds 150KB. Please upload a smaller file.");
         return;
       }
       const reader = new FileReader();

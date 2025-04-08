@@ -2,9 +2,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { Friend, useCreateFriendMutation } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import { useState } from "react";
-import io from "socket.io-client";
-
-const socket = io("https://capyapp-production.up.railway.app");
+import { socket } from "../routes/dashboard";
 
 export default function AddFriend(props: { friends: Friend[] | undefined }) {
   const { mutate: createFriend } = useCreateFriendMutation();

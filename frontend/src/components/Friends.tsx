@@ -1,6 +1,7 @@
 import { FaUserFriends } from "react-icons/fa";
 import { Friend } from "../lib/api/friend";
 import profilePic from "/capypaul01.jpg";
+import { socket } from "../routes/dashboard";
 
 export default function Friends(props: {
   clickedAddFriend: () => void;

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Message } from "../../../schemas/messages";
 import { Friend } from "../lib/api/friend";
 import profilePic from "/capypaul01.jpg";
@@ -10,9 +11,7 @@ export default function MessageFriend(props: {
   setReplyMode: (state: boolean) => void;
 }) {
   const { message, friends, setReplyMode } = props;
-  const friend = friends.map((friend) => {
-    if (friend.userId === message.userId) return friend;
-  });
+  const friend = friends.filter((friend) => friend.userId === message.userId);
 
   return (
     <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group">

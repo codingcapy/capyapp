@@ -20,8 +20,12 @@ import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
 import { getChatsByUserIdQueryOptions } from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
+import { Message } from "../../../schemas/messages";
 
-const socket = io("https://capyapp-production.up.railway.app");
+export const socket = io("https://capyapp-production.up.railway.app", {
+  path: "/ws",
+  transports: ["websocket", "polling"],
+});
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
@@ -50,8 +54,7 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
-
-  useEffect(() => console.log(chats), [chats]);
+  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -122,6 +125,7 @@ function RouteComponent() {
     setShowProfile(false);
     setShowFriends(window.innerWidth < 760 ? false : true);
     setShowChats(window.innerWidth < 760 ? false : true);
+    setLiveMessages([]);
   }
 
   return (
@@ -144,7 +148,13 @@ function RouteComponent() {
           </div>
           {showChats && <Chats chats={chats} clickedChat={clickedChat} />}
           {showMessages && (
-            <Messages chat={chat} user={user} friends={friends} />
+            <Messages
+              chat={chat}
+              user={user}
+              friends={friends}
+              liveMessages={liveMessages}
+              setLiveMessages={setLiveMessages}
+            />
           )}
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}

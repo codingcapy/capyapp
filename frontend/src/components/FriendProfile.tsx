@@ -3,9 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
 import { useCreateChatMutation } from "../lib/api/chat";
-import { io } from "socket.io-client";
-
-const socket = io("https://capyapp-production.up.railway.app");
+import { socket } from "../routes/dashboard";
 
 export default function FriendProfile(props: { friend: Friend | null }) {
   const { friend } = props;

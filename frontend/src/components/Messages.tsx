@@ -9,24 +9,35 @@ import {
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import { io } from "socket.io-client";
 import { useInviteFriendMutation } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
-
-const socket = io("https://capyapp-production.up.railway.app", {
-  path: "/ws",
-  transports: ["websocket", "polling"],
-});
+import { socket } from "../routes/dashboard";
+import { Message } from "../../../schemas/messages";
 
 export default function Messages(props: {
   chat: Chat | null;
   user: User | null;
   friends: Friend[] | undefined;
+  liveMessages: Message[];
+  setLiveMessages: Dispatch<
+    SetStateAction<
+      {
+        userId: string;
+        createdAt: Date;
+        chatId: number;
+        messageId: number;
+        content: string;
+        replyUserId: string | null;
+        replyContent: string | null;
+      }[]
+    >
+  >;
 }) {
-  const { chat, user, friends } = props;
+  const { chat, user, friends, liveMessages, setLiveMessages } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -40,7 +51,6 @@ export default function Messages(props: {
   const [replyMode, setReplyMode] = useState(false);
   const [menuMode, setMenuMode] = useState(false);
   const [leaveMode, setLeaveMode] = useState(false);
-  const [liveMessages, setLiveMessages] = useState<any[]>([]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -74,11 +84,7 @@ export default function Messages(props: {
   }
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Connected to socket", socket.id);
-    });
     socket.on("message", (data) => {
-      console.log("💬 message from server:", data);
       setLiveMessages((prev) => [
         ...prev,
         mapSerializedMessageToSchema(data.body),
