@@ -112,7 +112,12 @@ export default function Messages(props: {
     }
   }, [messages, liveMessages]);
 
-  const allMessages = [...(messages || []), ...liveMessages].sort(
+  const combinedMessages = [...(messages || []), ...liveMessages];
+  const uniqueMessagesMap = new Map<number, Message>();
+  for (const msg of combinedMessages) {
+    uniqueMessagesMap.set(msg.messageId, msg);
+  }
+  const allMessages = Array.from(uniqueMessagesMap.values()).sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
