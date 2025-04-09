@@ -185,4 +185,31 @@ export const userChatsRouter = new Hono()
       }
       return c.json({ user: newChatTitleResult[0] }, 200);
     }
-  );
+  )
+  .get("/participants/:chatId", async (c) => {
+    const chatId = c.req.param("chatId");
+    if (!chatId) {
+      return c.json({ error: "chatId parameter is required." }, 400);
+    }
+    const { result: participantsQueryResult, error: participantsQueryError } =
+      await mightFail(
+        db
+          .select({
+            userId: usersTable.userId,
+            email: usersTable.email,
+            username: usersTable.username,
+            profilePic: usersTable.profilePic,
+            createdAt: usersTable.createdAt,
+          })
+          .from(userChatsTable)
+          .innerJoin(usersTable, eq(userChatsTable.userId, usersTable.userId))
+          .where(eq(userChatsTable.chatId, Number(chatId)))
+      );
+    if (participantsQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching participants",
+        cause: participantsQueryError,
+      });
+    }
+    return c.json({ participants: participantsQueryResult });
+  });

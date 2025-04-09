@@ -38,7 +38,10 @@ export default function Chats(props: {
               className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
               onClick={() => clickedChat(chat)}
             >
-              <img src={profilePic} className="w-[40px] rounded-full" />
+              <img
+                src={profilePic}
+                className="w-[40px] h-[40px] rounded-full"
+              />
               <div className="ml-2 py-2">{chat.title}</div>
             </div>
           ))}

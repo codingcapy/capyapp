@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { Chat } from "../../../../schemas/chats";
+import { mapSerializedFriendToSchema } from "./friend";
 
 type CreateChatArgs = ArgumentTypes<
   typeof client.api.v0.chats.$post
@@ -124,3 +125,23 @@ export const useInviteFriendMutation = (
     },
   });
 };
+
+async function getParticipantsByChatId(id: string) {
+  const res = await client.api.v0.chats.participants[":chatId"].$get({
+    param: { chatId: id.toString() },
+  });
+
+  if (!res.ok) {
+    throw new Error("Error getting friends by userEmail");
+  }
+  const { participants } = await res.json();
+  return participants.map((participant) =>
+    mapSerializedFriendToSchema(participant)
+  );
+}
+
+export const getParticipantsByChatIdQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["participants", args],
+    queryFn: () => getParticipantsByChatId(args),
+  });

@@ -11,9 +11,13 @@ import { Friend } from "../lib/api/friend";
 import { useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
-import { useInviteFriendMutation } from "../lib/api/chat";
+import {
+  getParticipantsByChatIdQueryOptions,
+  useInviteFriendMutation,
+} from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
 import { socket } from "../routes/dashboard";
+import profilePic from "/capypaul01.jpg";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -25,6 +29,9 @@ export default function Messages(props: {
   const { chat, user, friends, friend, setFriend } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
+  );
+  const { data: participants } = useQuery(
+    getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
@@ -112,7 +119,17 @@ export default function Messages(props: {
             >
               Leave chat
             </div>
-            <div className="text-xl">Participants</div>
+            <div className="text-xl pb-2">Participants</div>
+            {participants?.map((participant) => (
+              <div className="flex" key={participant.userId}>
+                <img
+                  src={participant.profilePic || profilePic}
+                  alt=""
+                  className="w-[25px] h-[25px] rounded-full mt-2"
+                />
+                <div className="p-2">{participant.username}</div>
+              </div>
+            ))}
           </div>
         )}
         {leaveMode && (
