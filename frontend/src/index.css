@@ -11,3 +11,33 @@
     /* Adjust the height according to your content */
     transition: max-height 0.5s ease-in;
 }
+
+::-moz-selection {
+    /* Code for Firefox */
+    color: transparent;
+    background: #0891b2;
+}
+
+::selection {
+    color: transparent;
+    background: #0891b2;
+}
+
+::-webkit-scrollbar {
+    width: 8px
+}
+
+::-webkit-scrollbar-track {
+    background: transparent
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0891b2;
+    border-radius: 10px;
+    transition: background-color 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #06b6d4;
+    /* cyan-500 (a bit brighter) */
+}
