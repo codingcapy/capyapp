@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   useUpdatePasswordMutation,
   useUpdateProfilePicMutation,
+  useUpdateUsernameMutation,
 } from "../lib/api/user";
 
 export default function Profile() {
@@ -12,6 +13,7 @@ export default function Profile() {
   const [preview, setPreview] = useState<string | null>(null);
   const { mutate: updateProfilePic } = useUpdateProfilePicMutation();
   const { mutate: updatePassword } = useUpdatePasswordMutation();
+  const { mutate: updateUsername } = useUpdateUsernameMutation();
   const [editUsernameMode, setEditUsernameMode] = useState(false);
   const [editPasswordMode, setEditPasswordMode] = useState(false);
   const [usernameContent, setUsernameContent] = useState(
@@ -48,6 +50,17 @@ export default function Profile() {
     });
     setSuccessNotification("Password updated successfully!");
     setEditPasswordMode(false);
+  }
+
+  function handleUpdateUsername(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newUsername = (e.target as HTMLFormElement).username.value;
+    updateUsername({
+      userId: (user && user.userId) || "",
+      username: newUsername,
+    });
+    setSuccessNotification("Password updated successfully!");
+    setEditUsernameMode(false);
   }
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -105,13 +118,19 @@ export default function Profile() {
             </p>
           )}
           {editUsernameMode && (
-            <input
-              type="text"
-              ref={usernameInputRef}
-              className="px-2 py-1 mt-2 border"
-              value={usernameContent}
-              onChange={(e) => setUsernameContent(e.target.value)}
-            />
+            <form onSubmit={handleUpdateUsername}>
+              <input
+                type="text"
+                name="username"
+                ref={usernameInputRef}
+                className="px-2 py-1 mt-2 border"
+                value={usernameContent}
+                onChange={(e) => setUsernameContent(e.target.value)}
+              />
+              <button type="submit" className="hidden">
+                Submit
+              </button>
+            </form>
           )}
           <p className="my-1 md:my-3">
             Member Since: {user && user.createdAt.toString().slice(0, 10)}

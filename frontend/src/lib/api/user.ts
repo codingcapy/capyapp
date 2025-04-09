@@ -14,6 +14,10 @@ type UpdatePasswordArgs = ArgumentTypes<
   typeof client.api.v0.users.update.password.$post
 >[0]["json"];
 
+type UpdateUsernameArgs = ArgumentTypes<
+  typeof client.api.v0.users.update.username.$post
+>[0]["json"];
+
 type SerializeUser = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.users.$get>>
 >["users"][number];
@@ -129,6 +133,34 @@ export const useUpdatePasswordMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updatePassword,
+    onSettled: (newUser) => {
+      if (!newUser) return;
+      queryClient.invalidateQueries({
+        queryKey: ["users", newUser.userId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    },
+  });
+};
+
+async function updateUsername(args: UpdateUsernameArgs) {
+  const res = await client.api.v0.users.update.username.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating user.");
+  }
+  const { newUser } = await res.json();
+  console.log(newUser);
+  return mapSerializedUserToSchema(newUser);
+}
+
+export const useUpdateUsernameMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateUsername,
     onSettled: (newUser) => {
       if (!newUser) return;
       queryClient.invalidateQueries({
