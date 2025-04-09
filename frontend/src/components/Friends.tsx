@@ -17,7 +17,6 @@ export default function Friends(props: {
 
   useEffect(() => {
     socket.on("friend", (data) => {
-      console.log(data);
       queryClient.invalidateQueries({ queryKey: ["friends", user?.email] });
     });
     return () => {

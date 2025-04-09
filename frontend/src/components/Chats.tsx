@@ -16,7 +16,6 @@ export default function Chats(props: {
 
   useEffect(() => {
     socket.on("chat", (data) => {
-      console.log(data);
       queryClient.invalidateQueries({ queryKey: ["chats", user?.userId] });
     });
     return () => {

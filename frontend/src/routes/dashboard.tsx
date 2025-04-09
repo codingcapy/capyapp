@@ -1,10 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { CgProfile } from "react-icons/cg";
-import {
-  IoExitOutline,
-  IoChatbubbleOutline,
-  IoChatbubbleEllipsesOutline,
-} from "react-icons/io5";
+import { IoExitOutline, IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { FaUserFriends } from "react-icons/fa";
 import useAuthStore from "../store/AuthStore";
 import { useEffect, useState } from "react";
@@ -20,7 +16,6 @@ import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
 import { getChatsByUserIdQueryOptions } from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
-import { Message } from "../../../schemas/messages";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",

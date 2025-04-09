@@ -8,13 +8,12 @@ import {
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import { useInviteFriendMutation } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
 import { socket } from "../routes/dashboard";
-import { Message } from "../../../schemas/messages";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -72,8 +71,6 @@ export default function Messages(props: {
 
   useEffect(() => {
     socket.on("message", (data) => {
-      console.log(data);
-      console.log(chat);
       queryClient.invalidateQueries({
         queryKey: ["messages", chat?.chatId.toString()],
       });

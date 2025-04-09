@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Message } from "../../../schemas/messages";
 import { Friend } from "../lib/api/friend";
 import profilePic from "/capypaul01.jpg";

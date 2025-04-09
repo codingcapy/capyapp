@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import { db } from "../db";
 import { users as usersTable } from "../schemas/users";
 import { createInsertSchema } from "drizzle-zod";
-import { scrypt, randomBytes } from "crypto";
+import { scrypt } from "crypto";
 import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt);

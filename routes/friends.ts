@@ -1,7 +1,7 @@
 import { createInsertSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { userFriends as userFriendsTable } from "../schemas/userfriends";
-import { users, users as usersTable } from "../schemas/users";
+import { users as usersTable } from "../schemas/users";
 import { zValidator } from "@hono/zod-validator";
 import { mightFail } from "might-fail";
 import { db } from "../db";
