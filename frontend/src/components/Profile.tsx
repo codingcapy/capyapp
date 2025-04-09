@@ -59,7 +59,7 @@ export default function Profile() {
       userId: (user && user.userId) || "",
       username: newUsername,
     });
-    setSuccessNotification("Password updated successfully!");
+    setSuccessNotification("Username updated successfully!");
     setEditUsernameMode(false);
   }
 
