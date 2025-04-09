@@ -2,6 +2,9 @@ import { FaUserFriends } from "react-icons/fa";
 import { Friend } from "../lib/api/friend";
 import profilePic from "/capypaul01.jpg";
 import { socket } from "../routes/dashboard";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import useAuthStore from "../store/AuthStore";
 
 export default function Friends(props: {
   clickedAddFriend: () => void;
@@ -9,6 +12,19 @@ export default function Friends(props: {
   friends: Friend[] | undefined;
 }) {
   const { clickedAddFriend, clickedFriend, friends } = props;
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    socket.on("friend", (data) => {
+      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["friends", user?.email] });
+    });
+    return () => {
+      socket.off("connect");
+      socket.off("friend");
+    };
+  }, []);
 
   return (
     <div className="relative md:w-[15%] md:border-r md:h-screen overflow-auto">

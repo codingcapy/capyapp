@@ -1,12 +1,29 @@
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { socket } from "../routes/dashboard";
+import useAuthStore from "../store/AuthStore";
 
 export default function Chats(props: {
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
 }) {
   const { chats, clickedChat } = props;
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    socket.on("chat", (data) => {
+      console.log(data);
+      queryClient.invalidateQueries({ queryKey: ["chats", user?.userId] });
+    });
+    return () => {
+      socket.off("connect");
+      socket.off("chat");
+    };
+  }, []);
 
   return (
     <div className="relative md:w-[15%] md:border-r md:h-screen overflow-auto">

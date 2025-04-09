@@ -1,10 +1,9 @@
 import { IoChatbubbleOutline } from "react-icons/io5";
 import { LuSendHorizontal } from "react-icons/lu";
 import { Chat } from "../../../schemas/chats";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
-  mapSerializedMessageToSchema,
   useCreateMessageMutation,
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
@@ -12,7 +11,6 @@ import { Friend } from "../lib/api/friend";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
-import { io } from "socket.io-client";
 import { useInviteFriendMutation } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
 import { socket } from "../routes/dashboard";
@@ -24,30 +22,8 @@ export default function Messages(props: {
   friends: Friend[] | undefined;
   friend: Friend | null;
   setFriend: (state: Friend | null) => void;
-  liveMessages: Message[];
-  setLiveMessages: Dispatch<
-    SetStateAction<
-      {
-        userId: string;
-        createdAt: Date;
-        chatId: number;
-        messageId: number;
-        content: string;
-        replyUserId: string | null;
-        replyContent: string | null;
-      }[]
-    >
-  >;
 }) {
-  const {
-    chat,
-    user,
-    friends,
-    liveMessages,
-    setLiveMessages,
-    friend,
-    setFriend,
-  } = props;
+  const { chat, user, friends, friend, setFriend } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -61,6 +37,7 @@ export default function Messages(props: {
   const [replyMode, setReplyMode] = useState(false);
   const [menuMode, setMenuMode] = useState(false);
   const [leaveMode, setLeaveMode] = useState(false);
+  const queryClient = useQueryClient();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -95,10 +72,11 @@ export default function Messages(props: {
 
   useEffect(() => {
     socket.on("message", (data) => {
-      setLiveMessages((prev) => [
-        ...prev,
-        mapSerializedMessageToSchema(data.body),
-      ]);
+      console.log(data);
+      console.log(chat);
+      queryClient.invalidateQueries({
+        queryKey: ["messages", chat?.chatId.toString()],
+      });
     });
     return () => {
       socket.off("connect");
@@ -110,16 +88,7 @@ export default function Messages(props: {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, liveMessages]);
-
-  const combinedMessages = [...(messages || []), ...liveMessages];
-  const uniqueMessagesMap = new Map<number, Message>();
-  for (const msg of combinedMessages) {
-    uniqueMessagesMap.set(msg.messageId, msg);
-  }
-  const allMessages = Array.from(uniqueMessagesMap.values()).sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
+  }, [messages]);
 
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto relative">
@@ -209,27 +178,29 @@ export default function Messages(props: {
       <div
         className={`pt-[100px] pb-[150px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
       >
-        {allMessages.map((message, i) => (
-          <div className="text-white" key={message.messageId || `live-${i}`}>
-            {user && message.userId === user.userId ? (
-              <MessageComponent
-                message={message}
-                friends={friends || []}
-                setFriend={setFriend}
-                replyMode={replyMode}
-                setReplyMode={setReplyMode}
-              />
-            ) : (
-              <MessageFriend
-                message={message}
-                friends={friends || []}
-                setFriend={setFriend}
-                replyMode={replyMode}
-                setReplyMode={setReplyMode}
-              />
-            )}
-          </div>
-        ))}
+        {messages
+          ?.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+          .map((message, i) => (
+            <div className="text-white" key={message.messageId || `live-${i}`}>
+              {user && message.userId === user.userId ? (
+                <MessageComponent
+                  message={message}
+                  friends={friends || []}
+                  setFriend={setFriend}
+                  replyMode={replyMode}
+                  setReplyMode={setReplyMode}
+                />
+              ) : (
+                <MessageFriend
+                  message={message}
+                  friends={friends || []}
+                  setFriend={setFriend}
+                  replyMode={replyMode}
+                  setReplyMode={setReplyMode}
+                />
+              )}
+            </div>
+          ))}
 
         <div ref={lastMessageRef} />
       </div>

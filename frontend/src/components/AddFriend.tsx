@@ -24,10 +24,10 @@ export default function AddFriend(props: { friends: Friend[] | undefined }) {
     createFriend(
       { userEmail: user!.email, friendEmail: email },
       {
-        onSuccess: () => {
+        onSuccess: (result) => {
           setNotification("");
           setSuccessNotification("Friend added successfully!");
-          socket.emit("friend", { userEmail: user!.email, friendEmail: email });
+          socket.emit("friend", result);
         },
         onError: (errorMessage) => setNotification(errorMessage.toString()),
       }

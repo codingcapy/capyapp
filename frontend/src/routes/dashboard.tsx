@@ -54,7 +54,6 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
-  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -125,7 +124,6 @@ function RouteComponent() {
     setShowProfile(false);
     setShowFriends(window.innerWidth < 760 ? false : true);
     setShowChats(window.innerWidth < 760 ? false : true);
-    setLiveMessages([]);
   }
 
   return (
@@ -154,8 +152,6 @@ function RouteComponent() {
               friends={friends}
               friend={friend}
               setFriend={setFriend}
-              liveMessages={liveMessages}
-              setLiveMessages={setLiveMessages}
             />
           )}
           {showProfile && <Profile />}
