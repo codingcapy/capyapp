@@ -15,6 +15,10 @@ type InviteFriendArgs = ArgumentTypes<
   typeof client.api.v0.chats.add.$post
 >[0]["json"];
 
+type UpdateTitleArgs = ArgumentTypes<
+  typeof client.api.v0.chats.update.$post
+>[0]["json"];
+
 type SerializeChat = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.chats.$get>>
 >["chats"][number];
@@ -116,7 +120,7 @@ export const useInviteFriendMutation = (
     mutationFn: inviteFriend,
     onSettled: (args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["chats"], args });
+      queryClient.invalidateQueries({ queryKey: ["invite"], args });
     },
     onError: (error) => {
       if (onError) {
@@ -145,3 +149,31 @@ export const getParticipantsByChatIdQueryOptions = (args: string) =>
     queryKey: ["participants", args],
     queryFn: () => getParticipantsByChatId(args),
   });
+
+async function updateTitle(args: UpdateTitleArgs) {
+  const res = await client.api.v0.chats.update.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating chat.");
+  }
+  const { newChat } = await res.json();
+  console.log(newChat);
+  return mapSerializedChatToSchema(newChat);
+}
+
+export const useUpdateTitleMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateTitle,
+    onSettled: (newChat) => {
+      if (!newChat) return;
+      queryClient.invalidateQueries({
+        queryKey: ["chats", newChat.chatId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["chats"],
+      });
+    },
+  });
+};

@@ -14,6 +14,7 @@ import MessageFriend from "./MessageFriend";
 import {
   getParticipantsByChatIdQueryOptions,
   useInviteFriendMutation,
+  useUpdateTitleMutation,
 } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
 import { socket } from "../routes/dashboard";
@@ -35,6 +36,7 @@ export default function Messages(props: {
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
+  const { mutate: updateTitle } = useUpdateTitleMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -43,7 +45,10 @@ export default function Messages(props: {
   const [replyMode, setReplyMode] = useState(false);
   const [menuMode, setMenuMode] = useState(false);
   const [leaveMode, setLeaveMode] = useState(false);
+  const [editTitleMode, setEditTitleMode] = useState(false);
+  const [titleContent, setTitleContent] = useState((chat && chat.title) || "");
   const queryClient = useQueryClient();
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,6 +81,16 @@ export default function Messages(props: {
     });
   }
 
+  function handleUpdateTitle(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const newTitle = (e.target as HTMLFormElement).chattitle.value;
+    updateTitle({
+      chatId: (chat && chat.chatId) || 0,
+      title: newTitle,
+    });
+    setEditTitleMode(false);
+  }
+
   useEffect(() => {
     socket.on("message", (data) => {
       queryClient.invalidateQueries({
@@ -94,15 +109,66 @@ export default function Messages(props: {
     }
   }, [messages]);
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setEditTitleMode(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      titleInputRef.current &&
+      !titleInputRef.current.contains(event.target as Node)
+    ) {
+      setEditTitleMode(false);
+    }
+  };
+
   return (
     <div className="md:w-[55%] md:border-r md:h-screen overflow-auto relative">
       <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] px-5 pt-5 w-screen md:w-[53.9%]">
         <div className="flex justify-between">
           <div className="flex">
             <IoChatbubbleOutline size={25} className="" />
-            <div className="ml-2 text-xl">
-              {!chat ? "Messages" : chat.title}
-            </div>
+            {!editTitleMode && (
+              <div
+                onClick={() => {
+                  chat && setEditTitleMode(true);
+                  chat && setTitleContent(chat.title);
+                }}
+                className="ml-2 text-xl"
+              >
+                {!chat ? "Messages" : chat.title}
+              </div>
+            )}
+            {editTitleMode && (
+              <form onSubmit={handleUpdateTitle}>
+                <input
+                  type="text"
+                  name="chattitle"
+                  ref={titleInputRef}
+                  className="px-2 py-1 ml-2 border"
+                  value={titleContent}
+                  onChange={(e) => setTitleContent(e.target.value)}
+                />
+                <button type="submit" className="hidden">
+                  Submit
+                </button>
+              </form>
+            )}
           </div>
           {chat && (
             <FaEllipsis

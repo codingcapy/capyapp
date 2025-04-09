@@ -169,7 +169,7 @@ export const userChatsRouter = new Hono()
       if (insertValues.chatId === undefined) {
         throw new HTTPException(400, { message: "chatId is required" });
       }
-      const { error: updateChatTitleError, result: newChatTitleResult } =
+      const { error: updateChatError, result: updateChatResult } =
         await mightFail(
           db
             .update(chatsTable)
@@ -177,13 +177,13 @@ export const userChatsRouter = new Hono()
             .where(eq(chatsTable.chatId, insertValues.chatId))
             .returning()
         );
-      if (updateChatTitleError) {
+      if (updateChatError) {
         throw new HTTPException(500, {
           message: "Error updating chat title",
-          cause: updateChatTitleError,
+          cause: updateChatError,
         });
       }
-      return c.json({ user: newChatTitleResult[0] }, 200);
+      return c.json({ newChat: updateChatResult[0] }, 200);
     }
   )
   .get("/participants/:chatId", async (c) => {
