@@ -7,7 +7,7 @@ import { users as usersTable } from "../schemas/users";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { chats as chatsTable } from "../schemas/chats";
 import { z } from "zod";
 
@@ -212,4 +212,34 @@ export const userChatsRouter = new Hono()
       });
     }
     return c.json({ participants: participantsQueryResult });
-  });
+  })
+  .post(
+    "/leave",
+    zValidator(
+      "json",
+      createInsertSchema(userChatsTable).omit({
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { result: leaveChatQueryResult, error: leaveChatQueryError } =
+        await mightFail(
+          db
+            .delete(userChatsTable)
+            .where(
+              and(
+                eq(userChatsTable.userId, insertValues.userId),
+                eq(userChatsTable.chatId, insertValues.chatId)
+              )
+            )
+        );
+      if (leaveChatQueryError) {
+        throw new HTTPException(500, {
+          message: "Error occurred when leaving chat",
+          cause: leaveChatQueryError,
+        });
+      }
+      return c.json({ participants: leaveChatQueryResult });
+    }
+  );
