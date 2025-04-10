@@ -12,7 +12,7 @@ export const messages = pgTable("messages", {
   chatId: integer("chat_id").notNull(),
   userId: varchar("user_id").notNull(),
   content: varchar("content", { length: 25000 }).notNull(),
-  replyUserId: varchar("reply_user_id"),
+  replyUserId: varchar("reply_user_id", { length: 100 }),
   replyContent: varchar("reply_content", { length: 25000 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

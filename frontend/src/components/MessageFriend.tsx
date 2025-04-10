@@ -9,37 +9,55 @@ export default function MessageFriend(props: {
   setFriend: (state: Friend) => void;
   replyMode: boolean;
   setReplyMode: (state: boolean) => void;
+  setReplyContent: (state: string) => void;
 }) {
-  const { message, friends, setReplyMode, setFriend } = props;
+  const { message, friends, setReplyMode, setFriend, setReplyContent } = props;
   const friend = friends.filter((friend) => friend.userId === message.userId);
 
   return (
-    <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group">
-      <img
-        src={(friend[0] !== undefined && friend[0].profilePic) || profilePic}
-        className="w-[40px] h-[40px] rounded-full mr-2"
-      />
-      <div className="w-[100%]">
-        <div className="flex justify-between">
+    <div>
+      {message.replyContent && (
+        <div className="text-gray-400 pt-2 pl-10">
           <div className="flex">
-            <div className="font-bold px-1">
-              {(friend[0] !== undefined && friend[0].username) || ""}
-            </div>
-            <div className="pl-2 text-gray-400">
-              on {message.createdAt.toString().slice(0, 25)}
-            </div>
-          </div>
-          <div
-            onClick={() => {
-              setReplyMode(true);
-              setFriend(friend[0]);
-            }}
-            className="cursor-pointer px-2 pr-5 hidden group-hover:flex opacity-100 transition-opacity"
-          >
-            <FaReply size={20} className="" />
+            <img
+              src={profilePic}
+              className="w-[20px] h-[20px]  rounded-full mx-2"
+            />
+            <span className="font-bold pr-2">@{message.replyUserId}</span>{" "}
+            {message.replyContent}
           </div>
         </div>
-        <div className="overflow-wrap break-word">{message.content}</div>
+      )}
+      <div
+        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex hover:bg-slate-800 transition-all ease duration-300 group`}
+      >
+        <img
+          src={(friend[0] !== undefined && friend[0].profilePic) || profilePic}
+          className="w-[40px] h-[40px] rounded-full mr-2"
+        />
+        <div className="w-[100%]">
+          <div className="flex justify-between">
+            <div className="flex">
+              <div className="font-bold px-1">
+                {(friend[0] !== undefined && friend[0].username) || ""}
+              </div>
+              <div className="pl-2 text-gray-400">
+                on {message.createdAt.toString().slice(0, 25)}
+              </div>
+            </div>
+            <div
+              onClick={() => {
+                setReplyMode(true);
+                setFriend(friend[0]);
+                setReplyContent(message.content.toString());
+              }}
+              className="cursor-pointer px-2 pr-5 hidden group-hover:flex opacity-100 transition-opacity"
+            >
+              <FaReply size={20} className="" />
+            </div>
+          </div>
+          <div className="overflow-wrap break-word">{message.content}</div>
+        </div>
       </div>
     </div>
   );

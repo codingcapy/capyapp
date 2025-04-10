@@ -52,6 +52,7 @@ export default function Messages(props: {
   const [leaveMode, setLeaveMode] = useState(false);
   const [editTitleMode, setEditTitleMode] = useState(false);
   const [titleContent, setTitleContent] = useState((chat && chat.title) || "");
+  const [replyContent, setReplyContent] = useState("");
   const queryClient = useQueryClient();
   const titleInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -61,18 +62,40 @@ export default function Messages(props: {
     if (content.length > 25000)
       return setNotification("Your message is too long!");
     if (!user || !chat) return;
-    createMessage(
-      { content, chatId: chat.chatId, userId: user.userId },
-      {
-        onSuccess: () =>
-          socket.emit("message", {
-            content,
-            chatId: chat.chatId,
-            userId: user.userId,
-            createdAt: new Date().toISOString(),
-          }),
-      }
-    );
+    if (replyMode) {
+      createMessage(
+        {
+          content,
+          chatId: chat.chatId,
+          userId: user.userId,
+          replyUserId: friend?.userId || "",
+          replyContent: replyContent,
+        },
+        {
+          onSuccess: () =>
+            socket.emit("message", {
+              content,
+              chatId: chat.chatId,
+              userId: user.userId,
+              createdAt: new Date().toISOString(),
+            }),
+        }
+      );
+      setReplyMode(false);
+    } else {
+      createMessage(
+        { content, chatId: chat.chatId, userId: user.userId },
+        {
+          onSuccess: () =>
+            socket.emit("message", {
+              content,
+              chatId: chat.chatId,
+              userId: user.userId,
+              createdAt: new Date().toISOString(),
+            }),
+        }
+      );
+    }
     setMessageContent("");
   }
 
@@ -332,7 +355,17 @@ export default function Messages(props: {
                   setFriend={setFriend}
                   replyMode={replyMode}
                   setReplyMode={setReplyMode}
+                  setReplyContent={setReplyContent}
                 />
+              ) : message.userId === "notification" ? (
+                <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group text-[#b6b6b6]">
+                  <div className="w-[100%]">
+                    <div className="font-bold px-1">notification</div>
+                    <div className="overflow-wrap break-word">
+                      {message.content}
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <MessageFriend
                   message={message}
@@ -340,6 +373,7 @@ export default function Messages(props: {
                   setFriend={setFriend}
                   replyMode={replyMode}
                   setReplyMode={setReplyMode}
+                  setReplyContent={setReplyContent}
                 />
               )}
             </div>
@@ -386,7 +420,7 @@ export default function Messages(props: {
               x
             </div>
           </div>
-          <form className={`flex ${replyMode ? "mx-5 mt-3" : "m-5"} w-[100%]`}>
+          <form onSubmit={handleSubmit} className={`flex mx-5 mt-3 w-[100%]`}>
             <input
               type="text"
               className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"

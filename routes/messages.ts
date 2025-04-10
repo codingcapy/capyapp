@@ -43,9 +43,9 @@ export const messagesRouter = new Hono()
             .returning()
         );
       if (messageInsertError) {
-        console.log("Error while creating chat");
+        console.log("Error while creating message:", messageInsertResult);
         throw new HTTPException(500, {
-          message: "Error while creating chat",
+          message: "Error while creating message",
           cause: messageInsertResult,
         });
       }
