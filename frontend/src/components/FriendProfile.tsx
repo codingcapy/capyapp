@@ -20,8 +20,8 @@ export default function FriendProfile(props: { friend: Friend | null }) {
     );
   }
   return (
-    <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
-      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
+    <div className="md:w-[55%] md:bg-[#202020] md:h-screen overflow-auto">
+      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] md:bg-[#202020] p-5 w-screen md:w-[54%]">
         <CgProfile size={25} className="" />
         <div className="ml-2 text-xl">{friend && friend.username}</div>
       </div>

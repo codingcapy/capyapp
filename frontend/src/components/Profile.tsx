@@ -80,8 +80,8 @@ export default function Profile() {
   }, []);
 
   return (
-    <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
-      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
+    <div className="md:w-[55%] md:h-screen overflow-auto md:bg-[#202020]">
+      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] md:bg-[#202020] p-5 w-screen md:w-[54%]">
         <CgProfile size={25} className="" />
         <div className="ml-2 text-xl">Your Profile</div>
       </div>
