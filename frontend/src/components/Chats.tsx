@@ -25,8 +25,8 @@ export default function Chats(props: {
   }, []);
 
   return (
-    <div className="relative md:w-[15%] md:border-r md:h-screen overflow-auto">
-      <div className="fixed top-0 left-0 md:left-[15%] flex bg-[#040406] p-5 w-screen md:w-[14%]">
+    <div className="relative md:w-[15%] md:h-screen md:bg-zinc-900 overflow-auto">
+      <div className="fixed top-0 left-0 md:left-[15%] flex bg-[#040406] md:bg-zinc-900 p-5 w-screen md:w-[14%]">
         <IoChatbubbleEllipsesOutline size={25} className="" />
         <div className="ml-2 text-xl">Chats</div>
       </div>

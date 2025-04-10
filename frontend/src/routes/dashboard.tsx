@@ -133,7 +133,7 @@ function RouteComponent() {
             />
           )}
           <div
-            className="hidden md:flex fixed bottom-0 left-0 cursor-pointer p-10 bg-[#040406] w-[14%]"
+            className="hidden md:flex fixed bottom-0 left-0 cursor-pointer p-10 bg-[#040406] md:bg-zinc-900 w-[14%]"
             onClick={handleLogout}
           >
             <IoExitOutline size={25} />
@@ -152,7 +152,7 @@ function RouteComponent() {
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}
           {showFriend && <FriendProfile friend={friend} />}
-          <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto">
+          <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">
             <div
               className="flex p-10 md:py-5 md:px-7 cursor-pointer"
               onClick={clickedProfile}

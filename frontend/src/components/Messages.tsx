@@ -19,6 +19,7 @@ import {
 import { FaEllipsis } from "react-icons/fa6";
 import { socket } from "../routes/dashboard";
 import profilePic from "/capypaul01.jpg";
+import capyness from "/capyness.png";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -138,8 +139,8 @@ export default function Messages(props: {
   };
 
   return (
-    <div className="md:w-[55%] md:border-r md:h-screen overflow-auto relative">
-      <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] px-5 pt-5 w-screen md:w-[53.9%]">
+    <div className="md:w-[55%] md:h-screen overflow-auto relative md:bg-[#202020]">
+      <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] md:bg-[#202020] px-5 pt-5 w-screen md:w-[53.9%]">
         <div className="flex justify-between">
           <div className="flex">
             <IoChatbubbleOutline size={25} className="" />
@@ -177,6 +178,15 @@ export default function Messages(props: {
             />
           )}
         </div>
+        {!chat && (
+          <div className="absolute top-[250px] left-[37%]">
+            <img src={capyness} alt="" />
+            <div className="text-xl font-bold py-5 text-yellow-200">
+              {" "}
+              Start chatting with a friend!
+            </div>
+          </div>
+        )}
         {menuMode && (
           <div className="absolute top-10 right-0 bg-black px-10 pb-5">
             <div
@@ -286,11 +296,11 @@ export default function Messages(props: {
       </div>
       <div className="text-red-400">{notification}</div>
       {chat && !replyMode && (
-        <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] ">
+        <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] md:bg-[#202020] ">
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
             <input
               type="text"
-              className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
+              className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
               name="messagecontent"
               value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
@@ -303,7 +313,7 @@ export default function Messages(props: {
       )}
       {chat && replyMode && (
         <div
-          className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] ${replyMode ? "md:h-[132px]" : "md:h-[100px]"} bg-[#040406] `}
+          className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] ${replyMode ? "md:h-[132px]" : "md:h-[100px]"} bg-[#040406] md:bg-[#202020] `}
         >
           <div className="flex justify-between px-6 pb-2 bg-gray-700">
             <div className="pt-2">
@@ -320,7 +330,7 @@ export default function Messages(props: {
           <form className={`flex ${replyMode ? "mx-5 mt-3" : "m-5"} w-[100%]`}>
             <input
               type="text"
-              className="bg-gray-800 rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
+              className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
               name="messagecontent"
               value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
