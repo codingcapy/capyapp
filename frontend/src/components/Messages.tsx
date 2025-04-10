@@ -21,6 +21,7 @@ import { FaEllipsis } from "react-icons/fa6";
 import { socket } from "../routes/dashboard";
 import profilePic from "/capypaul01.jpg";
 import capyness from "/capyness.png";
+import { PiSmiley } from "react-icons/pi";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -158,6 +159,8 @@ export default function Messages(props: {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setEditTitleMode(false);
+        setAddFriendMode(false);
+        setMenuMode(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -348,16 +351,22 @@ export default function Messages(props: {
       {chat && !replyMode && (
         <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] md:bg-[#202020] ">
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
-            <input
-              type="text"
-              className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
-              name="messagecontent"
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-            />
-            <button>
-              <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
-            </button>
+            <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] mr-3 flex">
+              <input
+                type="text"
+                className="w-[100%] outline-none "
+                name="messagecontent"
+                value={messageContent}
+                onChange={(e) => setMessageContent(e.target.value)}
+              />
+              <PiSmiley size={25} className="" />
+              <button>
+                <LuSendHorizontal
+                  size={25}
+                  className="md:hidden text-cyan-600"
+                />
+              </button>
+            </div>
           </form>
         </div>
       )}
