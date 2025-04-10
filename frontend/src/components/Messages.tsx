@@ -53,8 +53,10 @@ export default function Messages(props: {
   const [editTitleMode, setEditTitleMode] = useState(false);
   const [titleContent, setTitleContent] = useState((chat && chat.title) || "");
   const [replyContent, setReplyContent] = useState("");
+  const [emojiMode, setEmojiMode] = useState(false);
   const queryClient = useQueryClient();
   const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const emojisRef = useRef<HTMLDivElement>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -184,6 +186,8 @@ export default function Messages(props: {
         setEditTitleMode(false);
         setAddFriendMode(false);
         setMenuMode(false);
+        setLeaveMode(false);
+        setEmojiMode(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -194,8 +198,10 @@ export default function Messages(props: {
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutsideEmojis);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutsideEmojis);
     };
   }, []);
 
@@ -205,6 +211,15 @@ export default function Messages(props: {
       !titleInputRef.current.contains(event.target as Node)
     ) {
       setEditTitleMode(false);
+    }
+  };
+
+  const handleClickOutsideEmojis = (event: MouseEvent) => {
+    if (
+      emojisRef.current &&
+      !emojisRef.current.contains(event.target as Node)
+    ) {
+      setEmojiMode(false);
     }
   };
 
@@ -261,13 +276,16 @@ export default function Messages(props: {
           <div className="absolute top-10 right-0 bg-[#202020] px-10 pb-5">
             <div
               onClick={() => setLeaveMode(true)}
-              className="py-5 text-red-400 cursor-pointer"
+              className="my-3 py-2 pl-1 text-red-400  hover:bg-zinc-800 cursor-pointer"
             >
               Leave chat
             </div>
             <div className="text-xl pb-2">Participants</div>
             {participants?.map((participant) => (
-              <div className="flex" key={participant.userId}>
+              <div
+                className="flex pl-1 hover:bg-zinc-800 cursor-pointer"
+                key={participant.userId}
+              >
                 <img
                   src={participant.profilePic || profilePic}
                   alt=""
@@ -323,17 +341,20 @@ export default function Messages(props: {
               Add friend
             </label>
             <input
-              className="bg-gray-800 rounded p-1 outline-none my-3"
+              className="bg-zinc-900 border border-[#636363] rounded p-1 outline-none my-3"
               type="email"
               name="email"
               placeholder="Type the email of a friend"
               required
             />
             <div className="my-1">
-              <button className="border border-cyan-600 text-cyan-600 font-bold px-2 py-2 rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
+              <button className="border border-cyan-600 text-cyan-600 font-bold px-2 py-2 rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300 cursor-pointer">
                 Add friend
               </button>
-              <button onClick={() => setAddFriendMode(false)} className="ml-2">
+              <button
+                onClick={() => setAddFriendMode(false)}
+                className="ml-4 cursor-pointer"
+              >
                 Cancel
               </button>
             </div>
@@ -382,6 +403,38 @@ export default function Messages(props: {
         <div ref={lastMessageRef} />
       </div>
       <div className="text-red-400">{notification}</div>
+      {emojiMode && (
+        <div
+          className={`fixed ${replyMode ? "bottom-[150px]" : "bottom-[100px]"} right-[18%] z-50 grid grid-cols-5 gap-2 text-xl bg-zinc-800 p-3 rounded`}
+          ref={emojisRef}
+        >
+          <div>😀</div>
+          <div>😂</div>
+          <div>🤣</div>
+          <div>😅</div>
+          <div>😥</div>
+          <div>😮</div>
+          <div>😛</div>
+          <div>😎</div>
+          <div>😆</div>
+          <div>👍</div>
+          <div>🔥</div>
+          <div>🎉</div>
+          <div>👀</div>
+          <div>🙌</div>
+          <div>👏</div>
+          <div>🙏</div>
+          <div>❤</div>
+          <div>✔</div>
+          <div>🏝</div>
+          <div>😍</div>
+          <div>🥰</div>
+          <div>😡</div>
+          <div>🤬</div>
+          <div>💀</div>
+          <div>☠</div>
+        </div>
+      )}
       {chat && !replyMode && (
         <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] md:bg-[#202020] ">
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
@@ -393,7 +446,11 @@ export default function Messages(props: {
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
               />
-              <PiSmiley size={25} className="" />
+              <PiSmiley
+                size={25}
+                onClick={() => setEmojiMode(true)}
+                className="cursor-pointer"
+              />
               <button>
                 <LuSendHorizontal
                   size={25}
