@@ -219,6 +219,7 @@ export const userChatsRouter = new Hono()
       "json",
       createInsertSchema(userChatsTable).omit({
         createdAt: true,
+        userChatId: true,
       })
     ),
     async (c) => {

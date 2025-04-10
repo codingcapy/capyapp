@@ -143,6 +143,7 @@ function RouteComponent() {
           {showMessages && (
             <Messages
               chat={chat}
+              setChat={setChat}
               user={user}
               friends={friends}
               friend={friend}

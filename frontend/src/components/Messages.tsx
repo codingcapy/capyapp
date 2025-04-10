@@ -14,6 +14,7 @@ import MessageFriend from "./MessageFriend";
 import {
   getParticipantsByChatIdQueryOptions,
   useInviteFriendMutation,
+  useLeaveChatMutation,
   useUpdateTitleMutation,
 } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
@@ -23,12 +24,13 @@ import capyness from "/capyness.png";
 
 export default function Messages(props: {
   chat: Chat | null;
+  setChat: (state: Chat | null) => void;
   user: User | null;
   friends: Friend[] | undefined;
   friend: Friend | null;
   setFriend: (state: Friend | null) => void;
 }) {
-  const { chat, user, friends, friend, setFriend } = props;
+  const { chat, user, friends, friend, setFriend, setChat } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -38,6 +40,7 @@ export default function Messages(props: {
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
   const { mutate: updateTitle } = useUpdateTitleMutation();
+  const { mutate: leaveChat } = useLeaveChatMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -74,11 +77,26 @@ export default function Messages(props: {
 
   function handleInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const email = (e.target as HTMLFormElement).messagecontent.value;
+    const email = (e.target as HTMLFormElement).email.value;
     if (!chat) return;
-    inviteFriend({
-      email: email,
-      chatId: chat.chatId,
+    inviteFriend(
+      {
+        email: email,
+        chatId: chat.chatId,
+      },
+      {
+        onSuccess: () =>
+          socket.emit("message", {
+            content: `user has entered the chat`,
+            chatId: chat && chat.chatId,
+            userId: user && user.userId,
+            createdAt: new Date().toISOString(),
+          }),
+      }
+    );
+    setAddFriendMode(false);
+    queryClient.invalidateQueries({
+      queryKey: ["messages", chat?.chatId.toString()],
     });
   }
 
@@ -90,6 +108,32 @@ export default function Messages(props: {
       title: newTitle,
     });
     setEditTitleMode(false);
+  }
+
+  function handleLeaveChat(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const userId = (user && user.userId) || "";
+    const chatId = (chat && chat.chatId) || 0;
+    createMessage(
+      {
+        userId: "notification",
+        chatId: (chat && chat.chatId) || 0,
+        content: `${user?.username} has left the chat`,
+      },
+      {
+        onSuccess: () =>
+          socket.emit("message", {
+            content: `${user?.username} has left the chat`,
+            chatId: chat && chat.chatId,
+            userId: user && user.userId,
+            createdAt: new Date().toISOString(),
+          }),
+      }
+    );
+    leaveChat({ userId, chatId });
+    setLeaveMode(false);
+    setMenuMode(false);
+    setChat(null);
   }
 
   useEffect(() => {
@@ -188,7 +232,7 @@ export default function Messages(props: {
           </div>
         )}
         {menuMode && (
-          <div className="absolute top-10 right-0 bg-black px-10 pb-5">
+          <div className="absolute top-10 right-0 bg-[#202020] px-10 pb-5">
             <div
               onClick={() => setLeaveMode(true)}
               className="py-5 text-red-400 cursor-pointer"
@@ -210,7 +254,10 @@ export default function Messages(props: {
         )}
         {leaveMode && (
           <div>
-            <form className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col">
+            <form
+              onSubmit={handleLeaveChat}
+              className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col"
+            >
               <div className="text-lg font-bold">Leave chat</div>
               <div className="text-sm mb-10">
                 Are you sure you want to leave this chat?
@@ -224,7 +271,10 @@ export default function Messages(props: {
                   >
                     Cancel
                   </button>
-                  <button className="px-3 py-2 bg-red-500 ml-2 text-sm rounded">
+                  <button
+                    type="submit"
+                    className="px-3 py-2 bg-red-500 ml-2 text-sm rounded"
+                  >
                     Leave
                   </button>
                 </div>
@@ -242,7 +292,7 @@ export default function Messages(props: {
           </div>
         )}
         {addFriendMode && (
-          <form className="p-2 flex flex-col w-[300px]">
+          <form onSubmit={handleInvite} className="p-2 flex flex-col w-[300px]">
             <label htmlFor="email" className="font-bold text-xl">
               Add friend
             </label>
