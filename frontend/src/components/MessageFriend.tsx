@@ -1,5 +1,6 @@
 import { Message } from "../../../schemas/messages";
 import { Friend } from "../lib/api/friend";
+import useAuthStore from "../store/AuthStore";
 import profilePic from "/capypaul01.jpg";
 import { FaReply } from "react-icons/fa";
 
@@ -13,21 +14,34 @@ export default function MessageFriend(props: {
 }) {
   const { message, friends, setReplyMode, setFriend, setReplyContent } = props;
   const friend = friends.filter((friend) => friend.userId === message.userId);
+  const { user } = useAuthStore();
 
   return (
     <div>
-      {message.replyContent && (
-        <div className="text-gray-400 pt-2 pl-10">
-          <div className="flex">
-            <img
-              src={profilePic}
-              className="w-[20px] h-[20px]  rounded-full mx-2"
-            />
-            <span className="font-bold pr-2">@{message.replyUserId}</span>{" "}
-            {message.replyContent}
+      {message.replyContent &&
+        (message.replyUserId === user?.userId ? (
+          <div className="text-gray-400 pt-2 pl-10">
+            <div className="flex">
+              <img
+                src={user.profilePic || profilePic}
+                className="w-[20px] h-[20px]  rounded-full mx-2"
+              />
+              <span className="font-bold pr-2">@{user.username}</span>{" "}
+              {message.replyContent}
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-gray-400 pt-2 pl-10">
+            <div className="flex">
+              <img
+                src={profilePic}
+                className="w-[20px] h-[20px]  rounded-full mx-2"
+              />
+              <span className="font-bold pr-2">@{message.replyUserId}</span>{" "}
+              {message.replyContent}
+            </div>
+          </div>
+        ))}
       <div
         className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex hover:bg-slate-800 transition-all ease duration-300 group`}
       >
