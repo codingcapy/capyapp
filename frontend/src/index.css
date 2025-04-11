@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+:root {
+    color-scheme: light;
+}
+
 #main-nav {
     max-height: 0;
     overflow: hidden;
