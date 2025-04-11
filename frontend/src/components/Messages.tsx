@@ -378,6 +378,7 @@ export default function Messages(props: {
                   replyMode={replyMode}
                   setReplyMode={setReplyMode}
                   setReplyContent={setReplyContent}
+                  participants={participants}
                 />
               ) : message.userId === "notification" ? (
                 <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group text-[#b6b6b6]">
@@ -396,6 +397,7 @@ export default function Messages(props: {
                   replyMode={replyMode}
                   setReplyMode={setReplyMode}
                   setReplyContent={setReplyContent}
+                  participants={participants}
                 />
               )}
             </div>

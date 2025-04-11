@@ -18,18 +18,13 @@ export default function MessageComponent(props: {
   replyMode: boolean;
   setReplyMode: (state: boolean) => void;
   setReplyContent: (state: string) => void;
+  participants: Friend[] | undefined;
 }) {
   const { user } = useAuthStore();
-  const {
-    message,
-    friends,
-    replyMode,
-    setReplyMode,
-    setFriend,
-    setReplyContent,
-  } = props;
-  const friendname = friends.filter(
-    (friend) => friend.userId === message.replyUserId
+  const { message, setReplyMode, setFriend, setReplyContent, participants } =
+    props;
+  const participant = participants?.filter(
+    (participant) => participant.userId === message.replyUserId
   );
   const username = user && user.username.toString();
   const [editMode, setEditMode] = useState(false);
@@ -89,7 +84,9 @@ export default function MessageComponent(props: {
                 src={profilePic}
                 className="w-[20px] h-[20px]  rounded-full mx-2"
               />
-              <span className="font-bold pr-2">@{message.replyUserId}</span>{" "}
+              <span className="font-bold pr-2">
+                @{participant && participant[0].username}
+              </span>{" "}
               {message.replyContent}
             </div>
           </div>
@@ -136,7 +133,6 @@ export default function MessageComponent(props: {
           <div className="flex justify-between">
             <div className="flex">
               <div className="font-bold px-1">{username}</div>
-
               <div className="pl-2 text-gray-400">
                 on {message.createdAt.toString().slice(0, 25)}
               </div>

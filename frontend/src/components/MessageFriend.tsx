@@ -11,9 +11,20 @@ export default function MessageFriend(props: {
   replyMode: boolean;
   setReplyMode: (state: boolean) => void;
   setReplyContent: (state: string) => void;
+  participants: Friend[] | undefined;
 }) {
-  const { message, friends, setReplyMode, setFriend, setReplyContent } = props;
+  const {
+    message,
+    friends,
+    setReplyMode,
+    setFriend,
+    setReplyContent,
+    participants,
+  } = props;
   const friend = friends.filter((friend) => friend.userId === message.userId);
+  const participant = participants?.filter(
+    (participant) => participant.userId === message.replyUserId
+  );
   const { user } = useAuthStore();
 
   return (
@@ -37,7 +48,9 @@ export default function MessageFriend(props: {
                 src={profilePic}
                 className="w-[20px] h-[20px]  rounded-full mx-2"
               />
-              <span className="font-bold pr-2">@{message.replyUserId}</span>{" "}
+              <span className="font-bold pr-2">
+                @{participant && participant[0].username}
+              </span>{" "}
               {message.replyContent}
             </div>
           </div>
