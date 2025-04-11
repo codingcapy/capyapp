@@ -22,6 +22,7 @@ import { socket } from "../routes/dashboard";
 import profilePic from "/capypaul01.jpg";
 import capyness from "/capyness.png";
 import { PiSmiley } from "react-icons/pi";
+import emojis from "../emojis/emojis";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -405,38 +406,39 @@ export default function Messages(props: {
       <div className="text-red-400">{notification}</div>
       {emojiMode && (
         <div
-          className={`fixed ${replyMode ? "bottom-[150px]" : "bottom-[100px]"} right-[18%] z-50 grid grid-cols-5 gap-2 text-xl bg-zinc-800 p-3 rounded`}
+          className={`fixed ${replyMode ? "bottom-[170px] md:bottom-[150px]" : "bottom-[150px] md:bottom-[100px]"} right-[13%] md:right-[18%] z-50 grid grid-cols-5 md:grid-cols-9 gap-2 text-xl bg-zinc-800 p-3 rounded`}
           ref={emojisRef}
         >
-          <div>😀</div>
-          <div>😂</div>
-          <div>🤣</div>
-          <div>😅</div>
-          <div>😥</div>
-          <div>😮</div>
-          <div>😛</div>
-          <div>😎</div>
-          <div>😆</div>
-          <div>👍</div>
-          <div>🔥</div>
-          <div>🎉</div>
-          <div>👀</div>
-          <div>🙌</div>
-          <div>👏</div>
-          <div>🙏</div>
-          <div>❤</div>
-          <div>✔</div>
-          <div>🏝</div>
-          <div>😍</div>
-          <div>🥰</div>
-          <div>😡</div>
-          <div>🤬</div>
-          <div>💀</div>
-          <div>☠</div>
+          {emojis.map((emoji) => (
+            <div
+              className="cursor-pointer"
+              onClick={() =>
+                setMessageContent(messageContent.toString() + emoji)
+              }
+            >
+              {emoji}
+            </div>
+          ))}
         </div>
       )}
-      {chat && !replyMode && (
-        <div className="fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] md:bg-[#202020] ">
+      {chat && replyMode && (
+        <div className="fixed bottom-[150px] md:bottom-[100px] left-0 w-[100%] md:left-[30%] md:w-[54%] flex justify-between px-6 pb-2 bg-gray-700">
+          <div className="pt-2 block">
+            Replying to{" "}
+            <span className="font-bold">{friend && friend.username}</span>
+          </div>
+          <div
+            onClick={() => setReplyMode(false)}
+            className="cursor-pointer pt-1"
+          >
+            x
+          </div>
+        </div>
+      )}
+      {chat && (
+        <div
+          className={`fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] md:bg-[#202020] `}
+        >
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
             <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] mr-3 flex">
               <input
@@ -448,43 +450,10 @@ export default function Messages(props: {
               />
               <PiSmiley
                 size={25}
-                onClick={() => setEmojiMode(true)}
+                onClick={() => setEmojiMode(!emojiMode)}
                 className="cursor-pointer"
               />
-              <button>
-                <LuSendHorizontal
-                  size={25}
-                  className="md:hidden text-cyan-600"
-                />
-              </button>
             </div>
-          </form>
-        </div>
-      )}
-      {chat && replyMode && (
-        <div
-          className={`fixed ${replyMode ? "bottom-[100px]" : "bottom-[80px]"} left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] ${replyMode ? "md:h-[132px]" : "md:h-[100px]"} bg-[#040406] md:bg-[#202020] `}
-        >
-          <div className="flex justify-between px-6 pb-2 bg-gray-700">
-            <div className="pt-2">
-              Replying to{" "}
-              <span className="font-bold">{friend && friend.username}</span>
-            </div>
-            <div
-              onClick={() => setReplyMode(false)}
-              className="cursor-pointer pt-1"
-            >
-              x
-            </div>
-          </div>
-          <form onSubmit={handleSubmit} className={`flex mx-5 mt-3 w-[100%]`}>
-            <input
-              type="text"
-              className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] outline-none mr-3"
-              name="messagecontent"
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-            />
             <button>
               <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
             </button>
