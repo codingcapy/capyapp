@@ -124,7 +124,8 @@ export const useInviteFriendMutation = (
     mutationFn: inviteFriend,
     onSettled: (args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["invite"], args });
+      queryClient.invalidateQueries({ queryKey: ["chats"], args });
+      queryClient.invalidateQueries({ queryKey: ["messages"], args });
     },
     onError: (error) => {
       if (onError) {

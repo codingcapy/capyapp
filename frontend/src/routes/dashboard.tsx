@@ -125,7 +125,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex flex-col bg-[#040406] text-white min-h-screen">
+    <div className="flex flex-col bg-[#15151a] text-white min-h-screen">
       <main className="flex-1 relative z-0">
         <div className="md:flex">
           {showFriends && (
@@ -185,7 +185,7 @@ function RouteComponent() {
           </div>
         </div>
       </main>
-      <div className="md:hidden fixed flex justify-between py-5 px-5 z-90  bottom-0 w-screen bg-[#040406]">
+      <div className="md:hidden fixed flex justify-between py-5 px-5 z-90  bottom-0 w-screen bg-[#27272c]">
         <div className="" onClick={() => tappedFriends()}>
           <FaUserFriends size={25} className="text-center mx-2" />
           <p className="text-center text-xs">Friends</p>

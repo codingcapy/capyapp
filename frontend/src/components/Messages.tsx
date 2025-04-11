@@ -107,6 +107,9 @@ export default function Messages(props: {
   function handleInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = (e.target as HTMLFormElement).email.value;
+    const validEmail = friends?.filter((friend) => friend.email === email);
+    if (!validEmail || validEmail.length < 1)
+      return setAddFriendNotification("Invalid email address");
     if (!chat) return;
     inviteFriend(
       {
@@ -233,8 +236,8 @@ export default function Messages(props: {
   };
 
   return (
-    <div className="md:w-[55%] md:h-screen overflow-auto relative md:bg-[#202020]">
-      <div className="fixed top-0 left-0 md:left-[30%] bg-[#040406] md:bg-[#202020] px-5 pt-5 w-screen md:w-[53.9%]">
+    <div className="md:w-[55%] md:h-screen overflow-auto relative bg-[#15151a] md:bg-[#202020]">
+      <div className="fixed top-0 left-0 md:left-[30%] bg-[#15151a] md:bg-[#202020] px-5 pt-5 w-screen md:w-[53.9%]">
         <div className="flex justify-between">
           <div className="flex">
             <IoChatbubbleOutline size={25} className="" />
@@ -446,7 +449,7 @@ export default function Messages(props: {
       )}
       {chat && (
         <div
-          className={`fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#040406] md:bg-[#202020] `}
+          className={`fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#15151a] md:bg-[#202020] `}
         >
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
             <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] mr-3 flex">

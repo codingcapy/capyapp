@@ -26,9 +26,9 @@ export default function Friends(props: {
   }, []);
 
   return (
-    <div className="relative md:w-[15%] md:border-r-[1px] border-zinc-700 md:bg-zinc-900 md:h-screen overflow-auto">
+    <div className="relative md:w-[15%] md:border-r-[1px] border-zinc-700 bg-[#15151a] md:bg-zinc-900 md:h-screen overflow-auto">
       <div
-        className="fixed top-0 left-0 bg-[#040406] md:bg-zinc-900 px-5 pt-5 w-screen md:w-[14%]"
+        className="fixed top-0 left-0 bg-[#15151a] md:bg-zinc-900 px-5 pt-5 w-screen md:w-[14%]"
         onClick={clickedAddFriend}
       >
         <div className="flex">
