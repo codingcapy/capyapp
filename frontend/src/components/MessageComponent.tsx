@@ -2,9 +2,9 @@ import { Message } from "../../../schemas/messages";
 import { Friend } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import profilePic from "/capypaul01.jpg";
-import { MdModeEditOutline } from "react-icons/md";
-import { FaTrashCan } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
+import { FaTrashCan } from "react-icons/fa6";
+import { MdModeEditOutline } from "react-icons/md";
 import { useEffect, useState } from "react";
 import {
   useDeleteMessageMutation,
@@ -20,13 +20,19 @@ export default function MessageComponent(props: {
   setReplyContent: (state: string) => void;
   participants: Friend[] | undefined;
 }) {
-  const { user } = useAuthStore();
-  const { message, setReplyMode, setFriend, setReplyContent, participants } =
-    props;
+  const {
+    message,
+    friends,
+    setReplyMode,
+    setFriend,
+    setReplyContent,
+    participants,
+  } = props;
+  const friend = friends.filter((friend) => friend.userId === message.userId);
   const participant = participants?.filter(
     (participant) => participant.userId === message.replyUserId
   );
-  const username = user && user.username.toString();
+  const { user } = useAuthStore();
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -65,32 +71,43 @@ export default function MessageComponent(props: {
 
   return (
     <div className="hover:bg-zinc-800 group">
-      {message.replyContent &&
-        (message.replyUserId === user?.userId ? (
-          <div className="text-gray-400 pt-2 pl-10">
-            <div className="flex">
-              <img
-                src={user.profilePic || profilePic}
-                className="w-[20px] h-[20px]  rounded-full mx-2"
-              />
-              <span className="font-bold pr-2">@{user.username}</span>{" "}
-              {message.replyContent}
-            </div>
+      {message.replyContent && (
+        <div className="text-gray-400 pt-2 pl-10">
+          <div className="flex">
+            <img
+              src={
+                message.replyUserId === user?.userId
+                  ? user.profilePic !== null
+                    ? user.profilePic
+                    : profilePic
+                  : message.replyUserId === friend[0]?.userId
+                    ? friend[0].profilePic !== null
+                      ? friend[0].profilePic
+                      : profilePic
+                    : participant &&
+                        message.replyUserId === participant[0]?.userId
+                      ? participant[0].profilePic !== null
+                        ? participant[0].profilePic
+                        : profilePic
+                      : profilePic
+              }
+              className="w-[20px] h-[20px]  rounded-full mx-2"
+            />
+            <span className="font-bold pr-2">
+              @
+              {message.replyUserId === user?.userId
+                ? user.username
+                : message.replyUserId === friend[0]?.userId
+                  ? friend[0].username
+                  : participant &&
+                      message.replyUserId === participant[0]?.userId
+                    ? participant[0].username
+                    : ""}
+            </span>{" "}
+            {message.replyContent}
           </div>
-        ) : (
-          <div className="text-gray-400 pt-2 pl-10">
-            <div className="flex">
-              <img
-                src={profilePic}
-                className="w-[20px] h-[20px]  rounded-full mx-2"
-              />
-              <span className="font-bold pr-2">
-                @{participant && participant[0].username}
-              </span>{" "}
-              {message.replyContent}
-            </div>
-          </div>
-        ))}
+        </div>
+      )}
       <div
         className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300`}
       >
@@ -126,13 +143,35 @@ export default function MessageComponent(props: {
           </div>
         )}
         <img
-          src={user?.profilePic ? user.profilePic : profilePic}
+          src={
+            message.userId === user?.userId
+              ? user.profilePic !== null
+                ? user.profilePic
+                : profilePic
+              : message.userId === friend[0]?.userId
+                ? friend[0].profilePic !== null
+                  ? friend[0].profilePic
+                  : profilePic
+                : participant && message.userId === participant[0]?.userId
+                  ? participant[0].profilePic !== null
+                    ? participant[0].profilePic
+                    : profilePic
+                  : profilePic
+          }
           className="w-[40px] h-[40px] rounded-full mr-2"
         />
         <div className="w-[100%]">
           <div className="flex justify-between">
             <div className="flex">
-              <div className="font-bold px-1">{username}</div>
+              <div className="font-bold px-1">
+                {message.userId === user?.userId
+                  ? user.username
+                  : message.userId === friend[0]?.userId
+                    ? friend[0].username
+                    : participant && message.userId === participant[0]?.userId
+                      ? participant[0].username
+                      : ""}
+              </div>
               <div className="pl-2 text-gray-400">
                 on {message.createdAt.toString().slice(0, 25)}
               </div>
@@ -141,25 +180,38 @@ export default function MessageComponent(props: {
               <div
                 onClick={() => {
                   setReplyMode(true);
-                  setFriend(user);
+                  setFriend(
+                    message.userId === user?.userId
+                      ? user
+                      : message.userId === friend[0]?.userId
+                        ? friend[0]
+                        : participant &&
+                            message.userId === participant[0]?.userId
+                          ? participant[0]
+                          : null
+                  );
                   setReplyContent(message.content.toString());
                 }}
                 className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
               >
                 <FaReply size={20} className="" />
               </div>
-              <div
-                onClick={() => setEditMode(true)}
-                className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
-              >
-                <MdModeEditOutline size={20} className="" />
-              </div>
-              <div
-                onClick={() => setDeleteMode(true)}
-                className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
-              >
-                <FaTrashCan size={20} className="text-red-400" />
-              </div>
+              {message.userId === user?.userId && (
+                <div
+                  onClick={() => setEditMode(true)}
+                  className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
+                >
+                  <MdModeEditOutline size={20} className="" />
+                </div>
+              )}
+              {message.userId === user?.userId && (
+                <div
+                  onClick={() => setDeleteMode(true)}
+                  className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
+                >
+                  <FaTrashCan size={20} className="text-red-400" />
+                </div>
+              )}
             </div>
           </div>
           {editMode ? (

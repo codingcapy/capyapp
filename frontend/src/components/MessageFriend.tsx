@@ -45,7 +45,7 @@ export default function MessageFriend(props: {
           <div className="text-gray-400 pt-2 pl-10">
             <div className="flex">
               <img
-                src={profilePic}
+                src={(participant && participant[0].profilePic) || profilePic}
                 className="w-[20px] h-[20px]  rounded-full mx-2"
               />
               <span className="font-bold pr-2">

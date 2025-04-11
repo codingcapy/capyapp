@@ -370,17 +370,7 @@ export default function Messages(props: {
           ?.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
           .map((message, i) => (
             <div className="text-white" key={message.messageId || `live-${i}`}>
-              {user && message.userId === user.userId ? (
-                <MessageComponent
-                  message={message}
-                  friends={friends || []}
-                  setFriend={setFriend}
-                  replyMode={replyMode}
-                  setReplyMode={setReplyMode}
-                  setReplyContent={setReplyContent}
-                  participants={participants}
-                />
-              ) : message.userId === "notification" ? (
+              {message.userId === "notification" ? (
                 <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group text-[#b6b6b6]">
                   <div className="w-[100%]">
                     <div className="font-bold px-1">notification</div>
@@ -390,7 +380,7 @@ export default function Messages(props: {
                   </div>
                 </div>
               ) : (
-                <MessageFriend
+                <MessageComponent
                   message={message}
                   friends={friends || []}
                   setFriend={setFriend}
