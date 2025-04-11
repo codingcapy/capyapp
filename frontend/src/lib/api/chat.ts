@@ -55,16 +55,16 @@ async function createChat(args: CreateChatArgs) {
   }
   const result = await res.json();
   console.log("Parsed API Response:", result);
-  return result;
+  return result.user;
 }
 
 export const useCreateChatMutation = (onError?: (message: string) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createChat,
-    onSettled: (args) => {
+    onSettled: (_data, _error, args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["chats"], args });
+      queryClient.invalidateQueries({ queryKey: ["chats", args.userId] });
     },
     onError: (error) => {
       if (onError) {
@@ -78,7 +78,6 @@ async function getChatsByUserId(userId: string) {
   const res = await client.api.v0.chats[":userId"].$get({
     param: { userId: userId.toString() },
   });
-
   if (!res.ok) {
     throw new Error("Error getting chats by userId");
   }
@@ -139,7 +138,6 @@ async function getParticipantsByChatId(id: string) {
   const res = await client.api.v0.chats.participants[":chatId"].$get({
     param: { chatId: id.toString() },
   });
-
   if (!res.ok) {
     throw new Error("Error getting friends by userEmail");
   }

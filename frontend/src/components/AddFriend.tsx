@@ -35,8 +35,8 @@ export default function AddFriend(props: { friends: Friend[] | undefined }) {
   }
 
   return (
-    <div className="md:w-[55%] md:border-r md:h-screen overflow-auto">
-      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#040406] p-5 w-screen md:w-[54%]">
+    <div className="md:w-[55%] md:h-screen bg-[#15151a] md:bg-[#202020] overflow-auto">
+      <div className="fixed top-0 left-0 md:left-[30%] flex bg-[#15151a] md:bg-[#202020] p-5 w-screen md:w-[54%]">
         <FaUserFriends size={25} className="" />
         <div className="ml-2 text-xl">Add Friend</div>
       </div>

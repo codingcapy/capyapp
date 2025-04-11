@@ -155,7 +155,13 @@ function RouteComponent() {
           )}
           {showProfile && <Profile />}
           {showAddFriend && <AddFriend friends={friends} />}
-          {showFriend && <FriendProfile friend={friend} />}
+          {showFriend && (
+            <FriendProfile
+              friend={friend}
+              chats={chats}
+              clickedChat={clickedChat}
+            />
+          )}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">
             <div
               className="flex p-10 md:p-3 md:my-2 md:mx-4 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
