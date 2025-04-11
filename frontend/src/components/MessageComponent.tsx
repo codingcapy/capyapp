@@ -23,8 +23,11 @@ export default function MessageComponent(props: {
   const { user } = useAuthStore();
   const { message, setReplyMode, setFriend, setReplyContent, participants } =
     props;
-  const participant = participants?.filter(
+  const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
+  );
+  const participant = participants?.filter(
+    (participant) => participant.userId === message.userId
   );
   const username = user && user.username.toString();
   const [editMode, setEditMode] = useState(false);
@@ -81,11 +84,14 @@ export default function MessageComponent(props: {
           <div className="text-gray-400 pt-2 pl-10">
             <div className="flex">
               <img
-                src={profilePic}
+                src={
+                  (participantReply && participantReply[0].profilePic) ||
+                  profilePic
+                }
                 className="w-[20px] h-[20px]  rounded-full mx-2"
               />
               <span className="font-bold pr-2">
-                @{participant && participant[0].username}
+                @{participantReply && participantReply[0].username}
               </span>{" "}
               {message.replyContent}
             </div>

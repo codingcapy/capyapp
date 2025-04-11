@@ -22,8 +22,11 @@ export default function MessageFriend(props: {
     participants,
   } = props;
   const friend = friends.filter((friend) => friend.userId === message.userId);
-  const participant = participants?.filter(
+  const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
+  );
+  const participant = participants?.filter(
+    (participant) => participant.userId === message.userId
   );
   const { user } = useAuthStore();
 
@@ -45,11 +48,14 @@ export default function MessageFriend(props: {
           <div className="text-gray-400 pt-2 pl-10">
             <div className="flex">
               <img
-                src={(participant && participant[0].profilePic) || profilePic}
+                src={
+                  (participantReply && participantReply[0].profilePic) ||
+                  profilePic
+                }
                 className="w-[20px] h-[20px]  rounded-full mx-2"
               />
               <span className="font-bold pr-2">
-                @{participant && participant[0].username}
+                @{participantReply && participantReply[0].username}
               </span>{" "}
               {message.replyContent}
             </div>
@@ -59,14 +65,20 @@ export default function MessageFriend(props: {
         className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300`}
       >
         <img
-          src={(friend[0] !== undefined && friend[0].profilePic) || profilePic}
+          src={
+            friend[0]?.profilePic ?? participant?.[0]?.profilePic ?? profilePic
+          }
           className="w-[40px] h-[40px] rounded-full mr-2"
         />
         <div className="w-[100%]">
           <div className="flex justify-between">
             <div className="flex">
               <div className="font-bold px-1">
-                {(friend[0] !== undefined && friend[0].username) || ""}
+                {friend[0] !== undefined
+                  ? friend[0].username
+                  : participant !== undefined
+                    ? participant[0].username
+                    : ""}
               </div>
               <div className="pl-2 text-gray-400">
                 on {message.createdAt.toString().slice(0, 25)}
