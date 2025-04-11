@@ -16,6 +16,8 @@ import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
 import { getChatsByUserIdQueryOptions } from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
+import profilePic from "/capypaul01.jpg";
+import useParticipantStore from "../store/ParticipantStore";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -49,6 +51,7 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
+  const { participants } = useParticipantStore();
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -155,12 +158,30 @@ function RouteComponent() {
           {showFriend && <FriendProfile friend={friend} />}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">
             <div
-              className="flex p-10 md:py-5 md:px-7 cursor-pointer"
+              className="flex p-10 md:p-3 md:my-2 md:mx-4 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
               onClick={clickedProfile}
             >
               <CgProfile size={25} className="" />
               <div className="ml-2 text-xl">{user && user.username}</div>
             </div>
+            {chat && (
+              <div className="pl-[30px] pt-[20px]">
+                <div className="text-xl pb-2">Participants</div>
+                {participants?.map((participant) => (
+                  <div
+                    className="flex pl-1 hover:bg-zinc-800 cursor-pointer"
+                    key={participant.userId}
+                  >
+                    <img
+                      src={participant.profilePic || profilePic}
+                      alt=""
+                      className="w-[25px] h-[25px] rounded-full mt-2"
+                    />
+                    <div className="p-2">{participant.username}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>

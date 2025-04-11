@@ -23,6 +23,7 @@ import profilePic from "/capypaul01.jpg";
 import capyness from "/capyness.png";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
+import useParticipantStore from "../store/ParticipantStore";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -58,6 +59,7 @@ export default function Messages(props: {
   const queryClient = useQueryClient();
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const emojisRef = useRef<HTMLDivElement>(null);
+  const { setParticipants } = useParticipantStore();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -206,6 +208,12 @@ export default function Messages(props: {
     };
   }, []);
 
+  useEffect(() => {
+    if (participants) {
+      setParticipants(participants);
+    }
+  }, [participants]);
+
   const handleClickOutside = (event: MouseEvent) => {
     if (
       titleInputRef.current &&
@@ -277,14 +285,14 @@ export default function Messages(props: {
           <div className="absolute top-10 right-0 bg-[#202020] px-10 pb-5">
             <div
               onClick={() => setLeaveMode(true)}
-              className="my-3 py-2 pl-1 text-red-400  hover:bg-zinc-800 cursor-pointer"
+              className="my-3 p-2 text-red-400  hover:bg-zinc-800 cursor-pointer"
             >
               Leave chat
             </div>
-            <div className="text-xl pb-2">Participants</div>
+            <div className="md:hidden text-xl pb-2">Participants</div>
             {participants?.map((participant) => (
               <div
-                className="flex pl-1 hover:bg-zinc-800 cursor-pointer"
+                className="md:hidden flex pl-1 hover:bg-zinc-800 cursor-pointer"
                 key={participant.userId}
               >
                 <img
@@ -381,10 +389,9 @@ export default function Messages(props: {
                   participants={participants}
                 />
               ) : message.userId === "notification" ? (
-                <div className="p-3 flex hover:bg-slate-800 transition-all ease duration-300 group text-[#b6b6b6]">
-                  <div className="w-[100%]">
-                    <div className="font-bold px-1">notification</div>
-                    <div className="overflow-wrap break-word">
+                <div className="p-3 flex text-[#b6b6b6]">
+                  <div className="w-[100%] text-center">
+                    <div className="overflow-wrap break-word italic">
                       {message.content}
                     </div>
                   </div>

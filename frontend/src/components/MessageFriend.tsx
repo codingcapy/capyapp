@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { Message } from "../../../schemas/messages";
 import { Friend } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import profilePic from "/capypaul01.jpg";
 import { FaReply } from "react-icons/fa";
+import { useQuery } from "@tanstack/react-query";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -29,6 +31,18 @@ export default function MessageFriend(props: {
     (participant) => participant.userId === message.userId
   );
   const { user } = useAuthStore();
+  const [externalUser, setExternalUser] = useState<Friend | null>(null);
+
+  useEffect(() => {
+    function getExternalUser() {
+      if (friend) return;
+      if (participant) return;
+      // use query to fetch external user
+      // set external user to result
+      // display external user info
+    }
+    getExternalUser();
+  }, []);
 
   return (
     <div className="hover:bg-zinc-800 group">
