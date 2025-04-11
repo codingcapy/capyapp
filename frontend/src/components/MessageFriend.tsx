@@ -17,7 +17,7 @@ export default function MessageFriend(props: {
   const { user } = useAuthStore();
 
   return (
-    <div className="hover:bg-zinc-800">
+    <div className="hover:bg-zinc-800 group">
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">
@@ -43,7 +43,7 @@ export default function MessageFriend(props: {
           </div>
         ))}
       <div
-        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300 group`}
+        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300`}
       >
         <img
           src={(friend[0] !== undefined && friend[0].profilePic) || profilePic}
