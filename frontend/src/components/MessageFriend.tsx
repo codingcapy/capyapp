@@ -4,12 +4,13 @@ import { Friend } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import profilePic from "/capypaul01.jpg";
 import { FaReply } from "react-icons/fa";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserByUserIdQueryOptions } from "../lib/api/chat";
 
 export default function MessageFriend(props: {
   message: Message;
   friends: Friend[];
-  setFriend: (state: Friend) => void;
+  setFriend: (state: Friend | null) => void;
   replyMode: boolean;
   setReplyMode: (state: boolean) => void;
   setReplyContent: (state: string) => void;
@@ -23,26 +24,28 @@ export default function MessageFriend(props: {
     setReplyContent,
     participants,
   } = props;
-  const friend = friends.filter((friend) => friend.userId === message.userId);
-  const participantReply = participants?.filter(
+  const friend = friends.find((friend) => friend.userId === message.userId);
+  const participantReply = participants?.find(
     (participant) => participant.userId === message.replyUserId
   );
-  const participant = participants?.filter(
+  const participant = participants?.find(
     (participant) => participant.userId === message.userId
   );
   const { user } = useAuthStore();
-  const [externalUser, setExternalUser] = useState<Friend | null>(null);
+  const queryClient = useQueryClient();
+
+  const isExternal = !friend && !participant && message.userId !== user?.userId;
+
+  const { data: externalUser, isSuccess: hasExternalUser } = useQuery({
+    ...getUserByUserIdQueryOptions(message.userId),
+    enabled: isExternal, // Only run this query if the user isn't already known
+  });
 
   useEffect(() => {
-    function getExternalUser() {
-      if (friend) return;
-      if (participant) return;
-      // use query to fetch external user
-      // set external user to result
-      // display external user info
+    if (friend || participant) {
+      queryClient.invalidateQueries({ queryKey: ["users", message.userId] });
     }
-    getExternalUser();
-  }, []);
+  }, [friend, participant, message.userId, queryClient]);
 
   return (
     <div className="hover:bg-zinc-800 group">
@@ -63,13 +66,13 @@ export default function MessageFriend(props: {
             <div className="flex">
               <img
                 src={
-                  (participantReply && participantReply[0].profilePic) ||
+                  (participantReply && participantReply.profilePic) ||
                   profilePic
                 }
                 className="w-[20px] h-[20px]  rounded-full mx-2"
               />
               <span className="font-bold pr-2">
-                @{participantReply && participantReply[0].username}
+                @{participantReply && participantReply.username}
               </span>{" "}
               {message.replyContent}
             </div>
@@ -80,7 +83,10 @@ export default function MessageFriend(props: {
       >
         <img
           src={
-            friend[0]?.profilePic ?? participant?.[0]?.profilePic ?? profilePic
+            friend?.profilePic ??
+            participant?.profilePic ??
+            externalUser?.profilePic ??
+            profilePic
           }
           className="w-[40px] h-[40px] rounded-full mr-2"
         />
@@ -88,11 +94,13 @@ export default function MessageFriend(props: {
           <div className="flex justify-between">
             <div className="flex">
               <div className="font-bold px-1">
-                {friend[0] !== undefined
-                  ? friend[0].username
+                {friend !== undefined
+                  ? friend.username
                   : participant !== undefined
-                    ? participant[0].username
-                    : ""}
+                    ? participant.username
+                    : externalUser
+                      ? externalUser.username
+                      : ""}
               </div>
               <div className="pl-2 text-gray-400">
                 on {message.createdAt.toString().slice(0, 25)}
@@ -101,7 +109,7 @@ export default function MessageFriend(props: {
             <div
               onClick={() => {
                 setReplyMode(true);
-                setFriend(friend[0]);
+                setFriend(friend || null);
                 setReplyContent(message.content.toString());
               }}
               className="cursor-pointer px-2 pr-5 hidden group-hover:flex opacity-100 transition-opacity"
