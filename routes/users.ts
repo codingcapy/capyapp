@@ -76,7 +76,6 @@ export const usersRouter = new Hono()
   .get(async (c) => {
     const { error: usersQueryError, result: usersQueryResult } =
       await mightFail(db.select().from(usersTable));
-
     if (usersQueryError) {
       throw new HTTPException(500, {
         message: "Error while fetching users",
@@ -172,4 +171,30 @@ export const usersRouter = new Hono()
       }
       return c.json({ newUser: newUserResult[0] }, 200);
     }
-  );
+  )
+  .get("/:userId", async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json({ error: "userId parameter is required." }, 400);
+    }
+    const { result: userQueryResult, error: userQueryError } = await mightFail(
+      db
+        .select({
+          userId: usersTable.userId,
+          username: usersTable.username,
+          email: usersTable.email,
+          password: usersTable.password,
+          profilePic: usersTable.profilePic,
+          createdAt: usersTable.createdAt,
+        })
+        .from(usersTable)
+        .where(eq(usersTable.userId, userId))
+    );
+    if (userQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching user chats.",
+        cause: userQueryError,
+      });
+    }
+    return c.json({ fetchedUser: userQueryResult });
+  });

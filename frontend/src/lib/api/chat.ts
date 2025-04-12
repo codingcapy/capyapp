@@ -153,6 +153,23 @@ export const getParticipantsByChatIdQueryOptions = (args: string) =>
     queryFn: () => getParticipantsByChatId(args),
   });
 
+async function getUserByUserId(id: string) {
+  const res = await client.api.v0.users[":userId"].$get({
+    param: { userId: id.toString() },
+  });
+  if (!res.ok) {
+    throw new Error("Error getting user by userId");
+  }
+  const { fetchedUser } = await res.json();
+  return mapSerializedFriendToSchema(fetchedUser[0]);
+}
+
+export const getUserByUserIdQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["users", args],
+    queryFn: () => getUserByUserId(args),
+  });
+
 async function updateTitle(args: UpdateTitleArgs) {
   const res = await client.api.v0.chats.update.$post({
     json: args,
