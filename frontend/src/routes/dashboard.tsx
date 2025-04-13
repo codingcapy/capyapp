@@ -92,6 +92,7 @@ function RouteComponent() {
     setShowProfile(true);
     setShowAddFriend(false);
     setShowFriend(false);
+    setChat(null);
   }
 
   function clickedAddFriend() {
@@ -112,6 +113,7 @@ function RouteComponent() {
     setShowProfile(false);
     setShowFriends(window.innerWidth < 760 ? false : true);
     setShowChats(window.innerWidth < 760 ? false : true);
+    setChat(null);
   }
 
   function clickedChat(currentChat: Chat) {
