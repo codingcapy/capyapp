@@ -175,6 +175,7 @@ function RouteComponent() {
                 <div className="text-xl pb-2">Participants</div>
                 {participants?.map((participant) => (
                   <div
+                    onClick={() => clickedFriend(participant)}
                     className="flex pl-1 hover:bg-zinc-800 cursor-pointer"
                     key={participant.userId}
                   >
