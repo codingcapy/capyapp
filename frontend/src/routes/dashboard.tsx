@@ -160,6 +160,7 @@ function RouteComponent() {
           {showFriend && (
             <FriendProfile
               friend={friend}
+              friends={friends}
               chats={chats}
               clickedChat={clickedChat}
             />

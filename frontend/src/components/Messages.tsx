@@ -423,7 +423,7 @@ export default function Messages(props: {
         >
           {emojis.map((emoji) => (
             <div
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-zinc-700"
               onClick={() =>
                 setMessageContent(messageContent.toString() + emoji)
               }
