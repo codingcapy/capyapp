@@ -263,6 +263,7 @@ function sendResetPasswordEmail(
         user: "capychat1@gmail.com",
         pass: process.env.EMAIL_PASSWORD,
       },
+      connectionTimeout: 10_000,
     });
     const mail_configs = {
       from: "CapyApp <capychat1@gmail.com>",
@@ -305,6 +306,7 @@ function sendResetPasswordEmail(
       </html>`,
     };
     transporter.sendMail(mail_configs, function (error, info) {
+      console.log("sendMail callback hit");
       if (error) {
         console.log(error);
         return reject({ message: `An error has occured` });
