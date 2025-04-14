@@ -237,11 +237,6 @@ export const usersRouter = new Hono()
       } catch (err) {
         console.log(err);
       }
-      sendResetPasswordEmail(
-        updateValues.email,
-        newUserResult[0].username,
-        newPassword.toString()
-      );
       return c.json({ newUser: newUserResult[0] }, 200);
     }
   );
@@ -252,7 +247,6 @@ function sendResetPasswordEmail(
   newPassword: string
 ) {
   console.log("email is being sent");
-  console.log(process.env.EMAIL_PASSWORD);
   return new Promise((resolve, reject) => {
     var transporter = nodemailer.createTransport({
       service: "gmail",
