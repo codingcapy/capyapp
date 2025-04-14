@@ -242,6 +242,7 @@ function sendResetPasswordEmail(
   username: string,
   newPassword: string
 ) {
+  console.log("email is being sent");
   return new Promise((resolve, reject) => {
     var transporter = nodemailer.createTransport({
       service: "gmail",

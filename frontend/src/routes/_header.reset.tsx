@@ -14,6 +14,7 @@ function RouteComponent() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = (e.target as HTMLFormElement).email.value;
+    console.log(email);
     sendPasswordEmail(
       { email },
       {
