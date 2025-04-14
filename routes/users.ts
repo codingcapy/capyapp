@@ -260,13 +260,13 @@ function sendResetPasswordEmail(
       port: 465,
       secure: true,
       auth: {
-        user: "capychat1@gmail.com",
+        user: "capyapp8@gmail.com",
         pass: process.env.EMAIL_PASSWORD,
       },
       connectionTimeout: 10_000,
     });
     const mail_configs = {
-      from: "CapyApp <capychat1@gmail.com>",
+      from: "CapyApp <capyapp8@gmail.com>",
       to: email,
       subject: "CapyApp Password Recovery",
       html: `<!DOCTYPE html>
