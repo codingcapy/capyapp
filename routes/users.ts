@@ -251,8 +251,8 @@ function sendResetPasswordEmail(
     var transporter = nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: {
         user: "capyapp8@gmail.com",
         pass: process.env.EMAIL_PASSWORD,
@@ -268,7 +268,6 @@ function sendResetPasswordEmail(
       <head>
           <meta charset="UTF-8">
           <title>CapyApp - Password Recovery</title>
-          <script src="https://cdn.tailwindcss.com"></script>
       </head>
       <body>
           <!-- partial:index.partial.html -->
