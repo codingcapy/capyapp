@@ -1,12 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSendPasswordEmailMutation } from "../lib/api/user";
+import { useState } from "react";
 
 export const Route = createFileRoute("/_header/reset")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { mutate: sendPasswordEmail } = useSendPasswordEmailMutation();
+  const [notification, setNotification] = useState("");
+  const [successNotification, setSuccessNotification] = useState("");
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const email = (e.target as HTMLFormElement).email.value;
+    sendPasswordEmail(
+      { email },
+      {
+        onSuccess: () => {
+          setNotification("");
+          setSuccessNotification("Email sent! Check your email.");
+        },
+        onError: (errorMessage) => setNotification(errorMessage.toString()),
+      }
+    );
   }
 
   return (
@@ -45,6 +62,10 @@ function RouteComponent() {
                 Log in
               </Link>
             </div>
+          </div>
+          <div className="text-red-400 text-center">{notification}</div>
+          <div className="text-green-400 text-center">
+            {successNotification}
           </div>
         </div>
       </div>

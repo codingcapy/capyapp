@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { randomUUIDv7 } from "bun";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
+import nodemailer from "nodemailer";
 
 const scryptAsync = promisify(scrypt);
 
@@ -197,4 +198,107 @@ export const usersRouter = new Hono()
       });
     }
     return c.json({ fetchedUser: userQueryResult });
+  })
+  .post(
+    "/reset/password",
+    zValidator(
+      "json",
+      createInsertSchema(usersTable).omit({
+        userId: true,
+        username: true,
+        password: true,
+        profilePic: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const updateValues = c.req.valid("json");
+      const newPassword = Math.floor(100000 + Math.random() * 900000);
+      const encrypted = await hashPassword(newPassword.toString());
+      const { error: queryError, result: newUserResult } = await mightFail(
+        db
+          .update(usersTable)
+          .set({ password: encrypted })
+          .where(eq(usersTable.email, updateValues.email))
+          .returning()
+      );
+      if (queryError) {
+        throw new HTTPException(500, {
+          message: "Error updating users table",
+          cause: queryError,
+        });
+      }
+      sendResetPasswordEmail(
+        updateValues.email,
+        newUserResult[0].username,
+        newPassword.toString()
+      );
+      return c.json({ newUser: newUserResult[0] }, 200);
+    }
+  );
+
+function sendResetPasswordEmail(
+  email: string,
+  username: string,
+  newPassword: string
+) {
+  return new Promise((resolve, reject) => {
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "capychat1@gmail.com",
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+    const mail_configs = {
+      from: "capychat1@gmail.com",
+      to: email,
+      subject: "CapyApp Password Recovery",
+      html: `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <title>CapyApp - Password Recovery</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+      </head>
+      <body>
+          <!-- partial:index.partial.html -->
+          <div
+              style="font-family: Helvetica,Arial,sans-serif;display:flex;flex-direction: column; min-height: 100vh; background-color: #040406; color: white;">
+              <div style="flex:1; margin:50px auto;width:70%;padding:20px 0">
+                  <div style="">
+                      <a href="https://capyapp-production.up.railway.app/"
+                          style="font-size:1.4em;color: rgb(19, 171, 209);text-decoration:none;font-weight:600">CapyApp</a>
+                  </div>
+                  <p style="padding-top: 20px;padding-bottom: 20px;">Hi ${username},</p>
+                  <p>We received a request to reset your password. Your temporary password is:</p>
+                  <h2 style="padding-top: 10px;padding-bottom: 10px;color: rgb(19, 171, 209);">
+                      ${newPassword}</h2>
+                  <p>Please ensure to change to a new, more secure password after logging in by navigating to your Profile.
+                  </p>
+                  <p>Please continue to enjoy <a href="https://capyapp-production.up.railway.app/"
+                          style="color: rgb(19, 171, 209);text-decoration:none;">CapyApp</a>
+                      here :)
+                  </p>
+                  <p style="padding-top: 20px;padding-bottom: 20px;">Regards,</p>
+                  <p style="font-size: large;">CapyApp</p>
+                  <img src="https://capyapp-production.up.railway.app/capyness.png" alt=""
+                      style="width:35px;height:35px; margin-top: 10px;">
+              </div>
+          </div>
+          <!-- partial -->
+      </body>
+      </html>`,
+    };
+    transporter.sendMail(mail_configs, function (error, info) {
+      if (error) {
+        console.log(error);
+        return reject({ message: `An error has occured` });
+      }
+      return resolve({ message: "Email sent succesfuly" });
+    });
   });
+}
