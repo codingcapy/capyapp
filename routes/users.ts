@@ -228,6 +228,15 @@ export const usersRouter = new Hono()
           cause: queryError,
         });
       }
+      try {
+        await sendResetPasswordEmail(
+          updateValues.email,
+          newUserResult[0].username,
+          newPassword.toString()
+        );
+      } catch (err) {
+        console.log(err);
+      }
       sendResetPasswordEmail(
         updateValues.email,
         newUserResult[0].username,
@@ -243,6 +252,7 @@ function sendResetPasswordEmail(
   newPassword: string
 ) {
   console.log("email is being sent");
+  console.log(process.env.EMAIL_PASSWORD);
   return new Promise((resolve, reject) => {
     var transporter = nodemailer.createTransport({
       service: "gmail",
@@ -299,6 +309,7 @@ function sendResetPasswordEmail(
         console.log(error);
         return reject({ message: `An error has occured` });
       }
+      console.log("Email sent successfully");
       return resolve({ message: "Email sent succesfuly" });
     });
   });
