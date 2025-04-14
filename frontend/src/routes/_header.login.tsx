@@ -62,12 +62,20 @@ function RouteComponent() {
               LOGIN
             </button>
             <div className="mx-auto">
-              Don't have an accountt?{" "}
+              Don't have an account?{" "}
               <Link to="/signup" className="font-bold">
                 Sign up
               </Link>
             </div>
           </form>
+          <div className="flex flex-col">
+            <div className="mx-auto">
+              Forgot password?{" "}
+              <Link to="/reset" className="font-bold">
+                Reset
+              </Link>
+            </div>
+          </div>
           <div className="text-red-400 text-center">{notification}</div>
           <div className="text-center">{loadingNotification}</div>
         </div>
