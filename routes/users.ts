@@ -254,7 +254,7 @@ function sendResetPasswordEmail(
       },
     });
     const mail_configs = {
-      from: "capychat1@gmail.com",
+      from: "CapyApp <capychat1@gmail.com>",
       to: email,
       subject: "CapyApp Password Recovery",
       html: `<!DOCTYPE html>
