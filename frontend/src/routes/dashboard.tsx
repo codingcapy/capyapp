@@ -153,6 +153,7 @@ function RouteComponent() {
               friends={friends}
               friend={friend}
               setFriend={setFriend}
+              clickedFriend={clickedFriend}
             />
           )}
           {showProfile && <Profile />}

@@ -32,8 +32,10 @@ export default function Messages(props: {
   friends: Friend[] | undefined;
   friend: Friend | null;
   setFriend: (state: Friend | null) => void;
+  clickedFriend: (state: Friend) => void;
 }) {
-  const { chat, user, friends, friend, setFriend, setChat } = props;
+  const { chat, user, friends, friend, setFriend, setChat, clickedFriend } =
+    props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -295,6 +297,7 @@ export default function Messages(props: {
             <div className="md:hidden text-xl pb-2">Participants</div>
             {participants?.map((participant) => (
               <div
+                onClick={() => clickedFriend(participant)}
                 className="md:hidden flex pl-1 hover:bg-zinc-800 cursor-pointer"
                 key={participant.userId}
               >

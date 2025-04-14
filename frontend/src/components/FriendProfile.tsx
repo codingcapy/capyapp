@@ -21,6 +21,7 @@ export default function FriendProfile(props: {
   const queryClient = useQueryClient();
   const isFriend =
     friends && friends.find((x) => friend && x.userId == friend.userId);
+  const isUser = friend && friend.userId === user?.userId;
   const [notification, setNotification] = useState("");
   const [successNotification, setSuccessNotification] = useState("");
 
@@ -77,7 +78,7 @@ export default function FriendProfile(props: {
           src={friend?.profilePic ? friend.profilePic : profilePic}
           className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2"
         />
-        {isFriend && (
+        {isFriend && !isUser && (
           <button
             className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300"
             onClick={handleSubmit}
@@ -85,7 +86,7 @@ export default function FriendProfile(props: {
             Start chat
           </button>
         )}
-        {!isFriend && (
+        {!isFriend && !isUser && (
           <form onSubmit={handleAddFriend}>
             <button className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
               Add friend
