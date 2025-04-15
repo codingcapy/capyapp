@@ -167,4 +167,24 @@ export const userFriendsRouter = new Hono()
       }
       return c.json({ newUser: newUserResult[0] }, 200);
     }
-  );
+  )
+  .get("/userfriends/:userEmail", async (c) => {
+    const userEmailString = c.req.param("userEmail");
+    if (!userEmailString) {
+      return c.json({ error: "userEmail parameter is required." }, 400);
+    }
+    const { result: userFriendQueryResult, error: userFriendQueryError } =
+      await mightFail(
+        db
+          .select()
+          .from(userFriendsTable)
+          .where(eq(userFriendsTable.userEmail, userEmailString))
+      );
+    if (userFriendQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching user friends.",
+        cause: userFriendQueryError,
+      });
+    }
+    return c.json({ userFriends: userFriendQueryResult });
+  });

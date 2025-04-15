@@ -7,14 +7,16 @@ import { socket } from "../routes/dashboard";
 import { Chat } from "../../../schemas/chats";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { UserFriend } from "../../../schemas/userfriends";
 
 export default function FriendProfile(props: {
   friend: Friend | null;
   friends: Friend[] | undefined;
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
+  userFriends: UserFriend[] | undefined;
 }) {
-  const { friend, friends, chats, clickedChat } = props;
+  const { friend, friends, chats, clickedChat, userFriends } = props;
   const { user } = useAuthStore();
   const { mutate: createChat } = useCreateChatMutation();
   const { mutate: createFriend } = useCreateFriendMutation();
@@ -24,6 +26,11 @@ export default function FriendProfile(props: {
   const isUser = friend && friend.userId === user?.userId;
   const [notification, setNotification] = useState("");
   const [successNotification, setSuccessNotification] = useState("");
+  const userFriend =
+    userFriends &&
+    friend &&
+    userFriends?.find((userFriend) => friend?.email == userFriend?.userEmail);
+  const isBlocked = userFriend && userFriend.blocked;
 
   function handleSubmit() {
     const title = `${user && user.username}, ${friend && friend.username}`;
@@ -78,7 +85,7 @@ export default function FriendProfile(props: {
           src={friend?.profilePic ? friend.profilePic : profilePic}
           className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2"
         />
-        {isFriend && !isUser && (
+        {isFriend && !isUser && !isBlocked && (
           <button
             className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300"
             onClick={handleSubmit}
@@ -106,9 +113,14 @@ export default function FriendProfile(props: {
             </span>
           </div>
         </div>
-        {isFriend && !isUser && (
+        {isFriend && !isUser && !isBlocked && (
           <button className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded">
             Block
+          </button>
+        )}
+        {isFriend && !isUser && isBlocked && (
+          <button className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded">
+            Blocked
           </button>
         )}
       </div>

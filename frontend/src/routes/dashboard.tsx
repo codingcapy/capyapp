@@ -9,7 +9,10 @@ import Chats from "../components/Chats";
 import Messages from "../components/Messages";
 import Profile from "../components/Profile";
 import AddFriend from "../components/AddFriend";
-import { getFriendsByEmailQueryOptions } from "../lib/api/friend";
+import {
+  getFriendsByEmailQueryOptions,
+  getUserFriendsByEmailQueryOptions,
+} from "../lib/api/friend";
 import { useQuery } from "@tanstack/react-query";
 import io from "socket.io-client";
 import { Friend } from "../lib/api/friend";
@@ -45,6 +48,9 @@ function RouteComponent() {
   const [showFriend, setShowFriend] = useState(false);
   const { data: friends } = useQuery(
     getFriendsByEmailQueryOptions(user?.email || "")
+  );
+  const { data: userFriends } = useQuery(
+    getUserFriendsByEmailQueryOptions(user?.email || "")
   );
   const {
     data: chats,
@@ -135,6 +141,7 @@ function RouteComponent() {
               clickedAddFriend={clickedAddFriend}
               clickedFriend={clickedFriend}
               friends={friends}
+              userFriends={userFriends}
             />
           )}
           <div
@@ -164,6 +171,7 @@ function RouteComponent() {
               friends={friends}
               chats={chats}
               clickedChat={clickedChat}
+              userFriends={userFriends}
             />
           )}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">

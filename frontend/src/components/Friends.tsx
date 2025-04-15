@@ -5,13 +5,15 @@ import { socket } from "../routes/dashboard";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../store/AuthStore";
+import { UserFriend } from "../../../schemas/userfriends";
 
 export default function Friends(props: {
   clickedAddFriend: () => void;
   clickedFriend: (currentFriend: Friend) => void;
   friends: Friend[] | undefined;
+  userFriends: UserFriend[] | undefined;
 }) {
-  const { clickedAddFriend, clickedFriend, friends } = props;
+  const { clickedAddFriend, clickedFriend, friends, userFriends } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
 

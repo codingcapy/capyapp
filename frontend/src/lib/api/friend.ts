@@ -132,10 +132,10 @@ export const useBlockUserMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: blockUser,
-    onSettled: (newUser) => {
-      if (!newUser) return;
+    onSettled: (newUserFriend) => {
+      if (!newUserFriend) return;
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: ["userfriends", newUserFriend.userEmail],
       });
     },
   });
@@ -157,11 +157,31 @@ export const useUnblockUserMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: unblockUser,
-    onSettled: (newUser) => {
-      if (!newUser) return;
+    onSettled: (newUserFriend) => {
+      if (!newUserFriend) return;
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: ["userfriends", newUserFriend.userEmail],
       });
     },
   });
 };
+
+async function getUserFriendsByEmail(email: string) {
+  const res = await client.api.v0.friends.userfriends[":userEmail"].$get({
+    param: { userEmail: email.toString() },
+  });
+
+  if (!res.ok) {
+    throw new Error("Error getting friends by userEmail");
+  }
+  const { userFriends } = await res.json();
+  return userFriends.map((userFriend) =>
+    mapSerializedUserFriendToSchema(userFriend)
+  );
+}
+
+export const getUserFriendsByEmailQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["userfriends", args],
+    queryFn: () => getUserFriendsByEmail(args),
+  });
