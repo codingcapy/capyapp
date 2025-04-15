@@ -6,7 +6,7 @@ import { zValidator } from "@hono/zod-validator";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const userFriendsRouter = new Hono()
   .post(
@@ -99,4 +99,72 @@ export const userFriendsRouter = new Hono()
       });
     }
     return c.json({ friends: userFriendQueryResult });
-  });
+  })
+  .post(
+    "/block",
+    zValidator(
+      "json",
+      createInsertSchema(userFriendsTable).omit({
+        userFriendId: true,
+        muted: true,
+        blocked: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const updateValues = c.req.valid("json");
+      const { error: queryError, result: newUserResult } = await mightFail(
+        db
+          .update(userFriendsTable)
+          .set({ blocked: true })
+          .where(
+            and(
+              eq(userFriendsTable.userEmail, updateValues.userEmail),
+              eq(userFriendsTable.friendEmail, updateValues.friendEmail)
+            )
+          )
+          .returning()
+      );
+      if (queryError) {
+        throw new HTTPException(500, {
+          message: "Error blocking user",
+          cause: queryError,
+        });
+      }
+      return c.json({ newUser: newUserResult[0] }, 200);
+    }
+  )
+  .post(
+    "/unblock",
+    zValidator(
+      "json",
+      createInsertSchema(userFriendsTable).omit({
+        userFriendId: true,
+        muted: true,
+        blocked: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const updateValues = c.req.valid("json");
+      const { error: queryError, result: newUserResult } = await mightFail(
+        db
+          .update(userFriendsTable)
+          .set({ blocked: false })
+          .where(
+            and(
+              eq(userFriendsTable.userEmail, updateValues.userEmail),
+              eq(userFriendsTable.friendEmail, updateValues.friendEmail)
+            )
+          )
+          .returning()
+      );
+      if (queryError) {
+        throw new HTTPException(500, {
+          message: "Error blocking user",
+          cause: queryError,
+        });
+      }
+      return c.json({ newUser: newUserResult[0] }, 200);
+    }
+  );

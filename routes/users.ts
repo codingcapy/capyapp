@@ -11,6 +11,7 @@ import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
+import tls from "tls";
 
 const scryptAsync = promisify(scrypt);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -342,26 +343,24 @@ function sendResetPasswordEmail(
   });
 }
 
-import tls from "tls";
+// const socket = tls.connect(
+//   {
+//     host: "smtp.gmail.com",
+//     port: 465,
+//     servername: "smtp.gmail.com",
+//     timeout: 5000,
+//   },
+//   () => {
+//     console.log("Connected to Gmail SMTP");
+//     socket.end();
+//   }
+// );
 
-const socket = tls.connect(
-  {
-    host: "smtp.gmail.com",
-    port: 465,
-    servername: "smtp.gmail.com",
-    timeout: 5000,
-  },
-  () => {
-    console.log("Connected to Gmail SMTP");
-    socket.end();
-  }
-);
+// socket.on("error", (err) => {
+//   console.error("SMTP connect error:", err);
+// });
 
-socket.on("error", (err) => {
-  console.error("SMTP connect error:", err);
-});
-
-socket.on("timeout", () => {
-  console.error("SMTP connect timeout");
-  socket.destroy();
-});
+// socket.on("timeout", () => {
+//   console.error("SMTP connect timeout");
+//   socket.destroy();
+// });

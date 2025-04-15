@@ -5,9 +5,18 @@ import {
 } from "@tanstack/react-query";
 import { ArgumentTypes, client } from "./client";
 import { User } from "../../../../schemas/users";
+import { UserFriend } from "../../../../schemas/userfriends";
 
 type CreateFriendArgs = ArgumentTypes<
   typeof client.api.v0.friends.$post
+>[0]["json"];
+
+type BlockUserArgs = ArgumentTypes<
+  typeof client.api.v0.friends.block.$post
+>[0]["json"];
+
+type UnblockUserArgs = ArgumentTypes<
+  typeof client.api.v0.friends.unblock.$post
 >[0]["json"];
 
 export type Friend = Omit<User, "password">;
@@ -20,12 +29,30 @@ type SerializeFriend = {
   createdAt: string;
 };
 
+type SerializeUserFriend = {
+  userFriendId: number;
+  userEmail: string;
+  friendEmail: string;
+  blocked: boolean | null;
+  muted: boolean | null;
+  createdAt: string;
+};
+
 export function mapSerializedFriendToSchema(
   SerializedFriend: SerializeFriend
 ): Friend {
   return {
     ...SerializedFriend,
     createdAt: new Date(SerializedFriend.createdAt),
+  };
+}
+
+export function mapSerializedUserFriendToSchema(
+  SerializedUserFriend: SerializeUserFriend
+): UserFriend {
+  return {
+    ...SerializedUserFriend,
+    createdAt: new Date(SerializedUserFriend.createdAt),
   };
 }
 
@@ -88,3 +115,53 @@ export const getFriendsByEmailQueryOptions = (args: string) =>
     queryKey: ["friends", args],
     queryFn: () => getFriendsByEmail(args),
   });
+
+async function blockUser(args: BlockUserArgs) {
+  const res = await client.api.v0.friends.block.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating user.");
+  }
+  const { newUser } = await res.json();
+  console.log(newUser);
+  return mapSerializedUserFriendToSchema(newUser);
+}
+
+export const useBlockUserMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: blockUser,
+    onSettled: (newUser) => {
+      if (!newUser) return;
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    },
+  });
+};
+
+async function unblockUser(args: BlockUserArgs) {
+  const res = await client.api.v0.friends.unblock.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating user.");
+  }
+  const { newUser } = await res.json();
+  console.log(newUser);
+  return mapSerializedUserFriendToSchema(newUser);
+}
+
+export const useUnblockUserMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: unblockUser,
+    onSettled: (newUser) => {
+      if (!newUser) return;
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    },
+  });
+};

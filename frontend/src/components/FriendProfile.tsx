@@ -95,6 +95,22 @@ export default function FriendProfile(props: {
         )}
         {notification}
         {successNotification}
+        <div>
+          <div>
+            Username: <span className="font-bold">{friend?.username}</span>
+          </div>
+          <div>
+            Member since:{" "}
+            <span className="font-bold">
+              {friend?.createdAt.toString().slice(4, 16)}
+            </span>
+          </div>
+        </div>
+        {isFriend && !isUser && (
+          <button className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded">
+            Block
+          </button>
+        )}
       </div>
     </div>
   );
