@@ -6,6 +6,7 @@ import profilePic from "/capypaul01.jpg";
 import { FaReply } from "react-icons/fa";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserByUserIdQueryOptions } from "../lib/api/chat";
+import { UserFriend } from "../../../schemas/userfriends";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -15,6 +16,7 @@ export default function MessageFriend(props: {
   setReplyMode: (state: boolean) => void;
   setReplyContent: (state: string) => void;
   participants: Friend[] | undefined;
+  userFriends: UserFriend[] | undefined;
 }) {
   const {
     message,
@@ -23,6 +25,7 @@ export default function MessageFriend(props: {
     setFriend,
     setReplyContent,
     participants,
+    userFriends,
   } = props;
   const friend = friends.find((friend) => friend.userId === message.userId);
   const participantReply = participants?.find(
@@ -33,13 +36,16 @@ export default function MessageFriend(props: {
   );
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
-
   const isExternal = !friend && !participant && message.userId !== user?.userId;
-
   const { data: externalUser, isSuccess: hasExternalUser } = useQuery({
     ...getUserByUserIdQueryOptions(message.userId),
     enabled: isExternal, // Only run this query if the user isn't already known
   });
+  const userFriend =
+    userFriends &&
+    friend &&
+    userFriends?.find((userFriend) => friend?.email == userFriend?.friendEmail);
+  const isBlocked = userFriend && userFriend.blocked;
 
   useEffect(() => {
     if (friend || participant) {
@@ -48,7 +54,7 @@ export default function MessageFriend(props: {
   }, [friend, participant, message.userId, queryClient]);
 
   return (
-    <div className="hover:bg-zinc-800 group">
+    <div className={`${isBlocked && "hidden"} hover:bg-zinc-800 group`}>
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">

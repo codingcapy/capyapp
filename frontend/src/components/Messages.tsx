@@ -24,6 +24,7 @@ import capyness from "/capyness.png";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
 import useParticipantStore from "../store/ParticipantStore";
+import { UserFriend } from "../../../schemas/userfriends";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -33,9 +34,18 @@ export default function Messages(props: {
   friend: Friend | null;
   setFriend: (state: Friend | null) => void;
   clickedFriend: (state: Friend) => void;
+  userFriends: UserFriend[] | undefined;
 }) {
-  const { chat, user, friends, friend, setFriend, setChat, clickedFriend } =
-    props;
+  const {
+    chat,
+    user,
+    friends,
+    friend,
+    setFriend,
+    setChat,
+    clickedFriend,
+    userFriends,
+  } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -260,7 +270,7 @@ export default function Messages(props: {
                   type="text"
                   name="chattitle"
                   ref={titleInputRef}
-                  className="px-2 py-1 ml-2 border"
+                  className="bg-zinc-900 border border-[#636363] rounded p-1 outline-none ml-2"
                   value={titleContent}
                   onChange={(e) => setTitleContent(e.target.value)}
                 />
@@ -411,6 +421,7 @@ export default function Messages(props: {
                   setReplyMode={setReplyMode}
                   setReplyContent={setReplyContent}
                   participants={participants}
+                  userFriends={userFriends}
                 />
               )}
             </div>
