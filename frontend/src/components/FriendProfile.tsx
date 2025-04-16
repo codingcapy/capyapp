@@ -1,4 +1,9 @@
-import { Friend, useCreateFriendMutation } from "../lib/api/friend";
+import {
+  Friend,
+  useBlockUserMutation,
+  useCreateFriendMutation,
+  useUnblockUserMutation,
+} from "../lib/api/friend";
 import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
@@ -20,6 +25,8 @@ export default function FriendProfile(props: {
   const { user } = useAuthStore();
   const { mutate: createChat } = useCreateChatMutation();
   const { mutate: createFriend } = useCreateFriendMutation();
+  const { mutate: blockUser } = useBlockUserMutation();
+  const { mutate: unblockUser } = useUnblockUserMutation();
   const queryClient = useQueryClient();
   const isFriend =
     friends && friends.find((x) => friend && x.userId == friend.userId);
@@ -29,7 +36,7 @@ export default function FriendProfile(props: {
   const userFriend =
     userFriends &&
     friend &&
-    userFriends?.find((userFriend) => friend?.email == userFriend?.userEmail);
+    userFriends?.find((userFriend) => friend?.email == userFriend?.friendEmail);
   const isBlocked = userFriend && userFriend.blocked;
 
   function handleSubmit() {
@@ -55,6 +62,18 @@ export default function FriendProfile(props: {
         },
       }
     );
+  }
+
+  function handleBlock() {
+    const userEmail = user!.email;
+    const friendEmail = friend!.email;
+    blockUser({ userEmail, friendEmail });
+  }
+
+  function handleUnblock() {
+    const userEmail = user!.email;
+    const friendEmail = friend!.email;
+    unblockUser({ userEmail, friendEmail });
   }
 
   function handleAddFriend(e: React.FormEvent<HTMLFormElement>) {
@@ -114,12 +133,18 @@ export default function FriendProfile(props: {
           </div>
         </div>
         {isFriend && !isUser && !isBlocked && (
-          <button className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded">
+          <button
+            onClick={handleBlock}
+            className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded"
+          >
             Block
           </button>
         )}
         {isFriend && !isUser && isBlocked && (
-          <button className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded">
+          <button
+            onClick={handleUnblock}
+            className="text-red-400 p-3 mt-5 hover:bg-[#2e2e2e] ease-in-out duration-300 rounded"
+          >
             Blocked
           </button>
         )}
