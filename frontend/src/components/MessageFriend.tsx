@@ -7,6 +7,7 @@ import { FaReply } from "react-icons/fa";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserByUserIdQueryOptions } from "../lib/api/chat";
 import { UserFriend } from "../../../schemas/userfriends";
+import { PiSmiley } from "react-icons/pi";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -112,15 +113,23 @@ export default function MessageFriend(props: {
                 on {message.createdAt.toString().slice(0, 25)}
               </div>
             </div>
-            <div
-              onClick={() => {
-                setReplyMode(true);
-                setFriend(friend || null);
-                setReplyContent(message.content.toString());
-              }}
-              className="cursor-pointer px-2 pr-5 hidden group-hover:flex opacity-100 transition-opacity"
-            >
-              <FaReply size={20} className="" />
+            <div className="flex">
+              <div className="cursor-pointer mx-2 hidden group-hover:flex opacity-100 transition-opacity">
+                <PiSmiley
+                  size={22}
+                  // onClick={() => setEmojiMode(!emojiMode)}
+                />
+              </div>
+              <div
+                onClick={() => {
+                  setReplyMode(true);
+                  setFriend(friend || null);
+                  setReplyContent(message.content.toString());
+                }}
+                className="cursor-pointer px-2 pr-5 hidden group-hover:flex opacity-100 transition-opacity"
+              >
+                <FaReply size={20} className="" />
+              </div>
             </div>
           </div>
           <div className="overflow-wrap break-word">{message.content}</div>

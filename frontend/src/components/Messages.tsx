@@ -475,9 +475,9 @@ export default function Messages(props: {
                 onChange={(e) => setMessageContent(e.target.value)}
               />
               <PiSmiley
-                size={25}
+                size={27}
                 onClick={() => setEmojiMode(!emojiMode)}
-                className="cursor-pointer"
+                className="cursor-pointer pb-1"
               />
             </div>
             <button>

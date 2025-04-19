@@ -10,6 +10,7 @@ import {
   useDeleteMessageMutation,
   useUpdateMessageMutation,
 } from "../lib/api/messages";
+import { PiSmiley } from "react-icons/pi";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -144,6 +145,12 @@ export default function MessageComponent(props: {
               </div>
             </div>
             <div className="flex">
+              <div className="cursor-pointer mx-2 hidden group-hover:flex opacity-100 transition-opacity">
+                <PiSmiley
+                  size={22}
+                  // onClick={() => setEmojiMode(!emojiMode)}
+                />
+              </div>
               <div
                 onClick={() => {
                   setReplyMode(true);
