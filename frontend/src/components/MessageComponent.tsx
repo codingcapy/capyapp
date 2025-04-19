@@ -5,12 +5,13 @@ import profilePic from "/capypaul01.jpg";
 import { MdModeEditOutline } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
 import { FaReply } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useDeleteMessageMutation,
   useUpdateMessageMutation,
 } from "../lib/api/messages";
 import { PiSmiley } from "react-icons/pi";
+import emojis from "../emojis/emojis";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -36,6 +37,8 @@ export default function MessageComponent(props: {
   const [deleteMode, setDeleteMode] = useState(false);
   const { mutate: deleteMessage } = useDeleteMessageMutation();
   const { mutate: updateMessage } = useUpdateMessageMutation();
+  const [emojiMode, setEmojiMode] = useState(false);
+  const emojisRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -66,6 +69,34 @@ export default function MessageComponent(props: {
     });
     setEditMode(false);
   }
+
+  const handleClickOutsideEmojis = (event: MouseEvent) => {
+    if (
+      emojisRef.current &&
+      !emojisRef.current.contains(event.target as Node)
+    ) {
+      setEmojiMode(false);
+    }
+  };
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setEmojiMode(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutsideEmojis);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideEmojis);
+    };
+  }, []);
 
   return (
     <div className="hover:bg-zinc-800 group">
@@ -146,10 +177,7 @@ export default function MessageComponent(props: {
             </div>
             <div className="flex">
               <div className="cursor-pointer mx-2 hidden group-hover:flex opacity-100 transition-opacity">
-                <PiSmiley
-                  size={22}
-                  // onClick={() => setEmojiMode(!emojiMode)}
-                />
+                <PiSmiley size={22} onClick={() => setEmojiMode(!emojiMode)} />
               </div>
               <div
                 onClick={() => {
@@ -204,6 +232,23 @@ export default function MessageComponent(props: {
           )}
         </div>
       </div>
+      {emojiMode && (
+        <div
+          className={`fixed bottom-[250px] right-[13%] md:right-[30%] z-50 grid grid-cols-5 md:grid-cols-9 gap-2 text-xl bg-zinc-800 p-3 rounded`}
+          ref={emojisRef}
+        >
+          {emojis.map((emoji) => (
+            <div
+              className="cursor-pointer hover:bg-zinc-700"
+              // onClick={() =>
+              //   setMessageContent(messageContent.toString() + emoji)
+              // }
+            >
+              {emoji}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
