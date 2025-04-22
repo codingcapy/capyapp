@@ -9,6 +9,7 @@ import { getUserByUserIdQueryOptions } from "../lib/api/chat";
 import { UserFriend } from "../../../schemas/userfriends";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
+import { useCreateReactionMutation } from "../lib/api/reaction";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -41,7 +42,7 @@ export default function MessageFriend(props: {
   const isExternal = !friend && !participant && message.userId !== user?.userId;
   const { data: externalUser, isSuccess: hasExternalUser } = useQuery({
     ...getUserByUserIdQueryOptions(message.userId),
-    enabled: isExternal, // Only run this query if the user isn't already known
+    enabled: isExternal,
   });
   const userFriend =
     userFriends &&
@@ -50,12 +51,7 @@ export default function MessageFriend(props: {
   const isBlocked = userFriend && userFriend.blocked;
   const [emojiMode, setEmojiMode] = useState(false);
   const emojisRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (friend || participant) {
-      queryClient.invalidateQueries({ queryKey: ["users", message.userId] });
-    }
-  }, [friend, participant, message.userId, queryClient]);
+  const { mutate: createReaction } = useCreateReactionMutation();
 
   const handleClickOutsideEmojis = (event: MouseEvent) => {
     if (
@@ -65,6 +61,22 @@ export default function MessageFriend(props: {
       setEmojiMode(false);
     }
   };
+
+  function handleCreateReaction(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const reactionContent = (e.target as HTMLFormElement).emoji.value;
+    // createReaction({
+    //   messageId: (message && message.messageId) || 0,
+    //   content: reactionContent,
+    // });
+    setEmojiMode(false);
+  }
+
+  useEffect(() => {
+    if (friend || participant) {
+      queryClient.invalidateQueries({ queryKey: ["users", message.userId] });
+    }
+  }, [friend, participant, message.userId, queryClient]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -171,9 +183,7 @@ export default function MessageFriend(props: {
           {emojis.map((emoji) => (
             <div
               className="cursor-pointer hover:bg-zinc-700"
-              // onClick={() =>
-              //   setMessageContent(messageContent.toString() + emoji)
-              // }
+              // onClick={handleCreateReaction}
             >
               {emoji}
             </div>

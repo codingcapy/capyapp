@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 
-export const messages = pgTable("messages", {
+export const reactions = pgTable("reactions", {
   reactionId: serial("reaction_id").primaryKey(),
   messageId: serial("message_id").primaryKey(),
   chatId: integer("chat_id").notNull(),
@@ -16,4 +16,4 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export type Message = InferSelectModel<typeof messages>;
+export type Reaction = InferSelectModel<typeof reactions>;

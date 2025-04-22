@@ -10,6 +10,7 @@ import { serve } from "@hono/node-server";
 import { attachSocketEventListeners } from "./ws";
 import { userChatsRouter } from "./routes/chats";
 import { messagesRouter } from "./routes/messages";
+import { reactionsRouter } from "./routes/reactions";
 
 const app = new Hono();
 
@@ -22,7 +23,8 @@ const apiRoutes = app
   .route("/user", userRouter)
   .route("/friends", userFriendsRouter)
   .route("/chats", userChatsRouter)
-  .route("/messages", messagesRouter);
+  .route("/messages", messagesRouter)
+  .route("/reactions", reactionsRouter);
 
 app.use("/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/*", async (c) => {
