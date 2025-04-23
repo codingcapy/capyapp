@@ -5,6 +5,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
+import { eq } from "drizzle-orm";
 
 export const reactionsRouter = new Hono()
   .post(
@@ -44,4 +45,31 @@ export const reactionsRouter = new Hono()
       });
     }
     return c.json({ reactions: reactionsQueryResult });
-  });
+  })
+  .delete(
+    "/",
+    zValidator(
+      "json",
+      createInsertSchema(reactionsTable).omit({
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { error: reactionDeleteError, result: reactionDeleteResult } =
+        await mightFail(
+          db
+            .delete(reactionsTable)
+            .where(
+              eq(reactionsTable.reactionId, Number(insertValues.reactionId))
+            )
+        );
+
+      if (reactionDeleteError) {
+        throw new HTTPException(500, {
+          message: "Error when deleting blog.",
+          cause: reactionDeleteError,
+        });
+      }
+    }
+  );
