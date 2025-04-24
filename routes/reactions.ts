@@ -93,7 +93,7 @@ export const reactionsRouter = new Hono()
           cause: reactionDeleteError,
         });
       }
-      return c.json({ reactions: reactionDeleteResult });
+      return c.json({ chatId: insertValues.chatId });
     }
   )
   .get("/:chatId", async (c) => {
