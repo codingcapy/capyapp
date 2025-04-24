@@ -10,6 +10,10 @@ type CreateReactionArgs = ArgumentTypes<
   typeof client.api.v0.reactions.$post
 >[0]["json"];
 
+type DeleteReactionArgs = ArgumentTypes<
+  typeof client.api.v0.reactions.$delete
+>[0]["json"];
+
 type SerializeReaction = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.reactions.$get>>
 >["reactions"][number];
@@ -84,7 +88,7 @@ export const getReactionsByChatIdQueryOptions = (args: string) =>
     queryFn: () => getReactionsByChatId(args),
   });
 
-async function deleteReaction(args: CreateReactionArgs) {
+async function deleteReaction(args: DeleteReactionArgs) {
   const res = await client.api.v0.reactions.$delete({ json: args });
   if (!res.ok) {
     let errorMessage =

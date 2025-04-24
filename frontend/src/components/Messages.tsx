@@ -408,6 +408,7 @@ export default function Messages(props: {
                   setReplyContent={setReplyContent}
                   participants={participants}
                   reactions={reactions}
+                  chat={chat}
                 />
               ) : message.userId === "notification" ? (
                 <div className="p-3 flex text-[#b6b6b6]">

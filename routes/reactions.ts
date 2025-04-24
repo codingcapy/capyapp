@@ -71,6 +71,9 @@ export const reactionsRouter = new Hono()
     zValidator(
       "json",
       createInsertSchema(reactionsTable).omit({
+        chatId: true,
+        messageId: true,
+        content: true,
         createdAt: true,
       })
     ),

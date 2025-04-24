@@ -50,6 +50,13 @@
       "when": 1744318427492,
       "tag": "0006_nice_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1745462214532,
+      "tag": "0007_fearless_shockwave",
+      "breakpoints": true
     }
   ]
 }
