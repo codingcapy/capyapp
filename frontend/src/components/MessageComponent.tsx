@@ -96,22 +96,12 @@ export default function MessageComponent(props: {
     const chatId = (chat && chat.chatId) || 0;
     const userId = (user && user.userId) || "";
     const reactionContent = (e.target as HTMLFormElement).content.value;
-    createReaction(
-      {
-        messageId,
-        chatId,
-        userId,
-        content: reactionContent,
-      }
-      // {
-      //   onSuccess: (result) => {
-      //     queryClient.invalidateQueries({
-      //       queryKey: ["reactions", chat?.chatId],
-      //     });
-      //     socket.emit("chat", result);
-      //   },
-      // }
-    );
+    createReaction({
+      messageId,
+      chatId,
+      userId,
+      content: reactionContent,
+    });
     setEmojiMode(false);
   }
 

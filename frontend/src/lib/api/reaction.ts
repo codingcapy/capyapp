@@ -71,7 +71,7 @@ export const useCreateReactionMutation = (
   });
 };
 
-async function getReactionsByChatId(chatId: string) {
+async function getReactionsByChatId(chatId: number) {
   const res = await client.api.v0.reactions[":chatId"].$get({
     param: { chatId: chatId.toString() },
   });
@@ -82,7 +82,7 @@ async function getReactionsByChatId(chatId: string) {
   return chats.map(mapSerializedReactionToSchema);
 }
 
-export const getReactionsByChatIdQueryOptions = (args: string) =>
+export const getReactionsByChatIdQueryOptions = (args: number) =>
   queryOptions({
     queryKey: ["reactions", args],
     queryFn: () => getReactionsByChatId(args),

@@ -54,7 +54,7 @@ export default function Messages(props: {
     getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
   const { data: reactions } = useQuery(
-    getReactionsByChatIdQueryOptions(chat?.chatId.toString() || "")
+    getReactionsByChatIdQueryOptions(chat?.chatId || 0)
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();

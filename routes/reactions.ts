@@ -87,13 +87,13 @@ export const reactionsRouter = new Hono()
               eq(reactionsTable.reactionId, Number(insertValues.reactionId))
             )
         );
-
       if (reactionDeleteError) {
         throw new HTTPException(500, {
           message: "Error when deleting reaction.",
           cause: reactionDeleteError,
         });
       }
+      return c.json({ reactions: reactionDeleteResult });
     }
   )
   .get("/:chatId", async (c) => {
