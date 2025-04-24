@@ -25,6 +25,7 @@ import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
 import useParticipantStore from "../store/ParticipantStore";
 import { UserFriend } from "../../../schemas/userfriends";
+import { getReactionsByChatIdQueryOptions } from "../lib/api/reaction";
 
 export default function Messages(props: {
   chat: Chat | null;
@@ -51,6 +52,9 @@ export default function Messages(props: {
   );
   const { data: participants } = useQuery(
     getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || "")
+  );
+  const { data: reactions } = useQuery(
+    getReactionsByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
@@ -403,6 +407,7 @@ export default function Messages(props: {
                   setReplyMode={setReplyMode}
                   setReplyContent={setReplyContent}
                   participants={participants}
+                  reactions={reactions}
                 />
               ) : message.userId === "notification" ? (
                 <div className="p-3 flex text-[#b6b6b6]">
@@ -422,6 +427,7 @@ export default function Messages(props: {
                   setReplyContent={setReplyContent}
                   participants={participants}
                   userFriends={userFriends}
+                  reactions={reactions}
                 />
               )}
             </div>

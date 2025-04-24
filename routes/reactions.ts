@@ -5,7 +5,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const reactionsRouter = new Hono()
   .post(
@@ -18,6 +18,26 @@ export const reactionsRouter = new Hono()
     ),
     async (c) => {
       const insertValues = c.req.valid("json");
+      const { error: reactionQueryError, result: reactionQueryResult } =
+        await mightFail(
+          db
+            .select()
+            .from(reactionsTable)
+            .where(
+              and(
+                eq(reactionsTable.userId, insertValues.userId),
+                eq(reactionsTable.messageId, insertValues.messageId),
+                eq(reactionsTable.content, insertValues.content)
+              )
+            )
+        );
+      if (reactionQueryError)
+        throw new HTTPException(500, {
+          message: "Error while querying friend",
+          cause: reactionQueryResult,
+        });
+      if (reactionQueryResult.length > 0)
+        return c.json({ message: "Reaction already exists" }, 500);
       const { error: reactionInsertError, result: reactionInsertResult } =
         await mightFail(
           db
@@ -72,4 +92,24 @@ export const reactionsRouter = new Hono()
         });
       }
     }
-  );
+  )
+  .get("/:chatId", async (c) => {
+    const chatId = c.req.param("chatId");
+    if (!chatId) {
+      return c.json({ error: "chatId parameter is required." }, 400);
+    }
+    const { result: reactionsQueryResult, error: reactionsQueryError } =
+      await mightFail(
+        db
+          .select()
+          .from(reactionsTable)
+          .where(eq(reactionsTable.chatId, Number(chatId)))
+      );
+    if (reactionsQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching reactions.",
+        cause: reactionsQueryResult,
+      });
+    }
+    return c.json({ chats: reactionsQueryResult });
+  });

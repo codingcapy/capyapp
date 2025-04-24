@@ -10,6 +10,7 @@ import { UserFriend } from "../../../schemas/userfriends";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
 import { useCreateReactionMutation } from "../lib/api/reaction";
+import { Reaction } from "../../../schemas/reactions";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -20,6 +21,7 @@ export default function MessageFriend(props: {
   setReplyContent: (state: string) => void;
   participants: Friend[] | undefined;
   userFriends: UserFriend[] | undefined;
+  reactions: Reaction[] | undefined;
 }) {
   const {
     message,

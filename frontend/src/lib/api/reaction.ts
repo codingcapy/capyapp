@@ -1,4 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { Reaction } from "../../../../schemas/reactions";
 import { ArgumentTypes, client, ExtractData } from "./client";
 
@@ -53,7 +57,7 @@ export const useCreateReactionMutation = (
     mutationFn: createReaction,
     onSettled: (args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["reactions"], args });
+      queryClient.invalidateQueries({ queryKey: ["reactions", args.userId] });
     },
     onError: (error) => {
       if (onError) {
@@ -62,6 +66,23 @@ export const useCreateReactionMutation = (
     },
   });
 };
+
+async function getReactionsByChatId(chatId: string) {
+  const res = await client.api.v0.reactions[":chatId"].$get({
+    param: { chatId: chatId.toString() },
+  });
+  if (!res.ok) {
+    throw new Error("Error getting reactions by chatId");
+  }
+  const { chats } = await res.json();
+  return chats.map(mapSerializedReactionToSchema);
+}
+
+export const getReactionsByChatIdQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["reactions", args],
+    queryFn: () => getReactionsByChatId(args),
+  });
 
 async function deleteReaction(args: CreateReactionArgs) {
   const res = await client.api.v0.reactions.$delete({ json: args });
@@ -82,7 +103,7 @@ async function deleteReaction(args: CreateReactionArgs) {
     }
     throw new Error(errorMessage);
   }
-  return args.messageId;
+  return args.userId;
 }
 
 export const useDeleteReactionMutation = (

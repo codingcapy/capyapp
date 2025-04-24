@@ -12,6 +12,7 @@ import {
 } from "../lib/api/messages";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
+import { Reaction } from "../../../schemas/reactions";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -21,6 +22,7 @@ export default function MessageComponent(props: {
   setReplyMode: (state: boolean) => void;
   setReplyContent: (state: string) => void;
   participants: Friend[] | undefined;
+  reactions: Reaction[] | undefined;
 }) {
   const { user } = useAuthStore();
   const { message, setReplyMode, setFriend, setReplyContent, participants } =

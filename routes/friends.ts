@@ -31,11 +31,11 @@ export const userFriendsRouter = new Hono()
         );
       if (userQueryError)
         throw new HTTPException(500, {
-          message: "Error while creating friend",
+          message: "Error while querying friend",
           cause: userQueryResult,
         });
       if (userQueryResult.length < 1)
-        return c.json({ message: "Error creating friend" }, 500);
+        return c.json({ message: "User does not exist" }, 500);
       const { error: userFriendInsertError, result: userFriendInsertResult } =
         await mightFail(
           db

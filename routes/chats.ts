@@ -123,7 +123,7 @@ export const userChatsRouter = new Hono()
       });
     }
     if (userQueryResult.length < 1)
-      return c.json({ message: "Error creating friend" }, 500);
+      return c.json({ message: "Error adding friend" }, 500);
     const { error: userChatInsertError, result: userChatInsertResult } =
       await mightFail(
         db

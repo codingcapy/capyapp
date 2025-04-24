@@ -9,7 +9,7 @@ import type { InferSelectModel } from "drizzle-orm";
 
 export const reactions = pgTable("reactions", {
   reactionId: serial("reaction_id").primaryKey(),
-  messageId: serial("message_id").primaryKey(),
+  messageId: integer("message_id").notNull(),
   chatId: integer("chat_id").notNull(),
   userId: varchar("user_id").notNull(),
   content: varchar("content", { length: 25000 }).notNull(),
