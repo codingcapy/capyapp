@@ -18,6 +18,8 @@ import {
   useCreateReactionMutation,
   useDeleteReactionMutation,
 } from "../lib/api/reaction";
+import { socket } from "../routes/dashboard";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -56,6 +58,7 @@ export default function MessageComponent(props: {
   const emojisRef = useRef<HTMLDivElement>(null);
   const { mutate: createReaction } = useCreateReactionMutation();
   const { mutate: deleteReaction } = useDeleteReactionMutation();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -93,19 +96,29 @@ export default function MessageComponent(props: {
     const chatId = (chat && chat.chatId) || 0;
     const userId = (user && user.userId) || "";
     const reactionContent = (e.target as HTMLFormElement).content.value;
-    createReaction({
-      messageId,
-      chatId,
-      userId,
-      content: reactionContent,
-    });
+    createReaction(
+      {
+        messageId,
+        chatId,
+        userId,
+        content: reactionContent,
+      }
+      // {
+      //   onSuccess: (result) => {
+      //     queryClient.invalidateQueries({
+      //       queryKey: ["reactions", chat?.chatId],
+      //     });
+      //     socket.emit("chat", result);
+      //   },
+      // }
+    );
     setEmojiMode(false);
   }
 
   function handleDeleteReaction(id: number) {
     const reactionId = id;
     deleteReaction({
-      userId: user!.userId,
+      chatId: chat!.chatId,
       reactionId,
     });
     setEmojiMode(false);

@@ -61,7 +61,7 @@ export const useCreateReactionMutation = (
     mutationFn: createReaction,
     onSettled: (args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["reactions", args.userId] });
+      queryClient.invalidateQueries({ queryKey: ["reactions", args.chatId] });
     },
     onError: (error) => {
       if (onError) {
@@ -92,7 +92,7 @@ async function deleteReaction(args: DeleteReactionArgs) {
   const res = await client.api.v0.reactions.$delete({ json: args });
   if (!res.ok) {
     let errorMessage =
-      "There was an issue creating your reaction :( We'll look into it ASAP!";
+      "There was an issue deleting your reaction :( We'll look into it ASAP!";
     try {
       const errorResponse = await res.json();
       if (
@@ -107,7 +107,7 @@ async function deleteReaction(args: DeleteReactionArgs) {
     }
     throw new Error(errorMessage);
   }
-  return args.userId;
+  return args.chatId;
 }
 
 export const useDeleteReactionMutation = (

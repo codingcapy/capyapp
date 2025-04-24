@@ -71,7 +71,7 @@ export const reactionsRouter = new Hono()
     zValidator(
       "json",
       createInsertSchema(reactionsTable).omit({
-        chatId: true,
+        userId: true,
         messageId: true,
         content: true,
         createdAt: true,
@@ -90,7 +90,7 @@ export const reactionsRouter = new Hono()
 
       if (reactionDeleteError) {
         throw new HTTPException(500, {
-          message: "Error when deleting blog.",
+          message: "Error when deleting reaction.",
           cause: reactionDeleteError,
         });
       }

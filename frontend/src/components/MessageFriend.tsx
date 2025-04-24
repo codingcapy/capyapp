@@ -9,8 +9,12 @@ import { getUserByUserIdQueryOptions } from "../lib/api/chat";
 import { UserFriend } from "../../../schemas/userfriends";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
-import { useCreateReactionMutation } from "../lib/api/reaction";
+import {
+  useCreateReactionMutation,
+  useDeleteReactionMutation,
+} from "../lib/api/reaction";
 import { Reaction } from "../../../schemas/reactions";
+import { Chat } from "../../../schemas/chats";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -22,6 +26,7 @@ export default function MessageFriend(props: {
   participants: Friend[] | undefined;
   userFriends: UserFriend[] | undefined;
   reactions: Reaction[] | undefined;
+  chat: Chat | null;
 }) {
   const {
     message,
@@ -31,6 +36,8 @@ export default function MessageFriend(props: {
     setReplyContent,
     participants,
     userFriends,
+    reactions,
+    chat,
   } = props;
   const friend = friends.find((friend) => friend.userId === message.userId);
   const participantReply = participants?.find(
@@ -54,6 +61,7 @@ export default function MessageFriend(props: {
   const [emojiMode, setEmojiMode] = useState(false);
   const emojisRef = useRef<HTMLDivElement>(null);
   const { mutate: createReaction } = useCreateReactionMutation();
+  const { mutate: deleteReaction } = useDeleteReactionMutation();
 
   const handleClickOutsideEmojis = (event: MouseEvent) => {
     if (
@@ -66,11 +74,25 @@ export default function MessageFriend(props: {
 
   function handleCreateReaction(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const reactionContent = (e.target as HTMLFormElement).emoji.value;
-    // createReaction({
-    //   messageId: (message && message.messageId) || 0,
-    //   content: reactionContent,
-    // });
+    const messageId = message.messageId;
+    const chatId = (chat && chat.chatId) || 0;
+    const userId = (user && user.userId) || "";
+    const reactionContent = (e.target as HTMLFormElement).content.value;
+    createReaction({
+      messageId,
+      chatId,
+      userId,
+      content: reactionContent,
+    });
+    setEmojiMode(false);
+  }
+
+  function handleDeleteReaction(id: number) {
+    const reactionId = id;
+    deleteReaction({
+      chatId: chat!.chatId,
+      reactionId,
+    });
     setEmojiMode(false);
   }
 
@@ -175,6 +197,38 @@ export default function MessageFriend(props: {
             </div>
           </div>
           <div className="overflow-wrap break-word">{message.content}</div>
+          <div className="flex">
+            {Object.entries(
+              reactions
+                ?.filter((reaction) => reaction.messageId === message.messageId)
+                .reduce<Record<string, Reaction[]>>((acc, reaction) => {
+                  if (!acc[reaction.content]) acc[reaction.content] = [];
+                  acc[reaction.content].push(reaction);
+                  return acc;
+                }, {}) || {}
+            ).map(([content, groupedReactions]) => {
+              const count = groupedReactions.length;
+              const userReaction = groupedReactions.find(
+                (r) => r.userId === user?.userId
+              );
+              return (
+                <div
+                  key={content}
+                  onClick={() =>
+                    userReaction &&
+                    handleDeleteReaction(userReaction.reactionId)
+                  }
+                  className="flex items-center bg-[#3b3b3b] px-2 py-[1px] rounded m-1 cursor-pointer"
+                  title={
+                    userReaction ? "Click to remove your reaction" : undefined
+                  }
+                >
+                  <div className="mr-1">{content}</div>
+                  <div className="text-xs">{count}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
       {emojiMode && (
@@ -183,12 +237,20 @@ export default function MessageFriend(props: {
           ref={emojisRef}
         >
           {emojis.map((emoji) => (
-            <div
-              className="cursor-pointer hover:bg-zinc-700"
-              // onClick={handleCreateReaction}
-            >
-              {emoji}
-            </div>
+            <form onSubmit={handleCreateReaction} key={emoji}>
+              <input
+                type="text"
+                defaultValue={emoji}
+                name="content"
+                className="hidden"
+              />
+              <button
+                type="submit"
+                className="cursor-pointer hover:bg-zinc-700"
+              >
+                {emoji}
+              </button>
+            </form>
           ))}
         </div>
       )}

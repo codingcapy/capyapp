@@ -429,6 +429,7 @@ export default function Messages(props: {
                   participants={participants}
                   userFriends={userFriends}
                   reactions={reactions}
+                  chat={chat}
                 />
               )}
             </div>
