@@ -291,13 +291,31 @@ export default function MessageComponent(props: {
               return (
                 <div
                   key={content}
-                  onClick={() =>
-                    userReaction &&
-                    handleDeleteReaction(userReaction.reactionId)
-                  }
-                  className="flex items-center bg-[#3b3b3b] px-2 py-[1px] rounded m-1 cursor-pointer"
+                  onClick={() => {
+                    const messageId = message.messageId;
+                    const chatId = chat?.chatId || 0;
+                    const userId = user?.userId || "";
+
+                    if (userReaction) {
+                      handleDeleteReaction(userReaction.reactionId);
+                    } else {
+                      createReaction({
+                        messageId,
+                        chatId,
+                        userId,
+                        content,
+                      });
+                    }
+                  }}
+                  className={`flex items-center px-2 py-[1px] rounded m-1 cursor-pointer ${
+                    userReaction
+                      ? "bg-[#285684] border border-[#0080ff]"
+                      : "bg-[#3b3b3b]"
+                  }`}
                   title={
-                    userReaction ? "Click to remove your reaction" : undefined
+                    userReaction
+                      ? "Click to remove your reaction"
+                      : "React to this message"
                   }
                 >
                   <div className="mr-1">{content}</div>
