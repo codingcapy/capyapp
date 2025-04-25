@@ -4,6 +4,7 @@ import {
   serial,
   timestamp,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 
@@ -14,6 +15,7 @@ export const messages = pgTable("messages", {
   content: varchar("content", { length: 25000 }).notNull(),
   replyUserId: varchar("reply_user_id", { length: 100 }),
   replyContent: varchar("reply_content", { length: 25000 }),
+  read: boolean("read").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
