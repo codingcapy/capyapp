@@ -15,6 +15,7 @@ import {
 } from "../lib/api/reaction";
 import { Reaction } from "../../../schemas/reactions";
 import { Chat } from "../../../schemas/chats";
+import { socket } from "../routes/dashboard";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -78,21 +79,35 @@ export default function MessageFriend(props: {
     const chatId = (chat && chat.chatId) || 0;
     const userId = (user && user.userId) || "";
     const reactionContent = (e.target as HTMLFormElement).content.value;
-    createReaction({
-      messageId,
-      chatId,
-      userId,
-      content: reactionContent,
-    });
+    createReaction(
+      {
+        messageId,
+        chatId,
+        userId,
+        content: reactionContent,
+      },
+      {
+        onSuccess: (result) => {
+          socket.emit("reaction", result);
+        },
+      }
+    );
     setEmojiMode(false);
   }
 
   function handleDeleteReaction(id: number) {
     const reactionId = id;
-    deleteReaction({
-      chatId: chat!.chatId,
-      reactionId,
-    });
+    deleteReaction(
+      {
+        chatId: chat!.chatId,
+        reactionId,
+      },
+      {
+        onSuccess: (result) => {
+          socket.emit("reaction", result);
+        },
+      }
+    );
     setEmojiMode(false);
   }
 
@@ -118,6 +133,16 @@ export default function MessageFriend(props: {
     document.addEventListener("mousedown", handleClickOutsideEmojis);
     return () => {
       document.removeEventListener("mousedown", handleClickOutsideEmojis);
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("reaction", (data) => {
+      queryClient.invalidateQueries({ queryKey: ["reactions", chat?.chatId] });
+    });
+    return () => {
+      socket.off("connect");
+      socket.off("reaction");
     };
   }, []);
 

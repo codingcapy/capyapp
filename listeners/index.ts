@@ -20,5 +20,11 @@ export function attachListeners(io: Server) {
         from: socket.id.slice(6),
       });
     });
+    socket.on("reaction", (body) => {
+      socket.broadcast.emit("reaction", {
+        body,
+        from: socket.id.slice(6),
+      });
+    });
   });
 }
