@@ -1,11 +1,12 @@
 import { Hono } from "hono";
 import { messages as messagesTable } from "../schemas/messages";
+import { messageReads as messageReadsTable } from "../schemas/messagereads";
 import { zValidator } from "@hono/zod-validator";
 import { createInsertSchema } from "drizzle-zod";
 import { mightFail, mightFailSync } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import z from "zod";
 
 export function assertIsParsableInt(id: string): number {
@@ -149,4 +150,33 @@ export const messagesRouter = new Hono()
       }
       return c.json({ newMessage: messageUpdateResult[0] }, 200);
     }
-  );
+  )
+  .get("/reads/:userId", async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json({ error: "userId parameter is required." }, 400);
+    }
+    const { result: readMessagesQueryResult, error: readMessagesQueryError } =
+      await mightFail(
+        db
+          .select()
+          .from(messagesTable)
+          .leftJoin(
+            messageReadsTable,
+            eq(messagesTable.messageId, messageReadsTable.messageId)
+          )
+          .where(
+            and(
+              isNull(messageReadsTable.messageId), // no read record for this message
+              ne(messagesTable.userId, userId) // not your own messages
+            )
+          )
+      );
+    if (readMessagesQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching messages.",
+        cause: readMessagesQueryError,
+      });
+    }
+    return c.json({ messages: readMessagesQueryResult });
+  });
