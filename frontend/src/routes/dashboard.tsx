@@ -17,10 +17,14 @@ import { useQuery } from "@tanstack/react-query";
 import io from "socket.io-client";
 import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
-import { getChatsByUserIdQueryOptions } from "../lib/api/chat";
+import {
+  getChatsByUserIdQueryOptions,
+  useCreateChatMutation,
+} from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import useParticipantStore from "../store/ParticipantStore";
+import { queryClient } from "../main";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -58,10 +62,36 @@ function RouteComponent() {
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
   const { participants } = useParticipantStore();
+  const { mutate: createChat } = useCreateChatMutation();
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
   }, []);
+
+  function handleCreateChat() {
+    const title = `${user && user.username}, ${friend && friend.username}`;
+    const userId = user!.userId;
+    const friendId = friend!.userId;
+    createChat(
+      { title, userId, friendId },
+      {
+        onSuccess: (result) => {
+          const targetChatId = result.chatId ?? result.chatId;
+          setTimeout(() => {
+            const updatedChats = queryClient.getQueryData<Chat[]>([
+              "chats",
+              userId,
+            ]);
+            const newChat = updatedChats?.find(
+              (chat) => chat.chatId === targetChatId
+            );
+            if (newChat) clickedChat(newChat);
+          }, 150);
+          socket.emit("chat", { title, userId, friendId });
+        },
+      }
+    );
+  }
 
   function handleLogout() {
     logoutService();
@@ -111,7 +141,7 @@ function RouteComponent() {
     setShowChats(window.innerWidth < 760 ? false : true);
   }
 
-  function clickedFriend(currentFriend: Friend) {
+  function clickedFriend(currentFriend: Friend | null) {
     setFriend(currentFriend);
     setShowMessages(false);
     setShowAddFriend(false);
@@ -143,6 +173,8 @@ function RouteComponent() {
               friends={friends}
               userFriends={userFriends}
               setFriend={setFriend}
+              friend={friend}
+              handleCreateChat={handleCreateChat}
             />
           )}
           <div
@@ -174,6 +206,7 @@ function RouteComponent() {
               chats={chats}
               clickedChat={clickedChat}
               userFriends={userFriends}
+              handleCreateChat={handleCreateChat}
             />
           )}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">

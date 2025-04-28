@@ -9,13 +9,22 @@ import { UserFriend } from "../../../schemas/userfriends";
 
 export default function Friends(props: {
   clickedAddFriend: () => void;
-  clickedFriend: (currentFriend: Friend) => void;
+  clickedFriend: (currentFriend: Friend | null) => void;
   friends: Friend[] | undefined;
   userFriends: UserFriend[] | undefined;
-  setFriend: (friend: Friend) => void;
+  setFriend: (friend: Friend | null) => void;
+  friend: Friend | null;
+  handleCreateChat: () => void;
 }) {
-  const { clickedAddFriend, clickedFriend, friends, userFriends, setFriend } =
-    props;
+  const {
+    clickedAddFriend,
+    clickedFriend,
+    friends,
+    userFriends,
+    setFriend,
+    friend,
+    handleCreateChat,
+  } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const [contextMenu, setContextMenu] = useState<{
@@ -52,7 +61,7 @@ export default function Friends(props: {
   }, []);
 
   return (
-    <div className="relative md:w-[15%] md:border-r-[1px] border-zinc-700 bg-[#15151a] md:bg-zinc-900 md:h-screen overflow-auto">
+    <div className="relative md:w-[15%] md:border-r-[1px] border-zinc-700 bg-[#15151a] md:bg-zinc-900 md:h-screen">
       <div
         className="fixed top-0 left-0 bg-[#15151a] md:bg-zinc-900 px-5 pt-5 w-screen md:w-[14%]"
         onClick={clickedAddFriend}
@@ -66,21 +75,21 @@ export default function Friends(props: {
         </div>
       </div>
       <div className="p-5 pt-[120px]">
-        {friends?.map((friend) => (
+        {friends?.map((f) => (
           <div
-            onClick={() => clickedFriend(friend)}
+            onClick={() => clickedFriend(f)}
             className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
             onContextMenu={(e) => {
               handleContextMenu(e);
-              setFriend(friend);
+              setFriend(f);
             }}
-            key={friend.userId}
+            key={f.userId}
           >
             <img
-              src={friend.profilePic ? friend.profilePic : profilePic}
+              src={f.profilePic ? f.profilePic : profilePic}
               className="w-[40px] rounded-full"
             />
-            <div className="ml-2 py-2">{friend.username}</div>
+            <div className="ml-2 py-2">{f.username}</div>
           </div>
         ))}
       </div>
@@ -90,10 +99,22 @@ export default function Friends(props: {
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+            onClick={() => {
+              clickedFriend(friend);
+              setContextMenu(null);
+            }}
+          >
             Profile
           </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+            onClick={() => {
+              handleCreateChat();
+              setContextMenu(null);
+            }}
+          >
             Start Chat
           </button>
           <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">

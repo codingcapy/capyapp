@@ -20,8 +20,10 @@ export default function FriendProfile(props: {
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
   userFriends: UserFriend[] | undefined;
+  handleCreateChat: () => void;
 }) {
-  const { friend, friends, chats, clickedChat, userFriends } = props;
+  const { friend, friends, chats, clickedChat, userFriends, handleCreateChat } =
+    props;
   const { user } = useAuthStore();
   const { mutate: createChat } = useCreateChatMutation();
   const { mutate: createFriend } = useCreateFriendMutation();
@@ -38,31 +40,6 @@ export default function FriendProfile(props: {
     friend &&
     userFriends?.find((userFriend) => friend?.email == userFriend?.friendEmail);
   const isBlocked = userFriend && userFriend.blocked;
-
-  function handleSubmit() {
-    const title = `${user && user.username}, ${friend && friend.username}`;
-    const userId = user!.userId;
-    const friendId = friend!.userId;
-    createChat(
-      { title, userId, friendId },
-      {
-        onSuccess: (result) => {
-          const targetChatId = result.chatId ?? result.chatId;
-          setTimeout(() => {
-            const updatedChats = queryClient.getQueryData<Chat[]>([
-              "chats",
-              userId,
-            ]);
-            const newChat = updatedChats?.find(
-              (chat) => chat.chatId === targetChatId
-            );
-            if (newChat) clickedChat(newChat);
-          }, 150);
-          socket.emit("chat", { title, userId, friendId });
-        },
-      }
-    );
-  }
 
   function handleBlock() {
     const userEmail = user!.email;
@@ -107,7 +84,7 @@ export default function FriendProfile(props: {
         {isFriend && !isUser && !isBlocked && (
           <button
             className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300"
-            onClick={handleSubmit}
+            onClick={handleCreateChat}
           >
             Start chat
           </button>
