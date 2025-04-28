@@ -2,7 +2,7 @@ import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { socket } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
 
@@ -13,6 +13,13 @@ export default function Chats(props: {
   const { chats, clickedChat } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     socket.on("chat", (data) => {
@@ -24,8 +31,36 @@ export default function Chats(props: {
     };
   }, []);
 
+  function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (!containerRef.current) return;
+
+    const container = containerRef.current.getBoundingClientRect();
+    const offset = 8; // Small offset to right and bottom
+
+    setContextMenu({
+      visible: true,
+      x: event.clientX - container.left + offset,
+      y: event.clientY - container.top + offset,
+    });
+  }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setContextMenu(null);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative md:w-[15%] md:h-screen bg-[#15151a] md:bg-zinc-900 overflow-auto">
+    <div
+      className="relative md:w-[15%] md:h-screen bg-[#15151a] md:bg-zinc-900"
+      ref={containerRef}
+    >
       <div className="fixed top-0 left-0 md:left-[15%] flex bg-[#15151a] md:bg-zinc-900 p-5 w-screen md:w-[14%]">
         <IoChatbubbleEllipsesOutline size={25} className="" />
         <div className="ml-2 text-xl">Chats</div>
@@ -37,6 +72,9 @@ export default function Chats(props: {
               key={chat.chatId}
               className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
               onClick={() => clickedChat(chat)}
+              onContextMenu={(e) => {
+                handleContextMenu(e);
+              }}
             >
               <img
                 src={profilePic}
@@ -46,6 +84,17 @@ export default function Chats(props: {
             </div>
           ))}
       </div>
+      {contextMenu?.visible && (
+        <div
+          ref={menuRef}
+          className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+            Leave
+          </button>
+        </div>
+      )}
     </div>
   );
 }

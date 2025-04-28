@@ -2,7 +2,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { Friend } from "../lib/api/friend";
 import profilePic from "/capypaul01.jpg";
 import { socket } from "../routes/dashboard";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../store/AuthStore";
 import { UserFriend } from "../../../schemas/userfriends";
@@ -12,10 +12,18 @@ export default function Friends(props: {
   clickedFriend: (currentFriend: Friend) => void;
   friends: Friend[] | undefined;
   userFriends: UserFriend[] | undefined;
+  setFriend: (friend: Friend) => void;
 }) {
-  const { clickedAddFriend, clickedFriend, friends, userFriends } = props;
+  const { clickedAddFriend, clickedFriend, friends, userFriends, setFriend } =
+    props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     socket.on("friend", (data) => {
@@ -25,6 +33,22 @@ export default function Friends(props: {
       socket.off("connect");
       socket.off("friend");
     };
+  }, []);
+
+  function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setContextMenu({ visible: true, x: event.clientX, y: event.clientY });
+  }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setContextMenu(null);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   return (
@@ -46,6 +70,10 @@ export default function Friends(props: {
           <div
             onClick={() => clickedFriend(friend)}
             className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
+            onContextMenu={(e) => {
+              handleContextMenu(e);
+              setFriend(friend);
+            }}
             key={friend.userId}
           >
             <img
@@ -56,6 +84,23 @@ export default function Friends(props: {
           </div>
         ))}
       </div>
+      {contextMenu?.visible && (
+        <div
+          ref={menuRef}
+          className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left">
+            Profile
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left">
+            Start Chat
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+            Block
+          </button>
+        </div>
+      )}
     </div>
   );
 }

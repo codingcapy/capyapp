@@ -142,6 +142,7 @@ function RouteComponent() {
               clickedFriend={clickedFriend}
               friends={friends}
               userFriends={userFriends}
+              setFriend={setFriend}
             />
           )}
           <div
