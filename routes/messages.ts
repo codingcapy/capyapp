@@ -1,12 +1,13 @@
 import { Hono } from "hono";
 import { messages as messagesTable } from "../schemas/messages";
 import { messageReads as messageReadsTable } from "../schemas/messagereads";
+import { userChats as userChatsTable } from "../schemas/userchats";
 import { zValidator } from "@hono/zod-validator";
 import { createInsertSchema } from "drizzle-zod";
 import { mightFail, mightFailSync } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { and, desc, eq, isNull, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import z from "zod";
 
 export function assertIsParsableInt(id: string): number {
@@ -156,27 +157,56 @@ export const messagesRouter = new Hono()
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
     }
-    const { result: readMessagesQueryResult, error: readMessagesQueryError } =
+    const { result: userChatsQueryResult, error: userChatsQueryError } =
       await mightFail(
         db
-          .select()
-          .from(messagesTable)
-          .leftJoin(
-            messageReadsTable,
-            eq(messagesTable.messageId, messageReadsTable.messageId)
-          )
-          .where(
-            and(
-              isNull(messageReadsTable.messageId), // no read record for this message
-              ne(messagesTable.userId, userId) // not your own messages
-            )
-          )
+          .select({ chatId: userChatsTable.chatId })
+          .from(userChatsTable)
+          .where(eq(userChatsTable.userId, userId))
       );
-    if (readMessagesQueryError) {
+    if (userChatsQueryError) {
       throw new HTTPException(500, {
-        message: "Error occurred when fetching messages.",
-        cause: readMessagesQueryError,
+        message: "Error occurred when fetching userchats.",
+        cause: userChatsQueryError,
       });
     }
-    return c.json({ messages: readMessagesQueryResult });
+    const chatIds = userChatsQueryResult.map((row) => row.chatId);
+    if (chatIds.length === 0) {
+      return c.json({ messages: [] });
+    }
+    const {
+      result: unreadMessagesQueryResult,
+      error: unreadMessagesQueryError,
+    } = await mightFail(
+      db
+        .select({
+          messageId: messagesTable.messageId,
+          chatId: messagesTable.chatId,
+          userId: messagesTable.userId,
+          content: messagesTable.content,
+          createdAt: messagesTable.createdAt,
+        })
+        .from(messagesTable)
+        .leftJoin(
+          messageReadsTable,
+          and(
+            eq(messagesTable.messageId, messageReadsTable.messageId),
+            eq(messageReadsTable.userId, userId)
+          )
+        )
+        .where(
+          and(
+            inArray(messagesTable.chatId, chatIds),
+            isNull(messageReadsTable.messageId),
+            ne(messagesTable.userId, userId)
+          )
+        )
+    );
+    if (unreadMessagesQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching unreads.",
+        cause: unreadMessagesQueryError,
+      });
+    }
+    return c.json({ messages: unreadMessagesQueryResult });
   });
