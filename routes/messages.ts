@@ -152,7 +152,7 @@ export const messagesRouter = new Hono()
       return c.json({ newMessage: messageUpdateResult[0] }, 200);
     }
   )
-  .get("/reads/:userId", async (c) => {
+  .get("/unreads/:userId", async (c) => {
     const userId = c.req.param("userId");
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
