@@ -5,12 +5,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
+import { Unread } from "../lib/api/messages";
 
 export default function Chats(props: {
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
+  unreads: Unread[] | undefined;
 }) {
-  const { chats, clickedChat } = props;
+  const { chats, clickedChat, unreads } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const [contextMenu, setContextMenu] = useState<{

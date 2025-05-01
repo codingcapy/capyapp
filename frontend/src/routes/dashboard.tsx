@@ -25,6 +25,7 @@ import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import useParticipantStore from "../store/ParticipantStore";
 import { queryClient } from "../main";
+import { getUnreadMessagesByUserIdQueryOptions } from "../lib/api/messages";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -61,6 +62,9 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
+  const { data: unreads } = useQuery(
+    getUnreadMessagesByUserIdQueryOptions(user?.userId || "")
+  );
   const { participants } = useParticipantStore();
   const { mutate: createChat } = useCreateChatMutation();
 
@@ -184,7 +188,9 @@ function RouteComponent() {
             <IoExitOutline size={25} />
             <div className="ml-3">Logout</div>
           </div>
-          {showChats && <Chats chats={chats} clickedChat={clickedChat} />}
+          {showChats && (
+            <Chats chats={chats} clickedChat={clickedChat} unreads={unreads} />
+          )}
           {showMessages && (
             <Messages
               chat={chat}

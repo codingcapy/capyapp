@@ -22,12 +22,27 @@ type SerializeMessage = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.messages.$get>>
 >["messages"][number];
 
+type SerializeUnread = ExtractData<
+  Awaited<ReturnType<typeof client.api.v0.messages.unreads.$get>>
+>["messages"][number];
+
+export type Unread = Omit<Message, "replyUserId" | "replyContent">;
+
 export function mapSerializedMessageToSchema(
   SerializedMessage: SerializeMessage
 ): Message {
   return {
     ...SerializedMessage,
     createdAt: new Date(SerializedMessage.createdAt),
+  };
+}
+
+export function mapSerializedUnreadToSchema(
+  SerializedUnread: SerializeUnread
+): Unread {
+  return {
+    ...SerializedUnread,
+    createdAt: new Date(SerializedUnread.createdAt),
   };
 }
 
@@ -158,7 +173,7 @@ async function getUnreadMessagesByUserId(userId: string) {
     throw new Error("Error getting chats by chatId");
   }
   const { messages } = await res.json();
-  return messages;
+  return messages.map(mapSerializedUnreadToSchema);
 }
 
 export const getUnreadMessagesByUserIdQueryOptions = (args: string) =>

@@ -209,4 +209,51 @@ export const messagesRouter = new Hono()
       });
     }
     return c.json({ messages: unreadMessagesQueryResult });
+  })
+  .get("/unreads", async (c) => {
+    const { result: userChatsQueryResult, error: userChatsQueryError } =
+      await mightFail(
+        db.select({ chatId: userChatsTable.chatId }).from(userChatsTable)
+      );
+    if (userChatsQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching userchats.",
+        cause: userChatsQueryError,
+      });
+    }
+    const chatIds = userChatsQueryResult.map((row) => row.chatId);
+    if (chatIds.length === 0) {
+      return c.json({ messages: [] });
+    }
+    const {
+      result: unreadMessagesQueryResult,
+      error: unreadMessagesQueryError,
+    } = await mightFail(
+      db
+        .select({
+          messageId: messagesTable.messageId,
+          chatId: messagesTable.chatId,
+          userId: messagesTable.userId,
+          content: messagesTable.content,
+          createdAt: messagesTable.createdAt,
+        })
+        .from(messagesTable)
+        .leftJoin(
+          messageReadsTable,
+          and(eq(messagesTable.messageId, messageReadsTable.messageId))
+        )
+        .where(
+          and(
+            inArray(messagesTable.chatId, chatIds),
+            isNull(messageReadsTable.messageId)
+          )
+        )
+    );
+    if (unreadMessagesQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching unreads.",
+        cause: unreadMessagesQueryError,
+      });
+    }
+    return c.json({ messages: unreadMessagesQueryResult });
   });
