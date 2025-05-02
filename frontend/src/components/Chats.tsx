@@ -72,7 +72,7 @@ export default function Chats(props: {
           chats.map((chat) => (
             <div
               key={chat.chatId}
-              className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
+              className="relative flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
               onClick={() => clickedChat(chat)}
               onContextMenu={(e) => {
                 handleContextMenu(e);
@@ -83,6 +83,13 @@ export default function Chats(props: {
                 className="w-[40px] h-[40px] rounded-full"
               />
               <div className="ml-2 py-2">{chat.title}</div>
+              <div className="absolute bottom-0 left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
+                {unreads &&
+                  unreads?.filter((unread) => unread.chatId === chat.chatId)
+                    .length > 0 &&
+                  unreads?.filter((unread) => unread.chatId === chat.chatId)
+                    .length}
+              </div>
             </div>
           ))}
       </div>
