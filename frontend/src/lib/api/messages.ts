@@ -18,6 +18,10 @@ type UpdateMessageArgs = ArgumentTypes<
   typeof client.api.v0.messages.update.$post
 >[0]["json"];
 
+type CreateMessageReadArgs = ArgumentTypes<
+  typeof client.api.v0.messages.unreads.$post
+>[0]["json"];
+
 type SerializeMessage = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.messages.$get>>
 >["messages"][number];
@@ -181,3 +185,47 @@ export const getUnreadMessagesByUserIdQueryOptions = (args: string) =>
     queryKey: ["unreads", args],
     queryFn: () => getUnreadMessagesByUserId(args),
   });
+
+async function createMessageRead(args: CreateMessageReadArgs) {
+  const res = await client.api.v0.messages.unreads.$post({ json: args });
+  if (!res.ok) {
+    let errorMessage =
+      "There was an issue creating your message read :( We'll look into it ASAP!";
+    try {
+      const errorResponse = await res.json();
+      if (
+        errorResponse &&
+        typeof errorResponse === "object" &&
+        "message" in errorResponse
+      ) {
+        errorMessage = String(errorResponse.message);
+      }
+    } catch (error) {
+      console.error("Failed to parse error response:", error);
+    }
+    throw new Error(errorMessage);
+  }
+  const result = await res.json();
+  if (!result.messageRead) {
+    throw new Error("Invalid response from server");
+  }
+  return result.messageRead;
+}
+
+export const useCreateMessageReadMutation = (
+  onError?: (message: string) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createMessageRead,
+    onSettled: (args) => {
+      if (!args) return console.log(args, "create args, returning");
+      queryClient.invalidateQueries({ queryKey: ["messages"], args });
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error.message);
+      }
+    },
+  });
+};

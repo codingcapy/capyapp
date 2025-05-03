@@ -256,4 +256,32 @@ export const messagesRouter = new Hono()
       });
     }
     return c.json({ messages: unreadMessagesQueryResult });
-  });
+  })
+  .post(
+    "/unreads",
+    zValidator(
+      "json",
+      createInsertSchema(messageReadsTable).omit({
+        messageReadId: true,
+        readAt: true,
+      })
+    ),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { error: messageReadInsertError, result: messageReadInsertResult } =
+        await mightFail(
+          db
+            .insert(messageReadsTable)
+            .values({ ...insertValues })
+            .returning()
+        );
+      if (messageReadInsertError) {
+        console.log("Error while creating message:", messageReadInsertResult);
+        throw new HTTPException(500, {
+          message: "Error while creating message",
+          cause: messageReadInsertResult,
+        });
+      }
+      return c.json({ messageRead: messageReadInsertResult[0] }, 200);
+    }
+  );
