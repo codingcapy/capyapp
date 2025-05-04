@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
   useCreateMessageMutation,
+  useCreateMessageReadMutation,
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
@@ -76,6 +77,7 @@ export default function Messages(props: {
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const emojisRef = useRef<HTMLDivElement>(null);
   const { setParticipants } = useParticipantStore();
+  const { mutate: createMessageRead } = useCreateMessageReadMutation();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
