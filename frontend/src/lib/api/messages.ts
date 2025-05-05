@@ -220,7 +220,7 @@ export const useCreateMessageReadMutation = (
     mutationFn: createMessageRead,
     onSettled: (args) => {
       if (!args) return console.log(args, "create args, returning");
-      queryClient.invalidateQueries({ queryKey: ["messages"], args });
+      queryClient.invalidateQueries({ queryKey: ["unreads", args.userId] });
     },
     onError: (error) => {
       if (onError) {

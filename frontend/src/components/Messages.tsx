@@ -186,6 +186,12 @@ export default function Messages(props: {
     setChat(null);
   }
 
+  function handleCreateMessageRead(id: number) {
+    const userId = (user && user.userId) || "";
+    const messageId = id;
+    createMessageRead({ userId, messageId });
+  }
+
   useEffect(() => {
     socket.on("message", (data) => {
       queryClient.invalidateQueries({
