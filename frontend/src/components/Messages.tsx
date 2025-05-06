@@ -28,6 +28,28 @@ import useParticipantStore from "../store/ParticipantStore";
 import { UserFriend } from "../../../schemas/userfriends";
 import { getReactionsByChatIdQueryOptions } from "../lib/api/reaction";
 
+export function useOnScreen(
+  ref: React.RefObject<HTMLElement | null>,
+  onVisible: () => void,
+  options?: IntersectionObserverInit
+) {
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        onVisible();
+        observer.disconnect(); // Only observe once
+      }
+    }, options);
+
+    const el = ref.current;
+    if (el) observer.observe(el);
+
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [ref]);
+}
+
 export default function Messages(props: {
   chat: Chat | null;
   setChat: (state: Chat | null) => void;
@@ -417,6 +439,7 @@ export default function Messages(props: {
                   participants={participants}
                   reactions={reactions}
                   chat={chat}
+                  handleCreateMessageRead={handleCreateMessageRead}
                 />
               ) : message.userId === "notification" ? (
                 <div className="p-3 flex text-[#b6b6b6]">
@@ -438,11 +461,11 @@ export default function Messages(props: {
                   userFriends={userFriends}
                   reactions={reactions}
                   chat={chat}
+                  handleCreateMessageRead={handleCreateMessageRead}
                 />
               )}
             </div>
           ))}
-
         <div ref={lastMessageRef} />
       </div>
       <div className="text-red-400">{notification}</div>

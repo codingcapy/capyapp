@@ -16,6 +16,7 @@ import {
 import { Reaction } from "../../../schemas/reactions";
 import { Chat } from "../../../schemas/chats";
 import { socket } from "../routes/dashboard";
+import { useOnScreen } from "./Messages";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -28,6 +29,7 @@ export default function MessageFriend(props: {
   userFriends: UserFriend[] | undefined;
   reactions: Reaction[] | undefined;
   chat: Chat | null;
+  handleCreateMessageRead: (id: number) => void;
 }) {
   const {
     message,
@@ -39,6 +41,7 @@ export default function MessageFriend(props: {
     userFriends,
     reactions,
     chat,
+    handleCreateMessageRead,
   } = props;
   const friend = friends.find((friend) => friend.userId === message.userId);
   const participantReply = participants?.find(
@@ -63,6 +66,11 @@ export default function MessageFriend(props: {
   const emojisRef = useRef<HTMLDivElement>(null);
   const { mutate: createReaction } = useCreateReactionMutation();
   const { mutate: deleteReaction } = useDeleteReactionMutation();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useOnScreen(ref, () => {
+    handleCreateMessageRead(message.messageId);
+  });
 
   const handleClickOutsideEmojis = (event: MouseEvent) => {
     if (
@@ -147,7 +155,10 @@ export default function MessageFriend(props: {
   }, []);
 
   return (
-    <div className={`${isBlocked && "hidden"} hover:bg-zinc-800 group`}>
+    <div
+      className={`${isBlocked && "hidden"} hover:bg-zinc-800 group`}
+      ref={ref}
+    >
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">

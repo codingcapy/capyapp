@@ -20,6 +20,7 @@ import {
 } from "../lib/api/reaction";
 import { socket } from "../routes/dashboard";
 import { useQueryClient } from "@tanstack/react-query";
+import { useOnScreen } from "./Messages";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -31,6 +32,7 @@ export default function MessageComponent(props: {
   participants: Friend[] | undefined;
   reactions: Reaction[] | undefined;
   chat: Chat | null;
+  handleCreateMessageRead: (id: number) => void;
 }) {
   const { user } = useAuthStore();
   const {
@@ -41,6 +43,7 @@ export default function MessageComponent(props: {
     participants,
     reactions,
     chat,
+    handleCreateMessageRead,
   } = props;
   const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
@@ -59,6 +62,11 @@ export default function MessageComponent(props: {
   const { mutate: createReaction } = useCreateReactionMutation();
   const { mutate: deleteReaction } = useDeleteReactionMutation();
   const queryClient = useQueryClient();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useOnScreen(ref, () => {
+    handleCreateMessageRead(message.messageId);
+  });
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -167,7 +175,7 @@ export default function MessageComponent(props: {
   }, []);
 
   return (
-    <div className="hover:bg-zinc-800 group">
+    <div className="hover:bg-zinc-800 group" ref={ref}>
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">
