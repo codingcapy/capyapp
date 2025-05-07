@@ -201,6 +201,7 @@ function RouteComponent() {
               setFriend={setFriend}
               clickedFriend={clickedFriend}
               userFriends={userFriends}
+              unreads={unreads}
             />
           )}
           {showProfile && <Profile />}

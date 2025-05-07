@@ -4,6 +4,7 @@ import { Chat } from "../../../schemas/chats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
+  Unread,
   useCreateMessageMutation,
   useCreateMessageReadMutation,
 } from "../lib/api/messages";
@@ -27,6 +28,7 @@ import emojis from "../emojis/emojis";
 import useParticipantStore from "../store/ParticipantStore";
 import { UserFriend } from "../../../schemas/userfriends";
 import { getReactionsByChatIdQueryOptions } from "../lib/api/reaction";
+import Notification from "./Notification";
 
 export function useOnScreen(
   ref: React.RefObject<HTMLElement | null>,
@@ -59,6 +61,7 @@ export default function Messages(props: {
   setFriend: (state: Friend | null) => void;
   clickedFriend: (state: Friend) => void;
   userFriends: UserFriend[] | undefined;
+  unreads: Unread[] | undefined;
 }) {
   const {
     chat,
@@ -69,6 +72,7 @@ export default function Messages(props: {
     setChat,
     clickedFriend,
     userFriends,
+    unreads,
   } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
@@ -211,6 +215,13 @@ export default function Messages(props: {
   function handleCreateMessageRead(id: number) {
     const userId = (user && user.userId) || "";
     const messageId = id;
+    if (
+      unreads &&
+      unreads.some(
+        (unread) => unread.userId === userId && unread.messageId === messageId
+      )
+    )
+      return;
     createMessageRead({ userId, messageId });
   }
 
@@ -442,13 +453,10 @@ export default function Messages(props: {
                   handleCreateMessageRead={handleCreateMessageRead}
                 />
               ) : message.userId === "notification" ? (
-                <div className="p-3 flex text-[#b6b6b6]">
-                  <div className="w-[100%] text-center">
-                    <div className="overflow-wrap break-word italic">
-                      {message.content}
-                    </div>
-                  </div>
-                </div>
+                <Notification
+                  message={message}
+                  handleCreateMessageRead={handleCreateMessageRead}
+                />
               ) : (
                 <MessageFriend
                   message={message}
