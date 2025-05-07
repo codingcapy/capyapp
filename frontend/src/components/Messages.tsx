@@ -4,6 +4,7 @@ import { Chat } from "../../../schemas/chats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
+  getreadMessagesByUserIdQueryOptions,
   Unread,
   useCreateMessageMutation,
   useCreateMessageReadMutation,
@@ -104,6 +105,9 @@ export default function Messages(props: {
   const emojisRef = useRef<HTMLDivElement>(null);
   const { setParticipants } = useParticipantStore();
   const { mutate: createMessageRead } = useCreateMessageReadMutation();
+  const { data: reads } = useQuery(
+    getreadMessagesByUserIdQueryOptions((user && user.userId) || "")
+  );
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -215,9 +219,10 @@ export default function Messages(props: {
   function handleCreateMessageRead(id: number) {
     const userId = (user && user.userId) || "";
     const messageId = id;
+
     if (
-      unreads &&
-      unreads.some(
+      reads &&
+      reads.some(
         (unread) => unread.userId === userId && unread.messageId === messageId
       )
     )

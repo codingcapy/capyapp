@@ -229,3 +229,22 @@ export const useCreateMessageReadMutation = (
     },
   });
 };
+
+async function getreadMessagesByUserId(userId: string) {
+  const res = await client.api.v0.messages.reads[":userId"].$get({
+    param: { userId: userId.toString() },
+  });
+  console.log(userId);
+  if (!res.ok) {
+    throw new Error("Error getting reads by userId");
+  }
+  const { reads } = await res.json();
+  console.log(reads);
+  return reads;
+}
+
+export const getreadMessagesByUserIdQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["reads", args],
+    queryFn: () => getreadMessagesByUserId(args),
+  });

@@ -284,4 +284,25 @@ export const messagesRouter = new Hono()
       }
       return c.json({ messageRead: messageReadInsertResult[0] }, 200);
     }
-  );
+  )
+  .get("/reads/:userId", async (c) => {
+    const userId = c.req.param("userId");
+    console.log(userId);
+    if (!userId) {
+      return c.json({ error: "userId parameter is required." }, 400);
+    }
+    const { result: readMessagesQueryResult, error: readMessagesQueryError } =
+      await mightFail(
+        db
+          .select()
+          .from(messageReadsTable)
+          .where(eq(messageReadsTable.userId, userId))
+      );
+    if (readMessagesQueryError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching unreads.",
+        cause: readMessagesQueryError,
+      });
+    }
+    return c.json({ reads: readMessagesQueryResult });
+  });
