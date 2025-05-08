@@ -12,6 +12,8 @@ import AddFriend from "../components/AddFriend";
 import {
   getFriendsByEmailQueryOptions,
   getUserFriendsByEmailQueryOptions,
+  useBlockUserMutation,
+  useUnblockUserMutation,
 } from "../lib/api/friend";
 import { useQuery } from "@tanstack/react-query";
 import io from "socket.io-client";
@@ -67,6 +69,8 @@ function RouteComponent() {
   );
   const { participants } = useParticipantStore();
   const { mutate: createChat } = useCreateChatMutation();
+  const { mutate: blockUser } = useBlockUserMutation();
+  const { mutate: unblockUser } = useUnblockUserMutation();
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -95,6 +99,18 @@ function RouteComponent() {
         },
       }
     );
+  }
+
+  function handleBlock() {
+    const userEmail = user!.email;
+    const friendEmail = friend!.email;
+    blockUser({ userEmail, friendEmail });
+  }
+
+  function handleUnblock() {
+    const userEmail = user!.email;
+    const friendEmail = friend!.email;
+    unblockUser({ userEmail, friendEmail });
   }
 
   function handleLogout() {
@@ -179,6 +195,8 @@ function RouteComponent() {
               setFriend={setFriend}
               friend={friend}
               handleCreateChat={handleCreateChat}
+              handleBlock={handleBlock}
+              handleUnblock={handleUnblock}
             />
           )}
           <div
@@ -214,6 +232,8 @@ function RouteComponent() {
               clickedChat={clickedChat}
               userFriends={userFriends}
               handleCreateChat={handleCreateChat}
+              handleBlock={handleBlock}
+              handleUnblock={handleUnblock}
             />
           )}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">

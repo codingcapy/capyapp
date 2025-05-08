@@ -1,16 +1,9 @@
-import {
-  Friend,
-  useBlockUserMutation,
-  useCreateFriendMutation,
-  useUnblockUserMutation,
-} from "../lib/api/friend";
+import { Friend, useCreateFriendMutation } from "../lib/api/friend";
 import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
-import { useCreateChatMutation } from "../lib/api/chat";
 import { socket } from "../routes/dashboard";
 import { Chat } from "../../../schemas/chats";
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { UserFriend } from "../../../schemas/userfriends";
 
@@ -21,15 +14,19 @@ export default function FriendProfile(props: {
   clickedChat: (currentChat: Chat) => void;
   userFriends: UserFriend[] | undefined;
   handleCreateChat: () => void;
+  handleBlock: () => void;
+  handleUnblock: () => void;
 }) {
-  const { friend, friends, chats, clickedChat, userFriends, handleCreateChat } =
-    props;
+  const {
+    friend,
+    friends,
+    userFriends,
+    handleCreateChat,
+    handleBlock,
+    handleUnblock,
+  } = props;
   const { user } = useAuthStore();
-  const { mutate: createChat } = useCreateChatMutation();
   const { mutate: createFriend } = useCreateFriendMutation();
-  const { mutate: blockUser } = useBlockUserMutation();
-  const { mutate: unblockUser } = useUnblockUserMutation();
-  const queryClient = useQueryClient();
   const isFriend =
     friends && friends.find((x) => friend && x.userId == friend.userId);
   const isUser = friend && friend.userId === user?.userId;
@@ -40,18 +37,6 @@ export default function FriendProfile(props: {
     friend &&
     userFriends?.find((userFriend) => friend?.email == userFriend?.friendEmail);
   const isBlocked = userFriend && userFriend.blocked;
-
-  function handleBlock() {
-    const userEmail = user!.email;
-    const friendEmail = friend!.email;
-    blockUser({ userEmail, friendEmail });
-  }
-
-  function handleUnblock() {
-    const userEmail = user!.email;
-    const friendEmail = friend!.email;
-    unblockUser({ userEmail, friendEmail });
-  }
 
   function handleAddFriend(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

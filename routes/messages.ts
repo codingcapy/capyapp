@@ -287,7 +287,6 @@ export const messagesRouter = new Hono()
   )
   .get("/reads/:userId", async (c) => {
     const userId = c.req.param("userId");
-    console.log(userId);
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
     }

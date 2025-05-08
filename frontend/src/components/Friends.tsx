@@ -15,6 +15,8 @@ export default function Friends(props: {
   setFriend: (friend: Friend | null) => void;
   friend: Friend | null;
   handleCreateChat: () => void;
+  handleBlock: () => void;
+  handleUnblock: () => void;
 }) {
   const {
     clickedAddFriend,
@@ -24,6 +26,8 @@ export default function Friends(props: {
     setFriend,
     friend,
     handleCreateChat,
+    handleBlock,
+    handleUnblock,
   } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -33,6 +37,11 @@ export default function Friends(props: {
     y: number;
   } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const userFriend =
+    userFriends &&
+    friend &&
+    userFriends?.find((userFriend) => friend?.email == userFriend?.friendEmail);
+  const isBlocked = userFriend && userFriend.blocked;
 
   useEffect(() => {
     socket.on("friend", (data) => {
@@ -117,9 +126,27 @@ export default function Friends(props: {
           >
             Start Chat
           </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
-            Block
-          </button>
+          {!isBlocked ? (
+            <button
+              className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400"
+              onClick={() => {
+                handleBlock();
+                setContextMenu(null);
+              }}
+            >
+              Block
+            </button>
+          ) : (
+            <button
+              className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400"
+              onClick={() => {
+                handleUnblock();
+                setContextMenu(null);
+              }}
+            >
+              Unblock
+            </button>
+          )}
         </div>
       )}
     </div>
