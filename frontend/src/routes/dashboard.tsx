@@ -22,12 +22,16 @@ import FriendProfile from "../components/FriendProfile";
 import {
   getChatsByUserIdQueryOptions,
   useCreateChatMutation,
+  useLeaveChatMutation,
 } from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import useParticipantStore from "../store/ParticipantStore";
 import { queryClient } from "../main";
-import { getUnreadMessagesByUserIdQueryOptions } from "../lib/api/messages";
+import {
+  getUnreadMessagesByUserIdQueryOptions,
+  useCreateMessageMutation,
+} from "../lib/api/messages";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -71,6 +75,15 @@ function RouteComponent() {
   const { mutate: createChat } = useCreateChatMutation();
   const { mutate: blockUser } = useBlockUserMutation();
   const { mutate: unblockUser } = useUnblockUserMutation();
+  const { mutate: createMessage } = useCreateMessageMutation();
+  const { mutate: leaveChat } = useLeaveChatMutation();
+  const [leaveMode, setLeaveMode] = useState(false);
+  const [menuMode, setMenuMode] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -111,6 +124,33 @@ function RouteComponent() {
     const userEmail = user!.email;
     const friendEmail = friend!.email;
     unblockUser({ userEmail, friendEmail });
+  }
+
+  function handleLeaveChat(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const userId = (user && user.userId) || "";
+    const chatId = (chat && chat.chatId) || 0;
+    createMessage(
+      {
+        userId: "notification",
+        chatId: (chat && chat.chatId) || 0,
+        content: `${user?.username} has left the chat`,
+      },
+      {
+        onSuccess: () =>
+          socket.emit("message", {
+            content: `${user?.username} has left the chat`,
+            chatId: chat && chat.chatId,
+            userId: user && user.userId,
+            createdAt: new Date().toISOString(),
+          }),
+      }
+    );
+    leaveChat({ userId, chatId });
+    setLeaveMode(false);
+    setChat(null);
+    setContextMenu(null);
+    setMenuMode(false);
   }
 
   function handleLogout() {
@@ -184,6 +224,37 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col bg-[#15151a] text-white min-h-screen">
+      {leaveMode && (
+        <div>
+          <form
+            onSubmit={handleLeaveChat}
+            className="fixed top-[35%] left-[40%] text-xl z-50 bg-gray-900 p-10 rounded flex flex-col"
+          >
+            <div className="text-lg font-bold">Leave chat</div>
+            <div className="text-sm mb-10">
+              Are you sure you want to leave this chat?
+            </div>
+            <div className="flex justify-between text-sm">
+              <div></div>
+              <div>
+                <button
+                  onClick={() => setLeaveMode(false)}
+                  className="px-3 py-2 bg-gray-800 mr-2 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-3 py-2 bg-red-500 ml-2 text-sm rounded"
+                >
+                  Leave
+                </button>
+              </div>
+            </div>
+          </form>
+          <div className="fixed top-0 left-0 bg-black opacity-50 w-screen h-screen z-10"></div>
+        </div>
+      )}
       <main className="flex-1 relative z-0">
         <div className="md:flex">
           {showFriends && (
@@ -207,7 +278,14 @@ function RouteComponent() {
             <div className="ml-3">Logout</div>
           </div>
           {showChats && (
-            <Chats chats={chats} clickedChat={clickedChat} unreads={unreads} />
+            <Chats
+              chats={chats}
+              clickedChat={clickedChat}
+              unreads={unreads}
+              setLeaveMode={setLeaveMode}
+              contextMenu={contextMenu}
+              setContextMenu={setContextMenu}
+            />
           )}
           {showMessages && (
             <Messages
@@ -219,7 +297,9 @@ function RouteComponent() {
               setFriend={setFriend}
               clickedFriend={clickedFriend}
               userFriends={userFriends}
-              unreads={unreads}
+              setLeaveMode={setLeaveMode}
+              menuMode={menuMode}
+              setMenuMode={setMenuMode}
             />
           )}
           {showProfile && <Profile />}

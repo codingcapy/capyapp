@@ -2,7 +2,7 @@ import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef } from "react";
 import { socket } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
 import { Unread } from "../lib/api/messages";
@@ -11,15 +11,30 @@ export default function Chats(props: {
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
   unreads: Unread[] | undefined;
-}) {
-  const { chats, clickedChat, unreads } = props;
-  const queryClient = useQueryClient();
-  const { user } = useAuthStore();
-  const [contextMenu, setContextMenu] = useState<{
+  setLeaveMode: Dispatch<SetStateAction<boolean>>;
+  contextMenu: {
     visible: boolean;
     x: number;
     y: number;
-  } | null>(null);
+  } | null;
+  setContextMenu: Dispatch<
+    SetStateAction<{
+      visible: boolean;
+      x: number;
+      y: number;
+    } | null>
+  >;
+}) {
+  const {
+    chats,
+    clickedChat,
+    unreads,
+    setLeaveMode,
+    contextMenu,
+    setContextMenu,
+  } = props;
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -99,7 +114,10 @@ export default function Chats(props: {
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400"
+            onClick={() => setLeaveMode(true)}
+          >
             Leave
           </button>
         </div>

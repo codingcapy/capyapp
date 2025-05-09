@@ -5,19 +5,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
   getreadMessagesByUserIdQueryOptions,
-  Unread,
   useCreateMessageMutation,
   useCreateMessageReadMutation,
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import {
   getParticipantsByChatIdQueryOptions,
   useInviteFriendMutation,
-  useLeaveChatMutation,
   useUpdateTitleMutation,
 } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
@@ -62,7 +60,9 @@ export default function Messages(props: {
   setFriend: (state: Friend | null) => void;
   clickedFriend: (state: Friend) => void;
   userFriends: UserFriend[] | undefined;
-  unreads: Unread[] | undefined;
+  setLeaveMode: Dispatch<SetStateAction<boolean>>;
+  menuMode: boolean;
+  setMenuMode: Dispatch<SetStateAction<boolean>>;
 }) {
   const {
     chat,
@@ -70,10 +70,11 @@ export default function Messages(props: {
     friends,
     friend,
     setFriend,
-    setChat,
     clickedFriend,
     userFriends,
-    unreads,
+    setLeaveMode,
+    menuMode,
+    setMenuMode,
   } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
@@ -87,15 +88,12 @@ export default function Messages(props: {
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
   const { mutate: updateTitle } = useUpdateTitleMutation();
-  const { mutate: leaveChat } = useLeaveChatMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
   const [addFriendMode, setAddFriendMode] = useState(false);
   const [addFriendNotification, setAddFriendNotification] = useState("");
   const [replyMode, setReplyMode] = useState(false);
-  const [menuMode, setMenuMode] = useState(false);
-  const [leaveMode, setLeaveMode] = useState(false);
   const [editTitleMode, setEditTitleMode] = useState(false);
   const [titleContent, setTitleContent] = useState((chat && chat.title) || "");
   const [replyContent, setReplyContent] = useState("");
@@ -188,32 +186,6 @@ export default function Messages(props: {
       title: newTitle,
     });
     setEditTitleMode(false);
-  }
-
-  function handleLeaveChat(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const userId = (user && user.userId) || "";
-    const chatId = (chat && chat.chatId) || 0;
-    createMessage(
-      {
-        userId: "notification",
-        chatId: (chat && chat.chatId) || 0,
-        content: `${user?.username} has left the chat`,
-      },
-      {
-        onSuccess: () =>
-          socket.emit("message", {
-            content: `${user?.username} has left the chat`,
-            chatId: chat && chat.chatId,
-            userId: user && user.userId,
-            createdAt: new Date().toISOString(),
-          }),
-      }
-    );
-    leaveChat({ userId, chatId });
-    setLeaveMode(false);
-    setMenuMode(false);
-    setChat(null);
   }
 
   function handleCreateMessageRead(id: number) {
@@ -369,37 +341,6 @@ export default function Messages(props: {
                 <div className="p-2">{participant.username}</div>
               </div>
             ))}
-          </div>
-        )}
-        {leaveMode && (
-          <div>
-            <form
-              onSubmit={handleLeaveChat}
-              className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col"
-            >
-              <div className="text-lg font-bold">Leave chat</div>
-              <div className="text-sm mb-10">
-                Are you sure you want to leave this chat?
-              </div>
-              <div className="flex justify-between text-sm">
-                <div></div>
-                <div>
-                  <button
-                    onClick={() => setLeaveMode(false)}
-                    className="px-3 py-2 bg-gray-800 mr-2 rounded"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-2 bg-red-500 ml-2 text-sm rounded"
-                  >
-                    Leave
-                  </button>
-                </div>
-              </div>
-            </form>
-            <div className="fixed top-0 left-0 bg-black opacity-50 w-screen h-screen z-0"></div>
           </div>
         )}
         {chat && (
