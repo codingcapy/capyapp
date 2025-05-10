@@ -397,6 +397,7 @@ export default function Messages(props: {
                   reactions={reactions}
                   chat={chat}
                   handleCreateMessageRead={handleCreateMessageRead}
+                  clickedFriend={clickedFriend}
                 />
               ) : message.userId === "notification" ? (
                 <Notification
@@ -416,6 +417,7 @@ export default function Messages(props: {
                   reactions={reactions}
                   chat={chat}
                   handleCreateMessageRead={handleCreateMessageRead}
+                  clickedFriend={clickedFriend}
                 />
               )}
             </div>

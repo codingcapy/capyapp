@@ -33,6 +33,7 @@ export default function MessageComponent(props: {
   reactions: Reaction[] | undefined;
   chat: Chat | null;
   handleCreateMessageRead: (id: number) => void;
+  clickedFriend: (state: Friend) => void;
 }) {
   const { user } = useAuthStore();
   const {
@@ -44,6 +45,7 @@ export default function MessageComponent(props: {
     reactions,
     chat,
     handleCreateMessageRead,
+    clickedFriend,
   } = props;
   const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
@@ -183,8 +185,14 @@ export default function MessageComponent(props: {
               <img
                 src={user.profilePic || profilePic}
                 className="w-[20px] h-[20px]  rounded-full mx-2"
+                onClick={() => clickedFriend(user)}
               />
-              <span className="font-bold pr-2">@{user.username}</span>{" "}
+              <span
+                className="font-bold pr-2"
+                onClick={() => clickedFriend(user)}
+              >
+                @{user.username}
+              </span>{" "}
               {message.replyContent}
             </div>
           </div>
@@ -242,11 +250,17 @@ export default function MessageComponent(props: {
         <img
           src={user?.profilePic ? user.profilePic : profilePic}
           className="w-[40px] h-[40px] rounded-full mr-2"
+          onClick={() => user && clickedFriend(user)}
         />
         <div className="w-[100%]">
           <div className="flex justify-between">
             <div className="flex">
-              <div className="font-bold px-1">{username}</div>
+              <div
+                className="font-bold px-1"
+                onClick={() => user && clickedFriend(user)}
+              >
+                {username}
+              </div>
               <div className="pl-2 text-gray-400">
                 on {message.createdAt.toString().slice(0, 25)}
               </div>

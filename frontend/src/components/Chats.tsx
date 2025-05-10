@@ -115,6 +115,12 @@ export default function Chats(props: {
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left "
+            onClick={() => setLeaveMode(true)}
+          >
+            Rename
+          </button>
+          <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400"
             onClick={() => setLeaveMode(true)}
           >

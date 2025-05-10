@@ -30,6 +30,7 @@ export default function MessageFriend(props: {
   reactions: Reaction[] | undefined;
   chat: Chat | null;
   handleCreateMessageRead: (id: number) => void;
+  clickedFriend: (state: Friend) => void;
 }) {
   const {
     message,
