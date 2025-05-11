@@ -43,6 +43,7 @@ export default function MessageFriend(props: {
     reactions,
     chat,
     handleCreateMessageRead,
+    clickedFriend,
   } = props;
   const friend = friends.find((friend) => friend.userId === message.userId);
   const participantReply = participants?.find(
@@ -167,8 +168,14 @@ export default function MessageFriend(props: {
               <img
                 src={user.profilePic || profilePic}
                 className="w-[20px] h-[20px]  rounded-full mx-2"
+                onClick={() => clickedFriend(user)}
               />
-              <span className="font-bold pr-2">@{user.username}</span>{" "}
+              <span
+                className="font-bold pr-2"
+                onClick={() => clickedFriend(user)}
+              >
+                @{user.username}
+              </span>{" "}
               {message.replyContent}
             </div>
           </div>
@@ -180,9 +187,17 @@ export default function MessageFriend(props: {
                   (participantReply && participantReply.profilePic) ||
                   profilePic
                 }
-                className="w-[20px] h-[20px]  rounded-full mx-2"
+                className="w-[20px] h-[20px] rounded-full mx-2"
+                onClick={() =>
+                  participantReply && clickedFriend(participantReply)
+                }
               />
-              <span className="font-bold pr-2">
+              <span
+                className="font-bold pr-2 hover:cursor-pointer hover:underline"
+                onClick={() =>
+                  participantReply && clickedFriend(participantReply)
+                }
+              >
                 @{participantReply && participantReply.username}
               </span>{" "}
               {message.replyContent}
@@ -200,11 +215,31 @@ export default function MessageFriend(props: {
             profilePic
           }
           className="w-[40px] h-[40px] rounded-full mr-2"
+          onClick={() =>
+            friend
+              ? clickedFriend(friend)
+              : participant
+                ? clickedFriend(participant)
+                : externalUser
+                  ? clickedFriend(externalUser)
+                  : ""
+          }
         />
         <div className="w-[100%]">
           <div className="flex justify-between">
             <div className="flex">
-              <div className="font-bold px-1">
+              <div
+                className="font-bold px-1 hover:cursor-pointer hover:underline"
+                onClick={() =>
+                  friend
+                    ? clickedFriend(friend)
+                    : participant
+                      ? clickedFriend(participant)
+                      : externalUser
+                        ? clickedFriend(externalUser)
+                        : ""
+                }
+              >
                 {friend !== undefined
                   ? friend.username
                   : participant !== undefined

@@ -188,7 +188,7 @@ export default function MessageComponent(props: {
                 onClick={() => clickedFriend(user)}
               />
               <span
-                className="font-bold pr-2"
+                className="font-bold pr-2 hover:cursor-pointer hover:underline"
                 onClick={() => clickedFriend(user)}
               >
                 @{user.username}
@@ -205,8 +205,16 @@ export default function MessageComponent(props: {
                   profilePic
                 }
                 className="w-[20px] h-[20px]  rounded-full mx-2"
+                onClick={() =>
+                  participantReply && clickedFriend(participantReply[0])
+                }
               />
-              <span className="font-bold pr-2">
+              <span
+                className="font-bold pr-2 hover:cursor-pointer hover:underline"
+                onClick={() =>
+                  participantReply && clickedFriend(participantReply[0])
+                }
+              >
                 @{participantReply && participantReply[0].username}
               </span>{" "}
               {message.replyContent}
@@ -256,7 +264,7 @@ export default function MessageComponent(props: {
           <div className="flex justify-between">
             <div className="flex">
               <div
-                className="font-bold px-1"
+                className="font-bold px-1 hover:cursor-pointer hover:underline"
                 onClick={() => user && clickedFriend(user)}
               >
                 {username}
