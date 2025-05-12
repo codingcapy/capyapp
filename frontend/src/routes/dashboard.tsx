@@ -84,6 +84,7 @@ function RouteComponent() {
     x: number;
     y: number;
   } | null>(null);
+  const [editTitleMode, setEditTitleMode] = useState(false);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -285,6 +286,8 @@ function RouteComponent() {
               setLeaveMode={setLeaveMode}
               contextMenu={contextMenu}
               setContextMenu={setContextMenu}
+              editTitleMode={editTitleMode}
+              setEditTitleMode={setEditTitleMode}
             />
           )}
           {showMessages && (
@@ -300,6 +303,8 @@ function RouteComponent() {
               setLeaveMode={setLeaveMode}
               menuMode={menuMode}
               setMenuMode={setMenuMode}
+              editTitleMode={editTitleMode}
+              setEditTitleMode={setEditTitleMode}
             />
           )}
           {showProfile && <Profile />}

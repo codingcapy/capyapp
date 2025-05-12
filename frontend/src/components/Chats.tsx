@@ -24,6 +24,8 @@ export default function Chats(props: {
       y: number;
     } | null>
   >;
+  editTitleMode: boolean;
+  setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const {
     chats,
@@ -32,6 +34,8 @@ export default function Chats(props: {
     setLeaveMode,
     contextMenu,
     setContextMenu,
+    editTitleMode,
+    setEditTitleMode,
   } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -116,7 +120,10 @@ export default function Chats(props: {
         >
           <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left "
-            onClick={() => setLeaveMode(true)}
+            onClick={() => {
+              setEditTitleMode(true);
+              setContextMenu(null);
+            }}
           >
             Rename
           </button>

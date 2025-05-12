@@ -63,6 +63,8 @@ export default function Messages(props: {
   setLeaveMode: Dispatch<SetStateAction<boolean>>;
   menuMode: boolean;
   setMenuMode: Dispatch<SetStateAction<boolean>>;
+  editTitleMode: boolean;
+  setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const {
     chat,
@@ -75,6 +77,8 @@ export default function Messages(props: {
     setLeaveMode,
     menuMode,
     setMenuMode,
+    editTitleMode,
+    setEditTitleMode,
   } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
@@ -94,7 +98,6 @@ export default function Messages(props: {
   const [addFriendMode, setAddFriendMode] = useState(false);
   const [addFriendNotification, setAddFriendNotification] = useState("");
   const [replyMode, setReplyMode] = useState(false);
-  const [editTitleMode, setEditTitleMode] = useState(false);
   const [titleContent, setTitleContent] = useState((chat && chat.title) || "");
   const [replyContent, setReplyContent] = useState("");
   const [emojiMode, setEmojiMode] = useState(false);
