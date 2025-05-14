@@ -69,6 +69,13 @@ export default function MessageFriend(props: {
   const { mutate: createReaction } = useCreateReactionMutation();
   const { mutate: deleteReaction } = useDeleteReactionMutation();
   const ref = useRef<HTMLDivElement>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useOnScreen(ref, () => {
     handleCreateMessageRead(message.messageId);
@@ -164,7 +171,7 @@ export default function MessageFriend(props: {
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">
-            <div className="flex">
+            <div className="flex cursor-pointer">
               <img
                 src={user.profilePic || profilePic}
                 className="w-[20px] h-[20px]  rounded-full mx-2"
@@ -181,7 +188,7 @@ export default function MessageFriend(props: {
           </div>
         ) : (
           <div className="text-gray-400 pt-2 pl-10">
-            <div className="flex">
+            <div className="flex cursor-pointer">
               <img
                 src={
                   (participantReply && participantReply.profilePic) ||
@@ -205,7 +212,7 @@ export default function MessageFriend(props: {
           </div>
         ))}
       <div
-        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300`}
+        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300 cursor-pointer`}
       >
         <img
           src={
@@ -342,6 +349,23 @@ export default function MessageFriend(props: {
               </button>
             </form>
           ))}
+        </div>
+      )}
+      {contextMenu?.visible && (
+        <div
+          ref={menuRef}
+          className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+            Reply
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+            Add Reaction
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+            Delete
+          </button>
         </div>
       )}
     </div>
