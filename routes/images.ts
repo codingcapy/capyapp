@@ -9,6 +9,7 @@ import { Hono } from "hono";
 import z from "zod";
 import { db } from "../db";
 import { messages as messagesTable } from "../schemas/messages";
+import { images as imagesTable } from "../schemas/images";
 
 const s3Client = new S3Client({
   region: process.env.AWS_IMAGE_BUCKET_REGION!,
@@ -31,4 +32,81 @@ type UploadResponse =
       error: string;
     };
 
-export const imagesRouter = new Hono().post();
+export const imagesRouter = new Hono().post(
+  "/upload",
+  zValidator(
+    "form",
+    z.object({
+      userId: z.string(),
+      file: z.instanceof(File),
+    })
+  ),
+  async (c) => {
+    const { file, userId } = c.req.valid("form");
+    try {
+      // Validate file type
+      const fileType = file.type;
+      const extension = fileType.split("/")[1];
+      if (!ALLOWED_FILE_TYPES.includes(extension)) {
+        return c.json<UploadResponse>(
+          {
+            success: false,
+            error: "Invalid file type",
+          },
+          400
+        );
+      }
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        return c.json<UploadResponse>(
+          {
+            success: false,
+            error: "File too large",
+          },
+          400
+        );
+      }
+
+      // Use timestamp in the key itself for time-versioned images
+      // Enables to avoid the cache (CloudFront) when image is updated
+      const timestamp = Date.now();
+      const env = process.env.NODE_ENV || "dev";
+      const key = `${env}/images/${file.name}-${timestamp}.${extension}`;
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      console.log(process.env.AWS_IMAGE_BUCKET_NAME);
+      // Upload to S3
+      const putObjectCommand = new PutObjectCommand({
+        Bucket: process.env.AWS_IMAGE_BUCKET_NAME!,
+        Key: key,
+        Body: buffer,
+        ContentType: fileType,
+      });
+
+      await s3Client.send(putObjectCommand);
+
+      // "Generate" CloudFront URL
+      const cloudFrontUrl = `${process.env.AWS_CLOUDFRONT_URL}/${key}`;
+
+      // Update the shape with the CloudFront URL
+      await db
+        .insert(imagesTable)
+        .values({ imageUrl: cloudFrontUrl, userId: userId });
+      return c.json<UploadResponse>({
+        success: true,
+        cloudFrontUrl,
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return c.json<UploadResponse>(
+        {
+          success: false,
+          error: "Failed to upload file",
+        },
+        500
+      );
+    }
+  }
+);
