@@ -128,6 +128,20 @@ export default function MessageFriend(props: {
     setEmojiMode(false);
   }
 
+  function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (!containerRef.current) return;
+
+    const container = containerRef.current.getBoundingClientRect();
+    const offset = 8; // Small offset to right and bottom
+
+    setContextMenu({
+      visible: true,
+      x: event.clientX - container.left + offset,
+      y: event.clientY - container.top + offset,
+    });
+  }
+
   useEffect(() => {
     if (friend || participant) {
       queryClient.invalidateQueries({ queryKey: ["users", message.userId] });
@@ -167,6 +181,9 @@ export default function MessageFriend(props: {
     <div
       className={`${isBlocked && "hidden"} hover:bg-zinc-800 group`}
       ref={ref}
+      onContextMenu={(e) => {
+        handleContextMenu(e);
+      }}
     >
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
@@ -212,7 +229,7 @@ export default function MessageFriend(props: {
           </div>
         ))}
       <div
-        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300 cursor-pointer`}
+        className={`${message.replyContent ? "px-3 pb-3" : "p-3"} flex transition-all ease duration-300`}
       >
         <img
           src={
@@ -221,7 +238,7 @@ export default function MessageFriend(props: {
             externalUser?.profilePic ??
             profilePic
           }
-          className="w-[40px] h-[40px] rounded-full mr-2"
+          className="w-[40px] h-[40px] rounded-full mr-2 cursor-pointer"
           onClick={() =>
             friend
               ? clickedFriend(friend)

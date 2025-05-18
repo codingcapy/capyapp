@@ -145,6 +145,20 @@ export default function MessageComponent(props: {
     setEmojiMode(false);
   }
 
+  function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (!containerRef.current) return;
+
+    const container = containerRef.current.getBoundingClientRect();
+    const offset = 8; // Small offset to right and bottom
+
+    setContextMenu({
+      visible: true,
+      x: event.clientX - container.left + offset,
+      y: event.clientY - container.top + offset,
+    });
+  }
+
   useEffect(() => {
     socket.on("reaction", (data) => {
       queryClient.invalidateQueries({ queryKey: ["reactions", chat?.chatId] });
@@ -184,7 +198,13 @@ export default function MessageComponent(props: {
   }, []);
 
   return (
-    <div className="hover:bg-zinc-800 group" ref={ref}>
+    <div
+      className="hover:bg-zinc-800 group"
+      ref={ref}
+      onContextMenu={(e) => {
+        handleContextMenu(e);
+      }}
+    >
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">
@@ -211,7 +231,7 @@ export default function MessageComponent(props: {
                   (participantReply && participantReply[0].profilePic) ||
                   profilePic
                 }
-                className="w-[20px] h-[20px]  rounded-full mx-2"
+                className="w-[20px] h-[20px] rounded-full mx-2"
                 onClick={() =>
                   participantReply && clickedFriend(participantReply[0])
                 }
@@ -271,7 +291,7 @@ export default function MessageComponent(props: {
           <div className="flex justify-between">
             <div className="flex">
               <div
-                className="font-bold px-1 hover:cursor-pointer hover:underline"
+                className="font-bold px-1 cursor-pointer hover:underline"
                 onClick={() => user && clickedFriend(user)}
               >
                 {username}
