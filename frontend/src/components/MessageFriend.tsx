@@ -138,7 +138,7 @@ export default function MessageFriend(props: {
     setContextMenu({
       visible: true,
       x: event.clientX - container.left + offset,
-      y: event.clientY - container.top + offset,
+      y: event.clientY - container.top + 250,
     });
   }
 
@@ -180,7 +180,7 @@ export default function MessageFriend(props: {
   return (
     <div
       className={`${isBlocked && "hidden"} hover:bg-zinc-800 group`}
-      ref={ref}
+      ref={containerRef}
       onContextMenu={(e) => {
         handleContextMenu(e);
       }}

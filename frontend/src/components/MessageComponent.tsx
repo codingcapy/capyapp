@@ -155,7 +155,7 @@ export default function MessageComponent(props: {
     setContextMenu({
       visible: true,
       x: event.clientX - container.left + offset,
-      y: event.clientY - container.top + offset,
+      y: event.clientY - container.top + 250,
     });
   }
 
@@ -200,7 +200,7 @@ export default function MessageComponent(props: {
   return (
     <div
       className="hover:bg-zinc-800 group"
-      ref={ref}
+      ref={containerRef}
       onContextMenu={(e) => {
         handleContextMenu(e);
       }}
