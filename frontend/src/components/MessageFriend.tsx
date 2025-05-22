@@ -138,8 +138,14 @@ export default function MessageFriend(props: {
     setContextMenu({
       visible: true,
       x: event.clientX - container.left + offset,
-      y: event.clientY - container.top + 250,
+      y: event.clientY - container.top + offset,
     });
+  }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setContextMenu(null);
+    }
   }
 
   useEffect(() => {
@@ -175,6 +181,11 @@ export default function MessageFriend(props: {
       socket.off("connect");
       socket.off("reaction");
     };
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   return (

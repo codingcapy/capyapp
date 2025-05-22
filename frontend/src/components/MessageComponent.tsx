@@ -178,6 +178,12 @@ export default function MessageComponent(props: {
     }
   };
 
+  function handleClickOutside(event: MouseEvent) {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setContextMenu(null);
+    }
+  }
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -195,6 +201,11 @@ export default function MessageComponent(props: {
     return () => {
       document.removeEventListener("mousedown", handleClickOutsideEmojis);
     };
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   return (

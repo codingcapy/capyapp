@@ -109,6 +109,13 @@ export default function Messages(props: {
   const { data: reads } = useQuery(
     getreadMessagesByUserIdQueryOptions((user && user.userId) || "")
   );
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -205,6 +212,24 @@ export default function Messages(props: {
     createMessageRead({ userId, messageId });
   }
 
+  function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const offset = 8;
+
+    const x = event.clientX - rect.left + container.scrollLeft + offset;
+    const y = event.clientY - rect.top + container.scrollTop + offset;
+
+    setContextMenu({
+      visible: true,
+      x,
+      y,
+    });
+  }
+
   useEffect(() => {
     socket.on("message", (data) => {
       queryClient.invalidateQueries({
@@ -272,8 +297,23 @@ export default function Messages(props: {
     }
   };
 
+  function handleClickOutsideContextMenu(event: MouseEvent) {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setContextMenu(null);
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutsideContextMenu);
+    return () =>
+      document.removeEventListener("click", handleClickOutsideContextMenu);
+  }, []);
+
   return (
-    <div className="md:w-[55%] md:h-screen overflow-auto relative bg-[#15151a] md:bg-[#202020]">
+    <div
+      className="md:w-[55%] md:h-screen overflow-auto relative bg-[#15151a] md:bg-[#202020]"
+      ref={containerRef}
+    >
       <div className="fixed top-0 left-0 md:left-[30%] bg-[#15151a] md:bg-[#202020] px-5 pt-5 w-screen md:w-[53.9%]">
         <div className="flex justify-between">
           <div className="flex">
@@ -389,39 +429,51 @@ export default function Messages(props: {
           .map((message, i) => (
             <div className="text-white" key={message.messageId || `live-${i}`}>
               {user && message.userId === user.userId ? (
-                <MessageComponent
-                  message={message}
-                  friends={friends || []}
-                  setFriend={setFriend}
-                  replyMode={replyMode}
-                  setReplyMode={setReplyMode}
-                  setReplyContent={setReplyContent}
-                  participants={participants}
-                  reactions={reactions}
-                  chat={chat}
-                  handleCreateMessageRead={handleCreateMessageRead}
-                  clickedFriend={clickedFriend}
-                />
+                <div
+                  onContextMenu={(e) => {
+                    handleContextMenu(e);
+                  }}
+                >
+                  <MessageComponent
+                    message={message}
+                    friends={friends || []}
+                    setFriend={setFriend}
+                    replyMode={replyMode}
+                    setReplyMode={setReplyMode}
+                    setReplyContent={setReplyContent}
+                    participants={participants}
+                    reactions={reactions}
+                    chat={chat}
+                    handleCreateMessageRead={handleCreateMessageRead}
+                    clickedFriend={clickedFriend}
+                  />
+                </div>
               ) : message.userId === "notification" ? (
                 <Notification
                   message={message}
                   handleCreateMessageRead={handleCreateMessageRead}
                 />
               ) : (
-                <MessageFriend
-                  message={message}
-                  friends={friends || []}
-                  setFriend={setFriend}
-                  replyMode={replyMode}
-                  setReplyMode={setReplyMode}
-                  setReplyContent={setReplyContent}
-                  participants={participants}
-                  userFriends={userFriends}
-                  reactions={reactions}
-                  chat={chat}
-                  handleCreateMessageRead={handleCreateMessageRead}
-                  clickedFriend={clickedFriend}
-                />
+                <div
+                  onContextMenu={(e) => {
+                    handleContextMenu(e);
+                  }}
+                >
+                  <MessageFriend
+                    message={message}
+                    friends={friends || []}
+                    setFriend={setFriend}
+                    replyMode={replyMode}
+                    setReplyMode={setReplyMode}
+                    setReplyContent={setReplyContent}
+                    participants={participants}
+                    userFriends={userFriends}
+                    reactions={reactions}
+                    chat={chat}
+                    handleCreateMessageRead={handleCreateMessageRead}
+                    clickedFriend={clickedFriend}
+                  />
+                </div>
               )}
             </div>
           ))}
@@ -482,6 +534,23 @@ export default function Messages(props: {
               <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
             </button>
           </form>
+        </div>
+      )}
+      {contextMenu?.visible && (
+        <div
+          ref={menuRef}
+          className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+            Reply
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+            Add Reaction
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+            Delete
+          </button>
         </div>
       )}
     </div>
