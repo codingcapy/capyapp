@@ -29,6 +29,8 @@ import { UserFriend } from "../../../schemas/userfriends";
 import { getReactionsByChatIdQueryOptions } from "../lib/api/reaction";
 import Notification from "./Notification";
 
+export type ContextMode = "user" | "friend";
+
 export function useOnScreen(
   ref: React.RefObject<HTMLElement | null>,
   onVisible: () => void,
@@ -116,6 +118,7 @@ export default function Messages(props: {
   } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [contextMode, setContextMode] = useState<ContextMode>("user");
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -220,8 +223,8 @@ export default function Messages(props: {
     const rect = container.getBoundingClientRect();
     const offset = 8;
 
-    const x = event.clientX - rect.left + container.scrollLeft + offset;
-    const y = event.clientY - rect.top + container.scrollTop + offset;
+    const x = event.clientX - rect.left + container.scrollLeft;
+    const y = event.clientY - rect.top + container.scrollTop;
 
     setContextMenu({
       visible: true,
@@ -433,6 +436,7 @@ export default function Messages(props: {
                   onContextMenu={(e) => {
                     handleContextMenu(e);
                     setReplyContent(message.content.toString());
+                    setContextMode("user");
                   }}
                 >
                   <MessageComponent
@@ -458,6 +462,8 @@ export default function Messages(props: {
                 <div
                   onContextMenu={(e) => {
                     handleContextMenu(e);
+                    setReplyContent(message.content.toString());
+                    setContextMode("friend");
                   }}
                 >
                   <MessageFriend
@@ -537,9 +543,8 @@ export default function Messages(props: {
           </form>
         </div>
       )}
-      {contextMenu?.visible && (
+      {contextMenu?.visible && contextMode === "user" && (
         <div
-          ref={menuRef}
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
@@ -553,6 +558,9 @@ export default function Messages(props: {
           >
             Reply
           </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+            Edit
+          </button>
           <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
             onClick={() => {
@@ -560,6 +568,22 @@ export default function Messages(props: {
               setContextMenu(null);
             }}
           >
+            Add Reaction
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+            Delete
+          </button>
+        </div>
+      )}
+      {contextMenu?.visible && contextMode === "friend" && (
+        <div
+          className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+            Reply
+          </button>
+          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
             Add Reaction
           </button>
         </div>
