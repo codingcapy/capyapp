@@ -270,9 +270,11 @@ export default function Messages(props: {
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("mousedown", handleClickOutsideEmojis);
+    document.addEventListener("mousedown", handleClickOutsideContextMenu);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("mousedown", handleClickOutsideEmojis);
+      document.addEventListener("mousedown", handleClickOutsideContextMenu);
     };
   }, []);
 
@@ -547,6 +549,7 @@ export default function Messages(props: {
         <div
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
+          ref={menuRef}
         >
           <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
@@ -579,6 +582,7 @@ export default function Messages(props: {
         <div
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
+          ref={menuRef}
         >
           <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
             Reply

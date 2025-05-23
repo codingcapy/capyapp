@@ -70,8 +70,6 @@ export default function MessageComponent(props: {
     x: number;
     y: number;
   } | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useOnScreen(ref, () => {
     handleCreateMessageRead(message.messageId);
@@ -145,20 +143,6 @@ export default function MessageComponent(props: {
     setEmojiMode(false);
   }
 
-  function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
-    event.preventDefault();
-    if (!containerRef.current) return;
-
-    const container = containerRef.current.getBoundingClientRect();
-    const offset = 8; // Small offset to right and bottom
-
-    setContextMenu({
-      visible: true,
-      x: event.clientX - container.left + offset,
-      y: event.clientY - container.top + 250,
-    });
-  }
-
   useEffect(() => {
     socket.on("reaction", (data) => {
       queryClient.invalidateQueries({ queryKey: ["reactions", chat?.chatId] });
@@ -177,12 +161,6 @@ export default function MessageComponent(props: {
       setEmojiMode(false);
     }
   };
-
-  function handleClickOutside(event: MouseEvent) {
-    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-      setContextMenu(null);
-    }
-  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -203,19 +181,8 @@ export default function MessageComponent(props: {
     };
   }, []);
 
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
   return (
-    <div
-      className="hover:bg-zinc-800 group"
-      ref={containerRef}
-      onContextMenu={(e) => {
-        handleContextMenu(e);
-      }}
-    >
+    <div className="hover:bg-zinc-800 group">
       {message.replyContent &&
         (message.replyUserId === user?.userId ? (
           <div className="text-gray-400 pt-2 pl-10">
@@ -443,7 +410,6 @@ export default function MessageComponent(props: {
       )}
       {contextMenu?.visible && (
         <div
-          ref={menuRef}
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
