@@ -432,6 +432,7 @@ export default function Messages(props: {
                 <div
                   onContextMenu={(e) => {
                     handleContextMenu(e);
+                    setReplyContent(message.content.toString());
                   }}
                 >
                   <MessageComponent
@@ -542,14 +543,24 @@ export default function Messages(props: {
           className="absolute bg-[#1A1A1A] p-2 z-[99] border border-[#555555] rounded"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+            onClick={() => {
+              setReplyMode(true);
+              setFriend(friend || null);
+              setContextMenu(null);
+            }}
+          >
             Reply
           </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+            onClick={() => {
+              setEmojiMode(true);
+              setContextMenu(null);
+            }}
+          >
             Add Reaction
-          </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
-            Delete
           </button>
         </div>
       )}
