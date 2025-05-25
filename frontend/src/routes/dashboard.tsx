@@ -32,6 +32,7 @@ import {
   getUnreadMessagesByUserIdQueryOptions,
   useCreateMessageMutation,
 } from "../lib/api/messages";
+import Participants from "../components/Participants";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -330,23 +331,18 @@ function RouteComponent() {
               <div className="ml-2 text-xl">{user && user.username}</div>
             </div>
             {chat && (
-              <div className="pl-[30px] pt-[20px]">
-                <div className="text-xl pb-2">Participants</div>
-                {participants?.map((participant) => (
-                  <div
-                    onClick={() => clickedFriend(participant)}
-                    className="flex pl-1 hover:bg-zinc-800 cursor-pointer"
-                    key={participant.userId}
-                  >
-                    <img
-                      src={participant.profilePic || profilePic}
-                      alt=""
-                      className="w-[25px] h-[25px] rounded-full mt-2"
-                    />
-                    <div className="p-2">{participant.username}</div>
-                  </div>
-                ))}
-              </div>
+              <Participants
+                participants={participants}
+                clickedAddFriend={clickedAddFriend}
+                clickedFriend={clickedFriend}
+                friends={friends}
+                userFriends={userFriends}
+                setFriend={setFriend}
+                friend={friend}
+                handleCreateChat={handleCreateChat}
+                handleBlock={handleBlock}
+                handleUnblock={handleUnblock}
+              />
             )}
           </div>
         </div>
