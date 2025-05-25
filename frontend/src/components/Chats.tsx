@@ -55,14 +55,14 @@ export default function Chats(props: {
   function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault();
     if (!containerRef.current) return;
-
-    const container = containerRef.current.getBoundingClientRect();
-    const offset = 8; // Small offset to right and bottom
-
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const x = event.clientX - rect.left + container.scrollLeft;
+    const y = event.clientY - rect.top + container.scrollTop;
     setContextMenu({
       visible: true,
-      x: event.clientX - container.left + offset,
-      y: event.clientY - container.top + offset,
+      x,
+      y,
     });
   }
 

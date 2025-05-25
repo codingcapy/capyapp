@@ -218,14 +218,10 @@ export default function Messages(props: {
   function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault();
     if (!containerRef.current) return;
-
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
-    const offset = 8;
-
     const x = event.clientX - rect.left + container.scrollLeft;
     const y = event.clientY - rect.top + container.scrollTop;
-
     setContextMenu({
       visible: true,
       x,
