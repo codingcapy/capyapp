@@ -580,7 +580,14 @@ export default function Messages(props: {
           style={{ top: contextMenu.y, left: contextMenu.x }}
           ref={menuRef}
         >
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+            onClick={() => {
+              setReplyMode(true);
+              setFriend(friend || null);
+              setContextMenu(null);
+            }}
+          >
             Reply
           </button>
           <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
