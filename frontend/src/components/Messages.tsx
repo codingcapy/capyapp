@@ -590,7 +590,13 @@ export default function Messages(props: {
           >
             Reply
           </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+            onClick={() => {
+              setEmojiMode(true);
+              setContextMenu(null);
+            }}
+          >
             Add Reaction
           </button>
         </div>
