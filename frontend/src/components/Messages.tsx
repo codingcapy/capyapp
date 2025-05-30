@@ -7,6 +7,7 @@ import {
   getreadMessagesByUserIdQueryOptions,
   useCreateMessageMutation,
   useCreateMessageReadMutation,
+  useDeleteMessageMutation,
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
@@ -119,6 +120,8 @@ export default function Messages(props: {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [contextMode, setContextMode] = useState<ContextMode>("user");
+  const [deleteMode, setDeleteMode] = useState(false);
+  const { mutate: deleteMessage } = useDeleteMessageMutation();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -304,6 +307,12 @@ export default function Messages(props: {
     }
   }
 
+  function handleDelete(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    //deleteMessage({ messageId: (message && message.messageId) || 0 });
+    setDeleteMode(false);
+  }
+
   useEffect(() => {
     document.addEventListener("click", handleClickOutsideContextMenu);
     return () =>
@@ -315,6 +324,37 @@ export default function Messages(props: {
       className="md:w-[55%] md:h-screen overflow-auto relative bg-[#15151a] md:bg-[#202020]"
       ref={containerRef}
     >
+      {deleteMode && (
+        <div>
+          <form
+            onSubmit={handleDelete}
+            className="fixed top-[35%] left-[40%] text-xl z-10 bg-gray-900 p-10 rounded flex flex-col"
+          >
+            <div className="text-lg font-bold">Delete message</div>
+            <div className="text-sm mb-10">
+              Are you sure you want to delete this message?
+            </div>
+            <div className="flex justify-between text-sm">
+              <div></div>
+              <div>
+                <button
+                  onClick={() => setDeleteMode(false)}
+                  className="px-3 py-2 bg-gray-800 mr-2 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-3 py-2 bg-red-500 ml-2 text-sm rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </form>
+          <div className="fixed top-0 left-0 bg-black opacity-50 w-screen h-screen z-0"></div>
+        </div>
+      )}
       <div className="fixed top-0 left-0 md:left-[30%] bg-[#15151a] md:bg-[#202020] px-5 pt-5 w-screen md:w-[53.9%]">
         <div className="flex justify-between">
           <div className="flex">
