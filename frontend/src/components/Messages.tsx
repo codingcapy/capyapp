@@ -29,6 +29,7 @@ import useParticipantStore from "../store/ParticipantStore";
 import { UserFriend } from "../../../schemas/userfriends";
 import { getReactionsByChatIdQueryOptions } from "../lib/api/reaction";
 import Notification from "./Notification";
+import { Message } from "../../../schemas/messages";
 
 export type ContextMode = "user" | "friend";
 
@@ -68,6 +69,8 @@ export default function Messages(props: {
   setMenuMode: Dispatch<SetStateAction<boolean>>;
   editTitleMode: boolean;
   setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
+  currentMessage: Message | null;
+  setCurrentMessage: (state: Message | null) => void;
 }) {
   const {
     chat,
@@ -82,6 +85,8 @@ export default function Messages(props: {
     setMenuMode,
     editTitleMode,
     setEditTitleMode,
+    currentMessage,
+    setCurrentMessage,
   } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
@@ -472,6 +477,8 @@ export default function Messages(props: {
               {user && message.userId === user.userId ? (
                 <div
                   onContextMenu={(e) => {
+                    setCurrentMessage(message);
+                    setFriend(user || null);
                     handleContextMenu(e);
                     setReplyContent(message.content.toString());
                     setContextMode("user");
@@ -499,6 +506,16 @@ export default function Messages(props: {
               ) : (
                 <div
                   onContextMenu={(e) => {
+                    setCurrentMessage(message);
+                    const friend =
+                      friends?.find(
+                        (friend) => message.userId === friend.userId
+                      ) ??
+                      participants?.find(
+                        (participant) => message.userId === participant.userId
+                      ) ??
+                      null;
+                    setFriend(friend);
                     handleContextMenu(e);
                     setReplyContent(message.content.toString());
                     setContextMode("friend");

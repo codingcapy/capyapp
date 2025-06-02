@@ -33,6 +33,7 @@ import {
   useCreateMessageMutation,
 } from "../lib/api/messages";
 import Participants from "../components/Participants";
+import { Message } from "../../../schemas/messages";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -86,6 +87,7 @@ function RouteComponent() {
     y: number;
   } | null>(null);
   const [editTitleMode, setEditTitleMode] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -306,6 +308,8 @@ function RouteComponent() {
               setMenuMode={setMenuMode}
               editTitleMode={editTitleMode}
               setEditTitleMode={setEditTitleMode}
+              currentMessage={currentMessage}
+              setCurrentMessage={setCurrentMessage}
             />
           )}
           {showProfile && <Profile />}
