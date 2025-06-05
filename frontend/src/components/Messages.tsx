@@ -27,7 +27,10 @@ import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
 import useParticipantStore from "../store/ParticipantStore";
 import { UserFriend } from "../../../schemas/userfriends";
-import { getReactionsByChatIdQueryOptions } from "../lib/api/reaction";
+import {
+  getReactionsByChatIdQueryOptions,
+  useCreateReactionMutation,
+} from "../lib/api/reaction";
 import Notification from "./Notification";
 import { Message } from "../../../schemas/messages";
 
@@ -127,6 +130,8 @@ export default function Messages(props: {
   const [contextMode, setContextMode] = useState<ContextMode>("user");
   const [deleteMode, setDeleteMode] = useState(false);
   const { mutate: deleteMessage } = useDeleteMessageMutation();
+  const { mutate: createReaction } = useCreateReactionMutation();
+  const [reactionMode, setReactionMode] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -263,6 +268,7 @@ export default function Messages(props: {
         setMenuMode(false);
         setLeaveMode(false);
         setEmojiMode(false);
+        setReactionMode(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -303,6 +309,7 @@ export default function Messages(props: {
       !emojisRef.current.contains(event.target as Node)
     ) {
       setEmojiMode(false);
+      setReactionMode(false);
     }
   };
 
@@ -316,6 +323,32 @@ export default function Messages(props: {
     e.preventDefault();
     //deleteMessage({ messageId: (message && message.messageId) || 0 });
     setDeleteMode(false);
+  }
+
+  function handleCreateReaction(
+    e: React.FormEvent<HTMLFormElement>,
+    message: Message | null
+  ) {
+    e.preventDefault();
+    if (message === null) return;
+    const messageId = message.messageId;
+    const chatId = (chat && chat.chatId) || 0;
+    const userId = (user && user.userId) || "";
+    const reactionContent = (e.target as HTMLFormElement).content.value;
+    createReaction(
+      {
+        messageId,
+        chatId,
+        userId,
+        content: reactionContent,
+      },
+      {
+        onSuccess: (result) => {
+          socket.emit("reaction", result);
+        },
+      }
+    );
+    setReactionMode(false);
   }
 
   useEffect(() => {
@@ -620,7 +653,7 @@ export default function Messages(props: {
           <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
             onClick={() => {
-              setEmojiMode(true);
+              setReactionMode(true);
               setContextMenu(null);
             }}
           >
@@ -650,12 +683,38 @@ export default function Messages(props: {
           <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
             onClick={() => {
-              setEmojiMode(true);
+              setReactionMode(true);
               setContextMenu(null);
             }}
           >
             Add Reaction
           </button>
+        </div>
+      )}
+      {reactionMode && (
+        <div
+          className={`fixed bottom-[250px] right-[13%] md:right-[30%] z-50 grid grid-cols-5 md:grid-cols-9 gap-2 text-xl bg-zinc-800 p-3 rounded`}
+          ref={emojisRef}
+        >
+          {emojis.map((emoji) => (
+            <form
+              onSubmit={(e) => handleCreateReaction(e, currentMessage)}
+              key={emoji}
+            >
+              <input
+                type="text"
+                defaultValue={emoji}
+                name="content"
+                className="hidden"
+              />
+              <button
+                type="submit"
+                className="cursor-pointer hover:bg-zinc-700"
+              >
+                {emoji}
+              </button>
+            </form>
+          ))}
         </div>
       )}
     </div>
