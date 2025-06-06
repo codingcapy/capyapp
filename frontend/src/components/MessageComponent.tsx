@@ -34,6 +34,10 @@ export default function MessageComponent(props: {
   chat: Chat | null;
   handleCreateMessageRead: (id: number) => void;
   clickedFriend: (state: Friend) => void;
+  handleCreateReaction: (
+    e: React.FormEvent<HTMLFormElement>,
+    message: Message | null
+  ) => void;
 }) {
   const { user } = useAuthStore();
   const {
@@ -46,6 +50,7 @@ export default function MessageComponent(props: {
     chat,
     handleCreateMessageRead,
     clickedFriend,
+    handleCreateReaction,
   } = props;
   const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
@@ -103,28 +108,6 @@ export default function MessageComponent(props: {
       content: messageContent,
     });
     setEditMode(false);
-  }
-
-  function handleCreateReaction(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const messageId = message.messageId;
-    const chatId = (chat && chat.chatId) || 0;
-    const userId = (user && user.userId) || "";
-    const reactionContent = (e.target as HTMLFormElement).content.value;
-    createReaction(
-      {
-        messageId,
-        chatId,
-        userId,
-        content: reactionContent,
-      },
-      {
-        onSuccess: (result) => {
-          socket.emit("reaction", result);
-        },
-      }
-    );
-    setEmojiMode(false);
   }
 
   function handleDeleteReaction(id: number) {
@@ -391,7 +374,13 @@ export default function MessageComponent(props: {
           ref={emojisRef}
         >
           {emojis.map((emoji) => (
-            <form onSubmit={handleCreateReaction} key={emoji}>
+            <form
+              onSubmit={(e) => {
+                handleCreateReaction(e, message);
+                setEmojiMode(false);
+              }}
+              key={emoji}
+            >
               <input
                 type="text"
                 defaultValue={emoji}
