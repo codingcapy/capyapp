@@ -38,6 +38,8 @@ export default function MessageComponent(props: {
     e: React.FormEvent<HTMLFormElement>,
     message: Message | null
   ) => void;
+  editMessageId: number | null;
+  setEditMessageId: (state: number | null) => void;
 }) {
   const { user } = useAuthStore();
   const {
@@ -51,6 +53,8 @@ export default function MessageComponent(props: {
     handleCreateMessageRead,
     clickedFriend,
     handleCreateReaction,
+    editMessageId,
+    setEditMessageId,
   } = props;
   const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
@@ -108,6 +112,7 @@ export default function MessageComponent(props: {
       content: messageContent,
     });
     setEditMode(false);
+    setEditMessageId(null);
   }
 
   function handleDeleteReaction(id: number) {
@@ -289,7 +294,7 @@ export default function MessageComponent(props: {
               </div>
             </div>
           </div>
-          {editMode ? (
+          {editMode || editMessageId === message.messageId ? (
             <form onSubmit={handleUpdate}>
               <input
                 type="text"

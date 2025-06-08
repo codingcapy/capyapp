@@ -132,6 +132,7 @@ export default function Messages(props: {
   const { mutate: deleteMessage } = useDeleteMessageMutation();
   const { mutate: createReaction } = useCreateReactionMutation();
   const [reactionMode, setReactionMode] = useState(false);
+  const [editMessageId, setEditMessageId] = useState<number | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -269,6 +270,8 @@ export default function Messages(props: {
         setLeaveMode(false);
         setEmojiMode(false);
         setReactionMode(false);
+        setDeleteMode(false);
+        setEditMessageId(null);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -321,7 +324,9 @@ export default function Messages(props: {
 
   function handleDelete(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    //deleteMessage({ messageId: (message && message.messageId) || 0 });
+    deleteMessage({
+      messageId: (currentMessage && currentMessage.messageId) || 0,
+    });
     setDeleteMode(false);
   }
 
@@ -530,6 +535,8 @@ export default function Messages(props: {
                     handleCreateMessageRead={handleCreateMessageRead}
                     clickedFriend={clickedFriend}
                     handleCreateReaction={handleCreateReaction}
+                    editMessageId={editMessageId}
+                    setEditMessageId={setEditMessageId}
                   />
                 </div>
               ) : message.userId === "notification" ? (
@@ -649,7 +656,13 @@ export default function Messages(props: {
           >
             Reply
           </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left ">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left "
+            onClick={() => {
+              setEditMessageId(currentMessage?.messageId || null);
+              setContextMenu(null);
+            }}
+          >
             Edit
           </button>
           <button
@@ -661,7 +674,13 @@ export default function Messages(props: {
           >
             Add Reaction
           </button>
-          <button className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400">
+          <button
+            className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400"
+            onClick={() => {
+              setDeleteMode(true);
+              setContextMenu(null);
+            }}
+          >
             Delete
           </button>
         </div>

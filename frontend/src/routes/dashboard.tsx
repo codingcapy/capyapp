@@ -283,6 +283,7 @@ function RouteComponent() {
           </div>
           {showChats && (
             <Chats
+              chat={chat}
               chats={chats}
               clickedChat={clickedChat}
               unreads={unreads}

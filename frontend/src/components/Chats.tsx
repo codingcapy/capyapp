@@ -8,6 +8,7 @@ import useAuthStore from "../store/AuthStore";
 import { Unread } from "../lib/api/messages";
 
 export default function Chats(props: {
+  chat: Chat | null;
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
   unreads: Unread[] | undefined;
@@ -36,6 +37,7 @@ export default function Chats(props: {
     setContextMenu,
     editTitleMode,
     setEditTitleMode,
+    chat,
   } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -88,11 +90,11 @@ export default function Chats(props: {
       </div>
       <div className="p-5 pt-[70px]">
         {chats !== undefined &&
-          chats.map((chat) => (
+          chats.map((c) => (
             <div
-              key={chat.chatId}
-              className="relative flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
-              onClick={() => clickedChat(chat)}
+              key={c.chatId}
+              className={`relative flex py-2 px-1 cursor-pointer hover:bg-zinc-800 transition-all ease duration-300 ${chat && chat.chatId === c.chatId && "bg-zinc-700"}`}
+              onClick={() => clickedChat(c)}
               onContextMenu={(e) => {
                 handleContextMenu(e);
               }}
@@ -101,12 +103,12 @@ export default function Chats(props: {
                 src={profilePic}
                 className="w-[40px] h-[40px] rounded-full"
               />
-              <div className="ml-2 py-2">{chat.title}</div>
+              <div className="ml-2 py-2">{c.title}</div>
               <div className="absolute top-[35px] left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
                 {unreads &&
-                  unreads?.filter((unread) => unread.chatId === chat.chatId)
+                  unreads?.filter((unread) => unread.chatId === c.chatId)
                     .length > 0 &&
-                  unreads?.filter((unread) => unread.chatId === chat.chatId)
+                  unreads?.filter((unread) => unread.chatId === c.chatId)
                     .length}
               </div>
             </div>
