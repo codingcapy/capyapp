@@ -1,0 +1,1 @@
+ALTER TABLE "images" ADD COLUMN "chat_id" integer;

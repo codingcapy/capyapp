@@ -11,6 +11,7 @@ import { attachSocketEventListeners } from "./ws";
 import { userChatsRouter } from "./routes/chats";
 import { messagesRouter } from "./routes/messages";
 import { reactionsRouter } from "./routes/reactions";
+import { imagesRouter } from "./routes/images";
 
 const app = new Hono();
 
@@ -24,7 +25,8 @@ const apiRoutes = app
   .route("/friends", userFriendsRouter)
   .route("/chats", userChatsRouter)
   .route("/messages", messagesRouter)
-  .route("/reactions", reactionsRouter);
+  .route("/reactions", reactionsRouter)
+  .route("/images", imagesRouter);
 
 app.use("/*", serveStatic({ root: "./frontend/dist" }));
 app.get("/*", async (c) => {
