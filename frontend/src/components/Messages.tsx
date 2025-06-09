@@ -218,7 +218,6 @@ export default function Messages(props: {
   function handleCreateMessageRead(id: number) {
     const userId = (user && user.userId) || "";
     const messageId = id;
-
     if (
       reads &&
       reads.some(
