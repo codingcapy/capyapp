@@ -33,6 +33,8 @@ import {
 } from "../lib/api/reaction";
 import Notification from "./Notification";
 import { Message } from "../../../schemas/messages";
+import { FaPlusCircle } from "react-icons/fa";
+import { FaImage } from "react-icons/fa6";
 
 export type ContextMode = "user" | "friend";
 
@@ -133,6 +135,7 @@ export default function Messages(props: {
   const { mutate: createReaction } = useCreateReactionMutation();
   const [reactionMode, setReactionMode] = useState(false);
   const [editMessageId, setEditMessageId] = useState<number | null>(null);
+  const [uploadMode, setUploadMode] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -600,6 +603,16 @@ export default function Messages(props: {
           ))}
         </div>
       )}
+      {uploadMode && (
+        <div
+          className={`fixed ${replyMode ? "bottom-[170px] md:bottom-[150px]" : "bottom-[150px] md:bottom-[100px]"} left-[13%] md:left-[31%] w-[10%] z-50 bg-zinc-800 p-3 rounded`}
+        >
+          <div className="flex cursor-pointer hover:bg-zinc-700 p-3">
+            <FaImage size={25} />
+            <button className="pl-4">Upload image</button>
+          </div>
+        </div>
+      )}
       {chat && replyMode && (
         <div className="fixed bottom-[150px] md:bottom-[100px] left-0 w-[100%] md:left-[30%] md:w-[54%] flex justify-between px-6 pb-2 bg-gray-700">
           <div className="pt-2 block">
@@ -620,9 +633,14 @@ export default function Messages(props: {
         >
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
             <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] mr-3 flex">
+              <FaPlusCircle
+                size={27}
+                onClick={() => setUploadMode(!uploadMode)}
+                className="cursor-pointer pb-1"
+              />
               <input
                 type="text"
-                className="w-[100%] outline-none "
+                className="w-[100%] outline-none pl-2"
                 name="messagecontent"
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
