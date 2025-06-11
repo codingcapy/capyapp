@@ -605,12 +605,20 @@ export default function Messages(props: {
       )}
       {uploadMode && (
         <div
-          className={`fixed ${replyMode ? "bottom-[170px] md:bottom-[150px]" : "bottom-[150px] md:bottom-[100px]"} left-[13%] md:left-[31%] w-[10%] z-50 bg-zinc-800 p-3 rounded`}
+          className={`fixed ${replyMode ? "bottom-[170px] md:bottom-[150px]" : "bottom-[150px] md:bottom-[100px]"} left-[13%] md:left-[31%] w-[15%] z-50 bg-zinc-800 p-3 rounded`}
         >
-          <div className="flex cursor-pointer hover:bg-zinc-700 p-3">
+          <label className="flex cursor-pointer hover:bg-zinc-700 p-3">
             <FaImage size={25} />
-            <button className="pl-4">Upload image</button>
-          </div>
+            <div className="pl-4">Upload image</div>
+            <input
+              id="imageUpload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              // onChange={handleImageUpload}
+              // disabled={isUploading}
+            />
+          </label>
         </div>
       )}
       {chat && replyMode && (
