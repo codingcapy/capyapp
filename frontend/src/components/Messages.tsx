@@ -11,7 +11,14 @@ import {
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import {
@@ -35,6 +42,7 @@ import Notification from "./Notification";
 import { Message } from "../../../schemas/messages";
 import { FaPlusCircle } from "react-icons/fa";
 import { FaImage } from "react-icons/fa6";
+import { useUploadImageMutation } from "../lib/api/images";
 
 export type ContextMode = "user" | "friend";
 
@@ -136,6 +144,11 @@ export default function Messages(props: {
   const [reactionMode, setReactionMode] = useState(false);
   const [editMessageId, setEditMessageId] = useState<number | null>(null);
   const [uploadMode, setUploadMode] = useState(false);
+  const {
+    mutate: uploadImage,
+    isPending: isUploading,
+    error: uploadError,
+  } = useUploadImageMutation();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -363,6 +376,19 @@ export default function Messages(props: {
     return () =>
       document.removeEventListener("click", handleClickOutsideContextMenu);
   }, []);
+
+  const handleImageUpload = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      uploadImage({ userId: user!.userId, file });
+
+      // Clear the input value to ensure onChange fires even with same file
+      event.target.value = "";
+    },
+    [user!.userId, uploadImage]
+  );
 
   return (
     <div
