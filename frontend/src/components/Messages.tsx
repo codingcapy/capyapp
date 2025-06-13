@@ -149,6 +149,7 @@ export default function Messages(props: {
     isPending: isUploading,
     error: uploadError,
   } = useUploadImageMutation();
+  const [preview, setPreview] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -381,6 +382,10 @@ export default function Messages(props: {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
 
       uploadImage({ userId: user!.userId, file });
 
@@ -641,7 +646,7 @@ export default function Messages(props: {
               type="file"
               accept="image/*"
               className="hidden"
-              // onChange={handleImageUpload}
+              onChange={handleImageUpload}
               // disabled={isUploading}
             />
           </label>
@@ -689,6 +694,7 @@ export default function Messages(props: {
               <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
             </button>
           </form>
+          {preview && <img src={preview} className="w-[50px]" />}
         </div>
       )}
       {contextMenu?.visible && contextMode === "user" && (
