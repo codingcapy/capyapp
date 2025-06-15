@@ -132,7 +132,7 @@ export const imagesRouter = new Hono()
         cause: imagesQueryError,
       });
     }
-    return c.json({ participants: imagesQueryResult });
+    return c.json({ images: imagesQueryResult });
   })
   .get("/", async (c) => {
     const { result: imagesQueryResult, error: imagesQueryError } =
@@ -143,5 +143,5 @@ export const imagesRouter = new Hono()
         cause: imagesQueryError,
       });
     }
-    return c.json({ participants: imagesQueryResult });
+    return c.json({ images: imagesQueryResult });
   });
