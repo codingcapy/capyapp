@@ -42,7 +42,10 @@ import Notification from "./Notification";
 import { Message } from "../../../schemas/messages";
 import { FaPlusCircle } from "react-icons/fa";
 import { FaImage } from "react-icons/fa6";
-import { useUploadImageMutation } from "../lib/api/images";
+import {
+  getImagesByChatIdQueryOptions,
+  useUploadImageMutation,
+} from "../lib/api/images";
 
 export type ContextMode = "user" | "friend";
 
@@ -109,6 +112,9 @@ export default function Messages(props: {
   );
   const { data: reactions } = useQuery(
     getReactionsByChatIdQueryOptions(chat?.chatId || 0)
+  );
+  const { data: images } = useQuery(
+    getImagesByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
@@ -577,6 +583,13 @@ export default function Messages(props: {
                   message={message}
                   handleCreateMessageRead={handleCreateMessageRead}
                 />
+              ) : images ? (
+                images.map(
+                  (image) =>
+                    image.messageId === message.messageId && (
+                      <div>{image.imageId}</div>
+                    )
+                )
               ) : (
                 <div
                   onContextMenu={(e) => {
@@ -670,6 +683,13 @@ export default function Messages(props: {
         <div
           className={`fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#15151a] md:bg-[#202020] `}
         >
+          {images && (
+            <div>
+              {images.map((image) => (
+                <img src={image.imageUrl} className="w-[1000px]" />
+              ))}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
             <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] mr-3 flex">
               <FaPlusCircle
@@ -694,7 +714,6 @@ export default function Messages(props: {
               <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
             </button>
           </form>
-          {preview && <img src={preview} className="w-[50px]" />}
         </div>
       )}
       {contextMenu?.visible && contextMode === "user" && (
