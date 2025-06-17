@@ -42,11 +42,13 @@ export const imagesRouter = new Hono()
       "form",
       z.object({
         userId: z.string(),
+        chatId: z.number(),
+        messageId: z.number(),
         file: z.instanceof(File),
       })
     ),
     async (c) => {
-      const { file, userId } = c.req.valid("form");
+      const { file, userId, chatId, messageId } = c.req.valid("form");
       try {
         // Validate file type
         const fileType = file.type;
@@ -97,7 +99,12 @@ export const imagesRouter = new Hono()
         // Update the shape with the CloudFront URL
         await db
           .insert(imagesTable)
-          .values({ imageUrl: cloudFrontUrl, userId: userId });
+          .values({
+            imageUrl: cloudFrontUrl,
+            userId: userId,
+            messageId: messageId,
+            chatId: chatId,
+          });
         return c.json<UploadResponse>({
           success: true,
           cloudFrontUrl,

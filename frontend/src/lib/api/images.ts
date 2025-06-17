@@ -32,12 +32,22 @@ export function mapSerializedImageToSchema(
 export function useUploadImageMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ userId, file }: { userId: string; file: File }) => {
+    mutationFn: async ({
+      userId,
+      file,
+      messageId,
+      chatId,
+    }: {
+      userId: string;
+      file: File;
+      messageId: string;
+      chatId: string;
+    }) => {
       const formData = new FormData();
       formData.append("file", file);
 
       const res = await client.api.v0.images.upload.$post({
-        form: { userId, file },
+        form: { userId, file, messageId, chatId },
       });
 
       const data = (await res.json()) as UploadResponse;

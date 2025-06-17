@@ -393,7 +393,13 @@ export default function Messages(props: {
         setPreview(reader.result as string);
       };
 
-      uploadImage({ userId: user!.userId, file });
+      uploadImage({
+        userId: user!.userId,
+        file,
+        chatId: chat?.chatId.toString() || "",
+        messageId:
+          (currentMessage && currentMessage.messageId.toString()) || "",
+      });
 
       // Clear the input value to ensure onChange fires even with same file
       event.target.value = "";
