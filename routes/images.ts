@@ -35,6 +35,10 @@ type UploadResponse =
       error: string;
     };
 
+const deleteImageSchema = z.object({
+  imageId: z.number(),
+});
+
 export const imagesRouter = new Hono()
   .post(
     "/upload",
@@ -151,4 +155,32 @@ export const imagesRouter = new Hono()
       });
     }
     return c.json({ images: imagesQueryResult });
+  })
+  .post("/delete", zValidator("json", deleteImageSchema), async (c) => {
+    const deleteValues = c.req.valid("json");
+    const { error: imageDeleteError, result: imageDeleteResult } =
+      await mightFail(
+        db
+          .delete(imagesTable)
+          .where(eq(imagesTable.imageId, Number(deleteValues.imageId)))
+          .returning()
+      );
+    if (imageDeleteError) {
+      console.log("Error while deleting image");
+      throw new HTTPException(500, {
+        message: "Error while deleting image",
+        cause: imageDeleteError,
+      });
+    }
+    return c.json({ newMessage: imageDeleteResult[0] }, 200);
   });
+
+export async function deleteImageFromS3(imageUrl: string) {
+  if (!imageUrl) return;
+  // const deleteCommand = new DeleteObjectsCommand({
+  //   Bucket: process.env.AWS_IMAGE_BUCKET_NAME!,
+  //   Delete: {
+  //     Objects: listedObjects.Contents.map(({ Key }) => ({ Key })),
+  //   },
+  // });
+}
