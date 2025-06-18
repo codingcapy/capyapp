@@ -688,13 +688,14 @@ export default function Messages(props: {
       )}
       {chat && (
         <div
-          className={`fixed bottom-[80px] md:bottom-0 left-0 w-[100%] ${images && images.length > 0 ? "h-[150px]" : "md:h-[100px]"} md:left-[30%] md:w-[54%] h-[70px] bg-[#15151a] md:bg-[#202020] `}
+          className={`fixed bottom-[80px] md:bottom-0 left-0 w-[100%] ${images && images.find((image) => image.userId === user!.userId && !image.posted) ? "h-[200px]" : "md:h-[100px]"} md:left-[30%] md:w-[54%] h-[70px] bg-[#15151a] md:bg-[#202020] `}
         >
           {images && (
             <div className="flex px-[20px] pt-[10px]">
               {images.map(
                 (image) =>
-                  !image.posted && (
+                  !image.posted &&
+                  image.userId === user!.userId && (
                     <div className="relative" key={image.imageId}>
                       <FaTrashCan
                         size={20}
@@ -702,7 +703,7 @@ export default function Messages(props: {
                       />
                       <img
                         src={`https://${image.imageUrl}`}
-                        className="h-[50px] px-[10px]"
+                        className="h-[100px] px-[10px]"
                       />
                     </div>
                   )
