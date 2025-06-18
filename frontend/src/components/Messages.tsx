@@ -384,28 +384,28 @@ export default function Messages(props: {
       document.removeEventListener("click", handleClickOutsideContextMenu);
   }, []);
 
-  const handleImageUpload = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-
-      uploadImage({
+  function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result as string);
+    };
+    console.log((chat && chat.chatId) || "no chat");
+    uploadImage(
+      {
         userId: user!.userId,
         file,
         chatId: chat?.chatId.toString() || "",
         messageId:
           (currentMessage && currentMessage.messageId.toString()) || "",
-      });
+      },
+      { onSuccess: () => setUploadMode(false) }
+    );
 
-      // Clear the input value to ensure onChange fires even with same file
-      event.target.value = "";
-    },
-    [user!.userId, uploadImage]
-  );
+    // Clear the input value to ensure onChange fires even with same file
+    event.target.value = "";
+  }
 
   return (
     <div
@@ -687,13 +687,20 @@ export default function Messages(props: {
       )}
       {chat && (
         <div
-          className={`fixed bottom-[80px] left-0 w-[100%] md:bottom-0 md:left-[30%] md:w-[54%] h-[70px] md:h-[100px] bg-[#15151a] md:bg-[#202020] `}
+          className={`fixed bottom-[80px] md:bottom-0 left-0 w-[100%] ${images && images.length > 0 ? "h-[150px]" : "md:h-[100px]"} md:left-[30%] md:w-[54%] h-[70px] bg-[#15151a] md:bg-[#202020] `}
         >
           {images && (
-            <div>
-              {images.map((image) => (
-                <img src={image.imageUrl} className="w-[1000px]" />
-              ))}
+            <div className="flex px-[20px] pt-[10px]">
+              {images.map(
+                (image) =>
+                  !image.posted && (
+                    <img
+                      src={`https://${image.imageUrl}`}
+                      className="h-[50px] px-[10px]"
+                      key={image.imageId}
+                    />
+                  )
+              )}
             </div>
           )}
           <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">

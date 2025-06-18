@@ -42,8 +42,8 @@ export const imagesRouter = new Hono()
       "form",
       z.object({
         userId: z.string(),
-        chatId: z.number(),
-        messageId: z.number(),
+        chatId: z.string(),
+        messageId: z.string(),
         file: z.instanceof(File),
       })
     ),
@@ -97,14 +97,12 @@ export const imagesRouter = new Hono()
         const cloudFrontUrl = `${process.env.AWS_CLOUDFRONT_URL}/${key}`;
 
         // Update the shape with the CloudFront URL
-        await db
-          .insert(imagesTable)
-          .values({
-            imageUrl: cloudFrontUrl,
-            userId: userId,
-            messageId: messageId,
-            chatId: chatId,
-          });
+        await db.insert(imagesTable).values({
+          imageUrl: cloudFrontUrl,
+          userId: userId,
+          messageId: Number(messageId),
+          chatId: Number(chatId),
+        });
         return c.json<UploadResponse>({
           success: true,
           cloudFrontUrl,
@@ -122,6 +120,7 @@ export const imagesRouter = new Hono()
     }
   )
   .get("/:chatId", async (c) => {
+    console.log("get images");
     const chatId = c.req.param("chatId");
     if (!chatId) {
       return c.json({ error: "chatId parameter is required." }, 400);
@@ -139,6 +138,7 @@ export const imagesRouter = new Hono()
         cause: imagesQueryError,
       });
     }
+    console.log(imagesQueryResult);
     return c.json({ images: imagesQueryResult });
   })
   .get("/", async (c) => {
