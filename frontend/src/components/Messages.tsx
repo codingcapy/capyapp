@@ -46,6 +46,7 @@ import {
   getImagesByChatIdQueryOptions,
   useUploadImageMutation,
 } from "../lib/api/images";
+import { FaTrashCan } from "react-icons/fa6";
 
 export type ContextMode = "user" | "friend";
 
@@ -694,11 +695,16 @@ export default function Messages(props: {
               {images.map(
                 (image) =>
                   !image.posted && (
-                    <img
-                      src={`https://${image.imageUrl}`}
-                      className="h-[50px] px-[10px]"
-                      key={image.imageId}
-                    />
+                    <div className="relative" key={image.imageId}>
+                      <FaTrashCan
+                        size={20}
+                        className="text-red-400 absolute top-0 right-0 bg-zinc-700 p-[3px] rounded"
+                      />
+                      <img
+                        src={`https://${image.imageUrl}`}
+                        className="h-[50px] px-[10px]"
+                      />
+                    </div>
                   )
               )}
             </div>
