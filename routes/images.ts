@@ -172,7 +172,7 @@ export const imagesRouter = new Hono()
         cause: imageDeleteError,
       });
     }
-    return c.json({ newMessage: imageDeleteResult[0] }, 200);
+    return c.json({ newImage: imageDeleteResult[0] }, 200);
   });
 
 export async function deleteImageFromS3(imageUrl: string) {

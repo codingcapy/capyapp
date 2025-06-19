@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { client, ExtractData } from "./client";
+import { ArgumentTypes, client, ExtractData } from "./client";
 import { ImageMessage } from "../../../../schemas/images";
 
 type UploadResponse =
@@ -19,6 +19,10 @@ type UploadResponse =
 type SerializeImage = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.images.$get>>
 >["images"][number];
+
+type DeleteImageArgs = ArgumentTypes<
+  typeof client.api.v0.images.delete.$post
+>[0]["json"];
 
 export function mapSerializedImageToSchema(
   SerializedImage: SerializeImage
@@ -77,3 +81,31 @@ export const getImagesByChatIdQueryOptions = (args: string) =>
     queryKey: ["images", args],
     queryFn: () => getImagesByChatId(args),
   });
+
+async function deleteImage(args: DeleteImageArgs) {
+  const res = await client.api.v0.images.delete.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error deleting image.");
+  }
+  const { newImage } = await res.json();
+  console.log(newImage);
+  return newImage;
+}
+
+export const useDeleteImageMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteImage,
+    onSettled: (newImage) => {
+      if (!newImage) return;
+      queryClient.invalidateQueries({
+        queryKey: ["images", newImage.chatId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["images"],
+      });
+    },
+  });
+};
