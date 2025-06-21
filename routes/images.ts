@@ -66,7 +66,6 @@ export const imagesRouter = new Hono()
             400
           );
         }
-
         // Validate file size
         if (file.size > MAX_FILE_SIZE) {
           return c.json<UploadResponse>(
@@ -77,7 +76,6 @@ export const imagesRouter = new Hono()
             400
           );
         }
-
         // Use timestamp in the key itself for time-versioned images
         // Enables to avoid the cache (CloudFront) when image is updated
         const timestamp = Date.now();
@@ -85,8 +83,6 @@ export const imagesRouter = new Hono()
         const key = `${env}/images/${file.name}-${timestamp}.${extension}`;
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-
-        console.log(process.env.AWS_IMAGE_BUCKET_NAME);
         // Upload to S3
         const putObjectCommand = new PutObjectCommand({
           Bucket: process.env.AWS_IMAGE_BUCKET_NAME!,
@@ -94,12 +90,9 @@ export const imagesRouter = new Hono()
           Body: buffer,
           ContentType: fileType,
         });
-
         await s3Client.send(putObjectCommand);
-
         // "Generate" CloudFront URL
         const cloudFrontUrl = `${process.env.AWS_CLOUDFRONT_URL}/${key}`;
-
         // Update the shape with the CloudFront URL
         await db.insert(imagesTable).values({
           imageUrl: cloudFrontUrl,
@@ -171,16 +164,26 @@ export const imagesRouter = new Hono()
         message: "Error while deleting image",
         cause: imageDeleteError,
       });
+    } else {
+      deleteImageFromS3(imageDeleteResult[0].imageUrl);
     }
     return c.json({ newImage: imageDeleteResult[0] }, 200);
   });
 
 export async function deleteImageFromS3(imageUrl: string) {
   if (!imageUrl) return;
-  // const deleteCommand = new DeleteObjectsCommand({
-  //   Bucket: process.env.AWS_IMAGE_BUCKET_NAME!,
-  //   Delete: {
-  //     Objects: listedObjects.Contents.map(({ Key }) => ({ Key })),
-  //   },
-  // });
+  const cloudFrontBase = process.env.AWS_CLOUDFRONT_URL!;
+  const key = imageUrl.replace(`${cloudFrontBase}/`, ""); // remove base URL
+  const deleteCommand = new DeleteObjectsCommand({
+    Bucket: process.env.AWS_IMAGE_BUCKET_NAME!,
+    Delete: {
+      Objects: [{ Key: key }],
+    },
+  });
+  try {
+    await s3Client.send(deleteCommand);
+    console.log(`Deleted image from S3: ${key}`);
+  } catch (err) {
+    console.error("Failed to delete image from S3", err);
+  }
 }

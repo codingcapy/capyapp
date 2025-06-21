@@ -410,7 +410,7 @@ export default function Messages(props: {
     event.target.value = "";
   }
 
-  function handleDeleteImage(event: MouseEvent, imageId: number) {
+  function handleDeleteImage(imageId: number) {
     deleteImage({
       imageId: imageId,
     });
@@ -708,6 +708,7 @@ export default function Messages(props: {
                       <FaTrashCan
                         size={20}
                         className="text-red-400 absolute top-0 right-0 bg-zinc-700 p-[3px] rounded"
+                        onClick={() => handleDeleteImage(image.imageId)}
                       />
                       <img
                         src={`https://${image.imageUrl}`}
