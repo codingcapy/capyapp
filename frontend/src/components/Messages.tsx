@@ -44,6 +44,7 @@ import { FaPlusCircle } from "react-icons/fa";
 import { FaImage } from "react-icons/fa6";
 import {
   getImagesByChatIdQueryOptions,
+  useDeleteImageMutation,
   useUploadImageMutation,
 } from "../lib/api/images";
 import { FaTrashCan } from "react-icons/fa6";
@@ -120,6 +121,7 @@ export default function Messages(props: {
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
   const { mutate: updateTitle } = useUpdateTitleMutation();
+  const { mutate: deleteImage } = useDeleteImageMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
   const lastMessageRef = useRef<HTMLDivElement>(null);
@@ -406,6 +408,12 @@ export default function Messages(props: {
 
     // Clear the input value to ensure onChange fires even with same file
     event.target.value = "";
+  }
+
+  function handleDeleteImage(event: MouseEvent, imageId: number) {
+    deleteImage({
+      imageId: imageId,
+    });
   }
 
   return (
