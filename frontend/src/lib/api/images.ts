@@ -24,6 +24,10 @@ type DeleteImageArgs = ArgumentTypes<
   typeof client.api.v0.images.delete.$post
 >[0]["json"];
 
+type UpdateImageArgs = ArgumentTypes<
+  typeof client.api.v0.images.update.$post
+>[0]["json"];
+
 export function mapSerializedImageToSchema(
   SerializedImage: SerializeImage
 ): ImageMessage {
@@ -105,6 +109,34 @@ export const useDeleteImageMutation = () => {
       });
       queryClient.invalidateQueries({
         queryKey: ["images"],
+      });
+    },
+  });
+};
+
+async function updateMessage(args: UpdateImageArgs) {
+  const res = await client.api.v0.images.update.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating image.");
+  }
+  const { newImage } = await res.json();
+  console.log(newImage);
+  return mapSerializedImageToSchema(newImage);
+}
+
+export const useUpdateMessageMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateMessage,
+    onSettled: (newMessage) => {
+      if (!newMessage) return;
+      queryClient.invalidateQueries({
+        queryKey: ["messages", newMessage.messageId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["messages"],
       });
     },
   });

@@ -178,6 +178,7 @@ export const imagesRouter = new Hono()
         chatId: true,
         userId: true,
         imageUrl: true,
+        posted: true,
         createdAt: true,
       })
     ),
@@ -198,7 +199,7 @@ export const imagesRouter = new Hono()
           cause: imageUpdateResult,
         });
       }
-      return c.json({ newMessage: imageUpdateResult[0] }, 200);
+      return c.json({ newImage: imageUpdateResult[0] }, 200);
     }
   );
 
