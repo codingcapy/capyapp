@@ -13,6 +13,7 @@ import { images as imagesTable } from "../schemas/images";
 import { mightFail } from "might-fail";
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { createInsertSchema } from "drizzle-zod";
 
 const s3Client = new S3Client({
   region: process.env.AWS_IMAGE_BUCKET_REGION!,
@@ -168,7 +169,38 @@ export const imagesRouter = new Hono()
       deleteImageFromS3(imageDeleteResult[0].imageUrl);
     }
     return c.json({ newImage: imageDeleteResult[0] }, 200);
-  });
+  })
+  .post(
+    "/update",
+    zValidator(
+      "json",
+      createInsertSchema(imagesTable).omit({
+        chatId: true,
+        userId: true,
+        imageUrl: true,
+        createdAt: true,
+      })
+    ),
+    async (c) => {
+      const updateValues = c.req.valid("json");
+      const { error: imageUpdateError, result: imageUpdateResult } =
+        await mightFail(
+          db
+            .update(imagesTable)
+            .set({ messageId: updateValues.messageId, posted: true })
+            .where(eq(imagesTable.imageId, Number(updateValues.imageId)))
+            .returning()
+        );
+      if (imageUpdateError) {
+        console.log("Error while updating image");
+        throw new HTTPException(500, {
+          message: "Error while updating image",
+          cause: imageUpdateResult,
+        });
+      }
+      return c.json({ newMessage: imageUpdateResult[0] }, 200);
+    }
+  );
 
 export async function deleteImageFromS3(imageUrl: string) {
   if (!imageUrl) return;
