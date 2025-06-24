@@ -114,7 +114,7 @@ export const useDeleteImageMutation = () => {
   });
 };
 
-async function updateMessage(args: UpdateImageArgs) {
+async function updateImage(args: UpdateImageArgs) {
   const res = await client.api.v0.images.update.$post({
     json: args,
   });
@@ -126,17 +126,17 @@ async function updateMessage(args: UpdateImageArgs) {
   return mapSerializedImageToSchema(newImage);
 }
 
-export const useUpdateMessageMutation = () => {
+export const useUpdateImageMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updateMessage,
-    onSettled: (newMessage) => {
-      if (!newMessage) return;
+    mutationFn: updateImage,
+    onSettled: (newImage) => {
+      if (!newImage) return;
       queryClient.invalidateQueries({
-        queryKey: ["messages", newMessage.messageId],
+        queryKey: ["images", newImage.chatId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["messages"],
+        queryKey: ["images"],
       });
     },
   });
