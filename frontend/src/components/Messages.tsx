@@ -45,6 +45,7 @@ import { FaImage } from "react-icons/fa6";
 import {
   getImagesByChatIdQueryOptions,
   useDeleteImageMutation,
+  useUpdateImageMutation,
   useUploadImageMutation,
 } from "../lib/api/images";
 import { FaTrashCan } from "react-icons/fa6";
@@ -158,6 +159,7 @@ export default function Messages(props: {
     isPending: isUploading,
     error: uploadError,
   } = useUploadImageMutation();
+  const { mutate: updateImage } = useUpdateImageMutation();
   const [preview, setPreview] = useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -176,13 +178,23 @@ export default function Messages(props: {
           replyContent: replyContent,
         },
         {
-          onSuccess: () =>
+          onSuccess: (args) => {
             socket.emit("message", {
               content,
               chatId: chat.chatId,
               userId: user.userId,
               createdAt: new Date().toISOString(),
-            }),
+            });
+            images?.map(
+              (image) =>
+                image.userId === user.userId &&
+                !image.posted &&
+                updateImage({
+                  imageId: image.imageId,
+                  messageId: args.messageId,
+                })
+            );
+          },
         }
       );
       setReplyMode(false);
@@ -190,13 +202,23 @@ export default function Messages(props: {
       createMessage(
         { content, chatId: chat.chatId, userId: user.userId },
         {
-          onSuccess: () =>
+          onSuccess: (args) => {
             socket.emit("message", {
               content,
               chatId: chat.chatId,
               userId: user.userId,
               createdAt: new Date().toISOString(),
-            }),
+            });
+            images?.map(
+              (image) =>
+                image.userId === user.userId &&
+                !image.posted &&
+                updateImage({
+                  imageId: image.imageId,
+                  messageId: args.messageId,
+                })
+            );
+          },
         }
       );
     }
@@ -591,6 +613,7 @@ export default function Messages(props: {
                     handleCreateReaction={handleCreateReaction}
                     editMessageId={editMessageId}
                     setEditMessageId={setEditMessageId}
+                    images={images}
                   />
                 </div>
               ) : message.userId === "notification" ? (
@@ -598,13 +621,6 @@ export default function Messages(props: {
                   message={message}
                   handleCreateMessageRead={handleCreateMessageRead}
                 />
-              ) : images ? (
-                images.map(
-                  (image) =>
-                    image.messageId === message.messageId && (
-                      <div>{image.imageId}</div>
-                    )
-                )
               ) : (
                 <div
                   onContextMenu={(e) => {
@@ -637,6 +653,7 @@ export default function Messages(props: {
                     handleCreateMessageRead={handleCreateMessageRead}
                     clickedFriend={clickedFriend}
                     handleCreateReaction={handleCreateReaction}
+                    images={images}
                   />
                 </div>
               )}

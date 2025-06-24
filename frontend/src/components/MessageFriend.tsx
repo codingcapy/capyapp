@@ -17,6 +17,7 @@ import { Reaction } from "../../../schemas/reactions";
 import { Chat } from "../../../schemas/chats";
 import { socket } from "../routes/dashboard";
 import { useOnScreen } from "./Messages";
+import { ImageMessage } from "../../../schemas/images";
 
 export default function MessageFriend(props: {
   message: Message;
@@ -35,6 +36,7 @@ export default function MessageFriend(props: {
     e: React.FormEvent<HTMLFormElement>,
     message: Message | null
   ) => void;
+  images: ImageMessage[] | undefined;
 }) {
   const {
     message,
@@ -49,6 +51,7 @@ export default function MessageFriend(props: {
     handleCreateMessageRead,
     clickedFriend,
     handleCreateReaction,
+    images,
   } = props;
   const friend = friends.find((friend) => friend.userId === message.userId);
   const participantReply = participants?.find(
@@ -254,6 +257,16 @@ export default function MessageFriend(props: {
             </div>
           </div>
           <div className="overflow-wrap break-word">{message.content}</div>
+          {images &&
+            images.map(
+              (image) =>
+                image.messageId === message.messageId && (
+                  <img
+                    src={`https://${image.imageUrl}`}
+                    className="w-[50%] mt-[10px]"
+                  />
+                )
+            )}
           <div className="flex">
             {Object.entries(
               reactions

@@ -21,6 +21,7 @@ import {
 import { socket } from "../routes/dashboard";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOnScreen } from "./Messages";
+import { ImageMessage } from "../../../schemas/images";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -40,6 +41,7 @@ export default function MessageComponent(props: {
   ) => void;
   editMessageId: number | null;
   setEditMessageId: (state: number | null) => void;
+  images: ImageMessage[] | undefined;
 }) {
   const { user } = useAuthStore();
   const {
@@ -55,6 +57,7 @@ export default function MessageComponent(props: {
     handleCreateReaction,
     editMessageId,
     setEditMessageId,
+    images,
   } = props;
   const participantReply = participants?.filter(
     (participant) => participant.userId === message.replyUserId
@@ -321,6 +324,16 @@ export default function MessageComponent(props: {
           ) : (
             <div className="overflow-wrap break-word">{message.content}</div>
           )}
+          {images &&
+            images.map(
+              (image) =>
+                image.messageId === message.messageId && (
+                  <img
+                    src={`https://${image.imageUrl}`}
+                    className="w-[50%] mt-[10px]"
+                  />
+                )
+            )}
           <div className="flex">
             {Object.entries(
               reactions
