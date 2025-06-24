@@ -22,6 +22,7 @@ import { socket } from "../routes/dashboard";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOnScreen } from "./Messages";
 import { ImageMessage } from "../../../schemas/images";
+import { useDeleteImageMutation } from "../lib/api/images";
 
 export default function MessageComponent(props: {
   message: Message;
@@ -75,6 +76,7 @@ export default function MessageComponent(props: {
   const emojisRef = useRef<HTMLDivElement>(null);
   const { mutate: createReaction } = useCreateReactionMutation();
   const { mutate: deleteReaction } = useDeleteReactionMutation();
+  const { mutate: deleteImage } = useDeleteImageMutation();
   const queryClient = useQueryClient();
   const ref = useRef<HTMLDivElement>(null);
   const [contextMenu, setContextMenu] = useState<{
@@ -105,6 +107,11 @@ export default function MessageComponent(props: {
     e.preventDefault();
     deleteMessage({ messageId: (message && message.messageId) || 0 });
     setDeleteMode(false);
+    images?.map(
+      (image) =>
+        image.messageId === message.messageId &&
+        deleteImage({ imageId: image.imageId })
+    );
   }
 
   function handleUpdate(e: React.FormEvent<HTMLFormElement>) {

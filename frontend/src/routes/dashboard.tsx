@@ -25,7 +25,6 @@ import {
   useLeaveChatMutation,
 } from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
-import profilePic from "/capypaul01.jpg";
 import useParticipantStore from "../store/ParticipantStore";
 import { queryClient } from "../main";
 import {

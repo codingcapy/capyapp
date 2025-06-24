@@ -11,14 +11,7 @@ import {
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
 import { Friend } from "../lib/api/friend";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import {
@@ -374,6 +367,12 @@ export default function Messages(props: {
     deleteMessage({
       messageId: (currentMessage && currentMessage.messageId) || 0,
     });
+    images?.map(
+      (image) =>
+        currentMessage &&
+        image.messageId === currentMessage.messageId &&
+        deleteImage({ imageId: image.imageId })
+    );
     setDeleteMode(false);
   }
 
