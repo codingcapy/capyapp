@@ -154,6 +154,9 @@ export default function Messages(props: {
   } = useUploadImageMutation();
   const { mutate: updateImage } = useUpdateImageMutation();
   const [preview, setPreview] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -435,6 +438,35 @@ export default function Messages(props: {
     deleteImage({
       imageId: imageId,
     });
+  }
+
+  useEffect(() => {
+    const lastWord = messageContent.slice(0, cursorPosition).split(" ").pop();
+    setShowSuggestions(lastWord?.startsWith("@") ?? false);
+  }, [messageContent, cursorPosition]);
+
+  function handleSelect(username: string) {
+    const input = inputRef.current;
+    if (!input) return;
+    const beforeCursor = messageContent.slice(0, cursorPosition);
+    const afterCursor = messageContent.slice(cursorPosition);
+    const lastAt = beforeCursor.lastIndexOf("@");
+    const newText =
+      beforeCursor.slice(0, lastAt) + "@" + username + " " + afterCursor;
+    setMessageContent(newText);
+    setShowSuggestions(false);
+    // Set caret position after inserted username
+    setTimeout(() => {
+      const pos = lastAt + username.length + 2;
+      input.setSelectionRange(pos, pos);
+      input.focus();
+      setCursorPosition(pos);
+    }, 0);
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setMessageContent(e.target.value);
+    setCursorPosition(e.target.selectionStart || 0);
   }
 
   return (
@@ -744,10 +776,16 @@ export default function Messages(props: {
               />
               <input
                 type="text"
+                ref={inputRef}
                 className="w-[100%] outline-none pl-2"
                 name="messagecontent"
                 value={messageContent}
-                onChange={(e) => setMessageContent(e.target.value)}
+                onChange={handleChange}
+                onClick={(e) =>
+                  setCursorPosition(
+                    (e.target as HTMLInputElement).selectionStart || 0
+                  )
+                }
               />
               <PiSmiley
                 size={27}
@@ -760,6 +798,29 @@ export default function Messages(props: {
             </button>
           </form>
         </div>
+      )}
+      {showSuggestions && (
+        <ul
+          className={`fixed bottom-[90px] left-[13%] md:left-[32%] z-50 bg-zinc-800 p-3 rounded`}
+        >
+          {participants &&
+            participants.map((p) => (
+              <li
+                key={p.username}
+                className="flex pl-1 hover:bg-zinc-700 cursor-pointer"
+                onMouseDown={(e) => {
+                  e.preventDefault(); // Prevent input blur
+                  handleSelect(p.username);
+                }}
+              >
+                <img
+                  src={p.profilePic || profilePic}
+                  className="w-[25px] h-[25px] rounded-full mt-2"
+                />
+                <div className="p-2">{p.username}</div>
+              </li>
+            ))}
+        </ul>
       )}
       {contextMenu?.visible && contextMode === "user" && (
         <div
