@@ -157,6 +157,7 @@ export default function Messages(props: {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [messageHtml, setMessageHtml] = useState("");
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -468,6 +469,20 @@ export default function Messages(props: {
     setMessageContent(e.target.value);
     setCursorPosition(e.target.selectionStart || 0);
   }
+
+  const handleInput = () => {
+    const div = inputRef.current;
+    if (!div) return;
+    const raw = div.innerHTML;
+    const parsed = raw.replace(/@(\w+)/g, (match, p1) => {
+      const exists =
+        participants && participants.find((p) => p.username === p1);
+      return exists
+        ? `<span class="text-blue-500 underline cursor-pointer" data-mention="${p1}">@${p1}</span>`
+        : match;
+    });
+    setMessageHtml(parsed);
+  };
 
   function renderMessageContent(content: string) {
     if (!participants) return content;
