@@ -179,6 +179,46 @@ export default function MessageComponent(props: {
     };
   }, []);
 
+  function renderMessageContent(content: string) {
+    if (!participants) return content;
+    // Build a regex dynamically from participant names
+    const names = participants.map((p) => p.username).join("|");
+    const mentionRegex = new RegExp(`@(${names})`, "g");
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    while ((match = mentionRegex.exec(content)) !== null) {
+      const [fullMatch, name] = match;
+      const startIndex = match.index;
+      // Push the text before the mention
+      if (startIndex > lastIndex) {
+        parts.push(content.slice(lastIndex, startIndex));
+      }
+      // Find the participant object
+      const participant = participants.find((p) => p.username === name);
+      if (participant) {
+        parts.push(
+          <span
+            key={`${name}-${startIndex}`}
+            onClick={() => clickedFriend(participant)}
+            className="text-[#06b6d4] hover:cursor-pointer"
+          >
+            {fullMatch}
+          </span>
+        );
+      } else {
+        // If no participant found, render as plain text
+        parts.push(fullMatch);
+      }
+      lastIndex = startIndex + fullMatch.length;
+    }
+    // Push remaining text after the last mention
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+    return parts;
+  }
+
   return (
     <div className="hover:bg-zinc-800 group">
       {message.replyContent &&
@@ -329,7 +369,9 @@ export default function MessageComponent(props: {
               </div>
             </form>
           ) : (
-            <div className="overflow-wrap break-word">{message.content}</div>
+            <div className="overflow-wrap break-word">
+              {renderMessageContent(message.content)}
+            </div>
           )}
           {images &&
             images.map(
