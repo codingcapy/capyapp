@@ -27,6 +27,10 @@ type SerializeChat = ExtractData<
   Awaited<ReturnType<typeof client.api.v0.chats.$get>>
 >["chats"][number];
 
+type UpdateLastReadMessageIdArgs = ArgumentTypes<
+  typeof client.api.v0.chats.unreads.update.$post
+>[0]["json"];
+
 export function mapSerializedChatToSchema(SerializedChat: SerializeChat): Chat {
   return {
     ...SerializedChat,
@@ -254,3 +258,28 @@ export const getUnreadsByUserIdQueryOptions = (args: string) =>
     queryKey: ["unreads", args],
     queryFn: () => getUnreadsByUserId(args),
   });
+
+async function updateLastReadMessageId(args: UpdateLastReadMessageIdArgs) {
+  const res = await client.api.v0.chats.unreads.update.$post({
+    json: args,
+  });
+  if (!res.ok) {
+    throw new Error("Error updating chat.");
+  }
+  const { newUnreads } = await res.json();
+  console.log(newUnreads);
+  return newUnreads;
+}
+
+export const useUpdateLastReadMessageIdMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateLastReadMessageId,
+    onSettled: (newUnreads) => {
+      if (!newUnreads) return;
+      queryClient.invalidateQueries({
+        queryKey: ["unreads", newUnreads[0].userId],
+      });
+    },
+  });
+};

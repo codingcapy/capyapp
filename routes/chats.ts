@@ -364,7 +364,10 @@ export const userChatsRouter = new Hono()
     zValidator("json", createInsertSchema(userChatReadStatusTable)),
     async (c) => {
       const insertValues = c.req.valid("json");
-      const { error, result } = await mightFail(
+      const {
+        result: updateUnreadsQueryResult,
+        error: updateUnreadsQueryError,
+      } = await mightFail(
         db
           .update(userChatReadStatusTable)
           .set({ lastReadMessageId: insertValues.lastReadMessageId })
@@ -376,16 +379,18 @@ export const userChatsRouter = new Hono()
           )
           .returning()
       );
-      if (error) {
-        console.log("Error updating last read message pointer:", error);
+      if (updateUnreadsQueryError) {
+        console.log(
+          "Error updating last read message pointer:",
+          updateUnreadsQueryError
+        );
         throw new HTTPException(500, {
           message: "Error updating last read message pointer",
-          cause: error,
+          cause: updateUnreadsQueryError,
         });
       }
       return c.json({
-        message: "Last read message pointer updated successfully",
-        updated: result,
+        newUnreads: updateUnreadsQueryResult,
       });
     }
   );
