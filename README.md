@@ -2,7 +2,7 @@
 
 Chat app under construction
 
-Live at: capyapp-production.up.railway.app
+Live at: https://capyapp-production.up.railway.app
 
 To install backend dependencies:
 
