@@ -237,3 +237,20 @@ export const useLeaveChatMutation = (onError?: (message: string) => void) => {
     },
   });
 };
+
+async function getUnreadsByUserId(userId: string) {
+  const res = await client.api.v0.chats.unreads[":userId"].$get({
+    param: { userId: userId.toString() },
+  });
+  if (!res.ok) {
+    throw new Error("Error getting chats by userId");
+  }
+  const { unreads } = await res.json();
+  return unreads;
+}
+
+export const getUnreadsByUserIdQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["unreads"],
+    queryFn: () => getUnreadsByUserId(args),
+  });
