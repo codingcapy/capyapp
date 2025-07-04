@@ -43,21 +43,23 @@ export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
 });
 
+export type MobileViewMode =
+  | "default"
+  | "friends"
+  | "chats"
+  | "profile"
+  | "messages"
+  | "friend"
+  | "add-friend";
+
 function RouteComponent() {
   const navigate = useNavigate();
   const { user, logoutService } = useAuthStore((state) => state);
-  const [showChats, setShowChats] = useState(true);
-  const [showFriends, setShowFriends] = useState(
-    window.innerWidth > 760 ? true : false
+  const [mobileViewMode, setMobileViewMode] = useState<MobileViewMode>(
+    window.innerWidth > 700 ? "default" : "chats"
   );
-  const [showMessages, setShowMessages] = useState(
-    window.innerWidth > 760 ? true : false
-  );
-  const [showProfile, setShowProfile] = useState(false);
-  const [showAddFriend, setShowAddFriend] = useState(false);
   const [friend, setFriend] = useState<Friend | null>(null);
   const [chat, setChat] = useState<Chat | null>(null);
-  const [showFriend, setShowFriend] = useState(false);
   const { data: friends } = useQuery(
     getFriendsByEmailQueryOptions(user?.email || "")
   );
@@ -162,67 +164,33 @@ function RouteComponent() {
   }
 
   function tappedFriends() {
-    setShowFriends(true);
-    setShowMessages(false);
-    setShowChats(false);
-    setShowProfile(false);
-    setShowFriend(false);
-    setShowAddFriend(false);
+    setMobileViewMode("friends");
   }
   function tappedChats() {
-    setShowFriends(false);
-    setShowMessages(false);
-    setShowChats(true);
-    setShowProfile(false);
-    setShowFriend(false);
-    setShowAddFriend(false);
+    setMobileViewMode("chats");
   }
   function tappedProfile() {
-    setShowFriends(false);
-    setShowMessages(false);
-    setShowChats(false);
-    setShowProfile(true);
-    setShowFriend(false);
-    setShowAddFriend(false);
+    setMobileViewMode("profile");
   }
 
   function clickedProfile() {
-    setShowMessages(false);
-    setShowProfile(true);
-    setShowAddFriend(false);
-    setShowFriend(false);
+    setMobileViewMode("profile");
     setChat(null);
   }
 
   function clickedAddFriend() {
-    setShowMessages(false);
-    setShowProfile(false);
-    setShowAddFriend(true);
-    setShowFriend(false);
-    setShowProfile(false);
-    setShowFriends(window.innerWidth < 760 ? false : true);
-    setShowChats(window.innerWidth < 760 ? false : true);
+    setMobileViewMode("add-friend");
   }
 
   function clickedFriend(currentFriend: Friend | null) {
     setFriend(currentFriend);
-    setShowMessages(false);
-    setShowAddFriend(false);
-    setShowFriend(true);
-    setShowProfile(false);
-    setShowFriends(window.innerWidth < 760 ? false : true);
-    setShowChats(window.innerWidth < 760 ? false : true);
+    setMobileViewMode("friend");
     setChat(null);
   }
 
   function clickedChat(currentChat: Chat) {
     setChat(currentChat);
-    setShowMessages(true);
-    setShowAddFriend(false);
-    setShowFriend(false);
-    setShowProfile(false);
-    setShowFriends(window.innerWidth < 760 ? false : true);
-    setShowChats(window.innerWidth < 760 ? false : true);
+    setMobileViewMode("messages");
   }
 
   return (
@@ -260,7 +228,7 @@ function RouteComponent() {
       )}
       <main className="flex-1 relative z-0">
         <div className="md:flex">
-          {showFriends && (
+          {(window.innerWidth > 700 || mobileViewMode === "friends") && (
             <Friends
               clickedAddFriend={clickedAddFriend}
               clickedFriend={clickedFriend}
@@ -280,7 +248,7 @@ function RouteComponent() {
             <IoExitOutline size={25} />
             <div className="ml-3">Logout</div>
           </div>
-          {showChats && (
+          {(window.innerWidth > 700 || mobileViewMode === "chats") && (
             <Chats
               chat={chat}
               chats={chats}
@@ -293,7 +261,7 @@ function RouteComponent() {
               setEditTitleMode={setEditTitleMode}
             />
           )}
-          {showMessages && (
+          {(mobileViewMode === "messages" || mobileViewMode === "default") && (
             <Messages
               chat={chat}
               setChat={setChat}
@@ -310,11 +278,12 @@ function RouteComponent() {
               setEditTitleMode={setEditTitleMode}
               currentMessage={currentMessage}
               setCurrentMessage={setCurrentMessage}
+              mobileViewMode={mobileViewMode}
             />
           )}
-          {showProfile && <Profile />}
-          {showAddFriend && <AddFriend friends={friends} />}
-          {showFriend && (
+          {mobileViewMode === "profile" && <Profile />}
+          {mobileViewMode === "add-friend" && <AddFriend friends={friends} />}
+          {mobileViewMode === "friend" && (
             <FriendProfile
               friend={friend}
               friends={friends}

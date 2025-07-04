@@ -7,8 +7,9 @@ import { users as usersTable } from "../schemas/users";
 import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, gt, ne, sql } from "drizzle-orm";
 import { chats as chatsTable } from "../schemas/chats";
+import { userChatReadStatus as userChatReadStatusTable } from "../schemas/userchatreadstatus";
 import { z } from "zod";
 
 const createChatSchema = z.object({
@@ -68,6 +69,27 @@ export const userChatsRouter = new Hono()
       throw new HTTPException(500, {
         message: "Error while creating user chat",
         cause: userChatInsertError2,
+      });
+    }
+    const { error: userChatReadStatusInsertError } = await mightFail(
+      db.insert(userChatReadStatusTable).values([
+        {
+          userId: insertValues.userId,
+          chatId: chatInsertResult[0].chatId,
+          lastReadMessageId: null,
+        },
+        {
+          userId: insertValues.friendId,
+          chatId: chatInsertResult[0].chatId,
+          lastReadMessageId: null,
+        },
+      ])
+    );
+    if (userChatReadStatusInsertError) {
+      console.log("Error while creating user chat read status");
+      throw new HTTPException(500, {
+        message: "Error while creating user chat read status",
+        cause: userChatReadStatusInsertError,
       });
     }
     return c.json({ user: userChatInsertResult[0] }, 200);
@@ -139,6 +161,40 @@ export const userChatsRouter = new Hono()
       throw new HTTPException(500, {
         message: "Error while creating user chat",
         cause: userChatInsertError,
+      });
+    }
+    const { error: lastMessageQueryError, result: lastMessageQueryResult } =
+      await mightFail(
+        db
+          .select({ messageId: messagesTable.messageId })
+          .from(messagesTable)
+          .where(eq(messagesTable.chatId, Number(insertValues.chatId)))
+          .orderBy(desc(messagesTable.messageId))
+          .limit(1)
+      );
+    if (lastMessageQueryError) {
+      console.log("Error while fetching last message");
+      throw new HTTPException(500, {
+        message: "Error while fetching last message",
+        cause: lastMessageQueryError,
+      });
+    }
+    const lastReadMessageId =
+      lastMessageQueryResult.length > 0
+        ? lastMessageQueryResult[0].messageId
+        : null;
+    const { error: userChatReadStatusInsertError } = await mightFail(
+      db.insert(userChatReadStatusTable).values({
+        userId: userQueryResult[0].userId,
+        chatId: Number(insertValues.chatId),
+        lastReadMessageId,
+      })
+    );
+    if (userChatReadStatusInsertError) {
+      console.log("Error while creating user chat read status");
+      throw new HTTPException(500, {
+        message: "Error while creating user chat read status",
+        cause: userChatReadStatusInsertError,
       });
     }
     const { error: messageInsertError, result: messageInsertResult } =
@@ -243,4 +299,64 @@ export const userChatsRouter = new Hono()
       }
       return c.json({ participants: leaveChatQueryResult });
     }
-  );
+  )
+  .get("/unreads/:userId", async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json({ error: "userId parameter is required." }, 400);
+    }
+    const { result: userChatsResult, error: userChatsError } = await mightFail(
+      db
+        .select({
+          chatId: userChatsTable.chatId,
+          lastReadMessageId: userChatReadStatusTable.lastReadMessageId,
+        })
+        .from(userChatsTable)
+        .innerJoin(
+          userChatReadStatusTable,
+          and(
+            eq(userChatReadStatusTable.chatId, userChatsTable.chatId),
+            eq(userChatReadStatusTable.userId, userId)
+          )
+        )
+        .where(eq(userChatsTable.userId, userId))
+    );
+    if (userChatsError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching user chats.",
+        cause: userChatsError,
+      });
+    }
+    const unreads = await Promise.all(
+      userChatsResult.map(async (row) => {
+        const { chatId, lastReadMessageId } = row;
+
+        const { result: countResult, error: countError } = await mightFail(
+          db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(messagesTable)
+            .where(
+              and(
+                eq(messagesTable.chatId, chatId),
+                lastReadMessageId !== null
+                  ? gt(messagesTable.messageId, lastReadMessageId)
+                  : undefined,
+                ne(messagesTable.userId, userId)
+              )
+            )
+        );
+
+        if (countError) {
+          console.log(`Error fetching unread count for chatId ${chatId}`);
+          return { chatId, unreadCount: 0 };
+        }
+
+        return {
+          chatId,
+          unreadCount: Number(countResult[0].count) || 0,
+        };
+      })
+    );
+
+    return c.json({ unreads });
+  });

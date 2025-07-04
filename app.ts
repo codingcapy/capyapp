@@ -61,3 +61,56 @@ const io = new SocketServer(server, {
 attachSocketEventListeners(io);
 
 console.log("Server running on port", PORT);
+
+// import { db } from "./db";
+// import { userChats as userChatsTable } from "./schemas/userchats";
+// import { userChatReadStatus as userChatReadStatusTable } from "./schemas/userchatreadstatus";
+// import { messages as messagesTable } from "./schemas/messages";
+// import { and, desc, eq } from "drizzle-orm";
+// async function backfillUserChatReadStatuses() {
+//   console.log("Starting backfill for UserChatReadStatus...");
+//   // 1. Fetch all user-chat relationships
+//   const userChats = await db.select().from(userChatsTable);
+//   console.log(`Found ${userChats.length} user-chat relationships.`);
+//   for (const userChat of userChats) {
+//     const { userId, chatId } = userChat;
+//     // 2. Check if UserChatReadStatus already exists
+//     const existing = await db
+//       .select()
+//       .from(userChatReadStatusTable)
+//       .where(
+//         and(
+//           eq(userChatReadStatusTable.userId, userId),
+//           eq(userChatReadStatusTable.chatId, chatId)
+//         )
+//       );
+//     if (existing.length === 0) {
+//       // 3. Get latest messageId for the chat
+//       const lastMessage = await db
+//         .select({ messageId: messagesTable.messageId })
+//         .from(messagesTable)
+//         .where(eq(messagesTable.chatId, chatId))
+//         .orderBy(desc(messagesTable.messageId))
+//         .limit(1);
+//       const lastReadMessageId =
+//         lastMessage.length > 0 ? lastMessage[0].messageId : null;
+//       // 4. Insert UserChatReadStatus
+//       await db.insert(userChatReadStatusTable).values({
+//         userId,
+//         chatId,
+//         lastReadMessageId, // or null if you want all prior messages as unread
+//       });
+//       console.log(
+//         `Inserted UserChatReadStatus for userId=${userId}, chatId=${chatId}, lastReadMessageId=${lastReadMessageId}`
+//       );
+//     }
+//   }
+//   console.log("Backfill completed.");
+// }
+
+// backfillUserChatReadStatuses()
+//   .then(() => process.exit(0))
+//   .catch((err) => {
+//     console.error("Error during backfill:", err);
+//     process.exit(1);
+//   });

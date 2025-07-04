@@ -20,7 +20,7 @@ import {
   useUpdateTitleMutation,
 } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
-import { socket } from "../routes/dashboard";
+import { MobileViewMode, socket } from "../routes/dashboard";
 import profilePic from "/capypaul01.jpg";
 import capyness from "/capyness.png";
 import { PiSmiley } from "react-icons/pi";
@@ -83,6 +83,7 @@ export default function Messages(props: {
   setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
   currentMessage: Message | null;
   setCurrentMessage: (state: Message | null) => void;
+  mobileViewMode: MobileViewMode;
 }) {
   const {
     chat,
@@ -99,6 +100,7 @@ export default function Messages(props: {
     setEditTitleMode,
     currentMessage,
     setCurrentMessage,
+    mobileViewMode,
   } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
@@ -558,7 +560,7 @@ export default function Messages(props: {
             />
           )}
         </div>
-        {!chat && (
+        {(!chat || mobileViewMode === "default") && (
           <div className="absolute top-[250px] left-[37%]">
             <img src={capyness} alt="" />
             <div className="text-xl font-bold py-5 text-yellow-200">
