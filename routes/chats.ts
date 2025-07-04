@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { userChats as userChatsTable } from "../schemas/userchats";
 import { messages as messagesTable } from "../schemas/messages";
@@ -357,6 +357,35 @@ export const userChatsRouter = new Hono()
         };
       })
     );
-
     return c.json({ unreads });
-  });
+  })
+  .post(
+    "/unreads/update",
+    zValidator("json", createInsertSchema(userChatReadStatusTable)),
+    async (c) => {
+      const insertValues = c.req.valid("json");
+      const { error, result } = await mightFail(
+        db
+          .update(userChatReadStatusTable)
+          .set({ lastReadMessageId: insertValues.lastReadMessageId })
+          .where(
+            and(
+              eq(userChatReadStatusTable.userId, insertValues.userId),
+              eq(userChatReadStatusTable.chatId, insertValues.chatId)
+            )
+          )
+          .returning()
+      );
+      if (error) {
+        console.log("Error updating last read message pointer:", error);
+        throw new HTTPException(500, {
+          message: "Error updating last read message pointer",
+          cause: error,
+        });
+      }
+      return c.json({
+        message: "Last read message pointer updated successfully",
+        updated: result,
+      });
+    }
+  );

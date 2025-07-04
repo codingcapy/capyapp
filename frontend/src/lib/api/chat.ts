@@ -251,6 +251,6 @@ async function getUnreadsByUserId(userId: string) {
 
 export const getUnreadsByUserIdQueryOptions = (args: string) =>
   queryOptions({
-    queryKey: ["unreads"],
+    queryKey: ["unreads", args],
     queryFn: () => getUnreadsByUserId(args),
   });
