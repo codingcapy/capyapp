@@ -44,27 +44,27 @@ import { FaTrashCan } from "react-icons/fa6";
 
 export type ContextMode = "user" | "friend";
 
-export function useOnScreen(
-  ref: React.RefObject<HTMLElement | null>,
-  onVisible: () => void,
-  options?: IntersectionObserverInit
-) {
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        onVisible();
-        observer.disconnect(); // Only observe once
-      }
-    }, options);
+// export function useOnScreen(
+//   ref: React.RefObject<HTMLElement | null>,
+//   onVisible: () => void,
+//   options?: IntersectionObserverInit
+// ) {
+//   useEffect(() => {
+//     const observer = new IntersectionObserver(([entry]) => {
+//       if (entry.isIntersecting) {
+//         onVisible();
+//         observer.disconnect(); // Only observe once
+//       }
+//     }, options);
 
-    const el = ref.current;
-    if (el) observer.observe(el);
+//     const el = ref.current;
+//     if (el) observer.observe(el);
 
-    return () => {
-      if (el) observer.unobserve(el);
-    };
-  }, [ref]);
-}
+//     return () => {
+//       if (el) observer.unobserve(el);
+//     };
+//   }, [ref]);
+// }
 
 export default function Messages(props: {
   chat: Chat | null;

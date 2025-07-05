@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { Message } from "../../../schemas/messages";
-import { useOnScreen } from "./Messages";
 
 export default function Notification(props: { message: Message }) {
   const { message } = props;

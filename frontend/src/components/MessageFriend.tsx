@@ -16,7 +16,6 @@ import {
 import { Reaction } from "../../../schemas/reactions";
 import { Chat } from "../../../schemas/chats";
 import { socket } from "../routes/dashboard";
-import { useOnScreen } from "./Messages";
 import { ImageMessage } from "../../../schemas/images";
 
 export default function MessageFriend(props: {

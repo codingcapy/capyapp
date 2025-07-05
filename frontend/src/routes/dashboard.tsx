@@ -15,7 +15,7 @@ import {
   useBlockUserMutation,
   useUnblockUserMutation,
 } from "../lib/api/friend";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import io from "socket.io-client";
 import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
@@ -99,6 +99,7 @@ function RouteComponent() {
   } | null>(null);
   const [editTitleMode, setEditTitleMode] = useState(false);
   const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
+  const tanstackQueryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) navigate({ to: "/" });
@@ -202,6 +203,23 @@ function RouteComponent() {
     setChat(currentChat);
     setMobileViewMode("messages");
   }
+
+  useEffect(() => {
+    socket.on("message", (data) => {
+      // data = { content, chatId, userId, createdAt }
+
+      // Only refetch if message is from another user
+      if (data.userId !== user?.userId) {
+        tanstackQueryClient.invalidateQueries({
+          queryKey: ["unreadstatus", user?.userId || ""],
+        });
+      }
+    });
+
+    return () => {
+      socket.off("message");
+    };
+  }, [socket, user?.userId, tanstackQueryClient]);
 
   return (
     <div className="flex flex-col bg-[#15151a] text-white min-h-screen">

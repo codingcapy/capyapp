@@ -20,7 +20,6 @@ import {
 } from "../lib/api/reaction";
 import { socket } from "../routes/dashboard";
 import { useQueryClient } from "@tanstack/react-query";
-import { useOnScreen } from "./Messages";
 import { ImageMessage } from "../../../schemas/images";
 import { useDeleteImageMutation } from "../lib/api/images";
 
