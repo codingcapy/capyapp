@@ -17,6 +17,7 @@ import MessageFriend from "./MessageFriend";
 import {
   getParticipantsByChatIdQueryOptions,
   useInviteFriendMutation,
+  useUpdateLastReadMessageIdMutation,
   useUpdateTitleMutation,
 } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
@@ -154,6 +155,8 @@ export default function Messages(props: {
     isPending: isUploading,
     error: uploadError,
   } = useUploadImageMutation();
+  const { mutate: updateLastReadMessageId } =
+    useUpdateLastReadMessageIdMutation();
   const { mutate: updateImage } = useUpdateImageMutation();
   const [preview, setPreview] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);

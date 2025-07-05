@@ -300,6 +300,26 @@ export const userChatsRouter = new Hono()
       return c.json({ participants: leaveChatQueryResult });
     }
   )
+  .get("/chatsreadstatus/:userId", async (c) => {
+    const userId = c.req.param("userId");
+    if (!userId) {
+      return c.json({ error: "userId parameter is required." }, 400);
+    }
+    const { result: chatsReadStatusResult, error: chatsReadStatusError } =
+      await mightFail(
+        db
+          .select()
+          .from(userChatReadStatusTable)
+          .where(eq(userChatReadStatusTable.userId, userId))
+      );
+    if (chatsReadStatusError) {
+      throw new HTTPException(500, {
+        message: "Error occurred when fetching user chats read status.",
+        cause: chatsReadStatusError,
+      });
+    }
+    return c.json({ chatsReadStatus: chatsReadStatusResult });
+  })
   .get("/unreads/:userId", async (c) => {
     const userId = c.req.param("userId");
     if (!userId) {

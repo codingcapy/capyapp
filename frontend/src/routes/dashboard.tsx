@@ -21,6 +21,8 @@ import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
 import {
   getChatsByUserIdQueryOptions,
+  getChatsReadStatusByUserIdQueryOptions,
+  getUnreadsByUserIdQueryOptions,
   useCreateChatMutation,
   useLeaveChatMutation,
 } from "../lib/api/chat";
@@ -52,6 +54,11 @@ export type MobileViewMode =
   | "friend"
   | "add-friend";
 
+export type UnreadStatus = {
+  chatId: number;
+  unreadCount: number;
+};
+
 function RouteComponent() {
   const navigate = useNavigate();
   const { user, logoutService } = useAuthStore((state) => state);
@@ -71,8 +78,16 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
+  console.log("CHATS:", chats);
+  const { data: chatsReadStatus } = useQuery(
+    getChatsReadStatusByUserIdQueryOptions(user?.userId || "")
+  );
+  console.log("CHATS READ STATUS:", chatsReadStatus);
   const { data: unreads } = useQuery(
     getUnreadMessagesByUserIdQueryOptions(user?.userId || "")
+  );
+  const { data: unreadStatus } = useQuery(
+    getUnreadsByUserIdQueryOptions(user?.userId || "")
   );
   const { participants } = useParticipantStore();
   const { mutate: createChat } = useCreateChatMutation();
@@ -254,6 +269,7 @@ function RouteComponent() {
               chats={chats}
               clickedChat={clickedChat}
               unreads={unreads}
+              unreadStatus={unreadStatus}
               setLeaveMode={setLeaveMode}
               contextMenu={contextMenu}
               setContextMenu={setContextMenu}

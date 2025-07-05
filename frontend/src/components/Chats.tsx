@@ -3,7 +3,7 @@ import { Chat } from "../../../schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dispatch, SetStateAction, useEffect, useRef } from "react";
-import { socket } from "../routes/dashboard";
+import { socket, UnreadStatus } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
 import { Unread } from "../lib/api/messages";
 
@@ -12,6 +12,7 @@ export default function Chats(props: {
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
   unreads: Unread[] | undefined;
+  unreadStatus: UnreadStatus[] | undefined;
   setLeaveMode: Dispatch<SetStateAction<boolean>>;
   contextMenu: {
     visible: boolean;
@@ -32,6 +33,7 @@ export default function Chats(props: {
     chats,
     clickedChat,
     unreads,
+    unreadStatus,
     setLeaveMode,
     contextMenu,
     setContextMenu,
@@ -105,10 +107,10 @@ export default function Chats(props: {
               />
               <div className="ml-2 py-2">{c.title}</div>
               <div className="absolute top-[35px] left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
-                {unreads &&
-                  unreads?.filter((unread) => unread.chatId === c.chatId)
+                {unreadStatus &&
+                  unreadStatus?.filter((unread) => unread.chatId === c.chatId)
                     .length > 0 &&
-                  unreads?.filter((unread) => unread.chatId === c.chatId)
+                  unreadStatus?.filter((unread) => unread.chatId === c.chatId)
                     .length}
               </div>
             </div>

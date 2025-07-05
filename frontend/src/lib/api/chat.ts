@@ -242,6 +242,23 @@ export const useLeaveChatMutation = (onError?: (message: string) => void) => {
   });
 };
 
+async function getChatsReadStatusByUserId(userId: string) {
+  const res = await client.api.v0.chats.chatsreadstatus[":userId"].$get({
+    param: { userId: userId.toString() },
+  });
+  if (!res.ok) {
+    throw new Error("Error getting user chats read status by userId");
+  }
+  const { chatsReadStatus } = await res.json();
+  return chatsReadStatus;
+}
+
+export const getChatsReadStatusByUserIdQueryOptions = (args: string) =>
+  queryOptions({
+    queryKey: ["chatsreadstatus", args],
+    queryFn: () => getChatsReadStatusByUserId(args),
+  });
+
 async function getUnreadsByUserId(userId: string) {
   const res = await client.api.v0.chats.unreads[":userId"].$get({
     param: { userId: userId.toString() },
