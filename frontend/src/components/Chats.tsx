@@ -11,7 +11,6 @@ export default function Chats(props: {
   chat: Chat | null;
   chats: Chat[] | undefined;
   clickedChat: (currentChat: Chat) => void;
-  unreads: Unread[] | undefined;
   unreadStatus: UnreadStatus[] | undefined;
   setLeaveMode: Dispatch<SetStateAction<boolean>>;
   contextMenu: {
@@ -32,7 +31,6 @@ export default function Chats(props: {
   const {
     chats,
     clickedChat,
-    unreads,
     unreadStatus,
     setLeaveMode,
     contextMenu,
@@ -110,8 +108,12 @@ export default function Chats(props: {
                 {unreadStatus &&
                   unreadStatus?.filter((unread) => unread.chatId === c.chatId)
                     .length > 0 &&
-                  unreadStatus?.filter((unread) => unread.chatId === c.chatId)
-                    .length}
+                  unreadStatus?.filter(
+                    (unread) => unread.chatId === c.chatId
+                  )[0].unreadCount > 0 &&
+                  unreadStatus?.filter(
+                    (unread) => unread.chatId === c.chatId
+                  )[0].unreadCount}
               </div>
             </div>
           ))}

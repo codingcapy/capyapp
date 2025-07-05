@@ -29,10 +29,7 @@ import {
 import { Chat } from "../../../schemas/chats";
 import useParticipantStore from "../store/ParticipantStore";
 import { queryClient } from "../main";
-import {
-  getUnreadMessagesByUserIdQueryOptions,
-  useCreateMessageMutation,
-} from "../lib/api/messages";
+import { useCreateMessageMutation } from "../lib/api/messages";
 import Participants from "../components/Participants";
 import { Message } from "../../../schemas/messages";
 
@@ -78,17 +75,15 @@ function RouteComponent() {
     isLoading,
     error,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
-  console.log("CHATS:", chats);
+  //console.log("CHATS:", chats);
   const { data: chatsReadStatus } = useQuery(
     getChatsReadStatusByUserIdQueryOptions(user?.userId || "")
   );
-  console.log("CHATS READ STATUS:", chatsReadStatus);
-  const { data: unreads } = useQuery(
-    getUnreadMessagesByUserIdQueryOptions(user?.userId || "")
-  );
+  //console.log("CHATS READ STATUS:", chatsReadStatus);
   const { data: unreadStatus } = useQuery(
     getUnreadsByUserIdQueryOptions(user?.userId || "")
   );
+  //console.log("UNREAD STATUS:", unreadStatus);
   const { participants } = useParticipantStore();
   const { mutate: createChat } = useCreateChatMutation();
   const { mutate: blockUser } = useBlockUserMutation();
@@ -268,7 +263,6 @@ function RouteComponent() {
               chat={chat}
               chats={chats}
               clickedChat={clickedChat}
-              unreads={unreads}
               unreadStatus={unreadStatus}
               setLeaveMode={setLeaveMode}
               contextMenu={contextMenu}

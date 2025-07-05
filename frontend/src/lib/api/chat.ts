@@ -272,7 +272,7 @@ async function getUnreadsByUserId(userId: string) {
 
 export const getUnreadsByUserIdQueryOptions = (args: string) =>
   queryOptions({
-    queryKey: ["unreads", args],
+    queryKey: ["unreadstatus", args],
     queryFn: () => getUnreadsByUserId(args),
   });
 
@@ -295,7 +295,7 @@ export const useUpdateLastReadMessageIdMutation = () => {
     onSettled: (newUnreads) => {
       if (!newUnreads) return;
       queryClient.invalidateQueries({
-        queryKey: ["unreads", newUnreads[0].userId],
+        queryKey: ["unreadstatus", newUnreads[0].userId],
       });
     },
   });

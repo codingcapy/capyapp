@@ -136,7 +136,6 @@ export const imagesRouter = new Hono()
         cause: imagesQueryError,
       });
     }
-    console.log(imagesQueryResult);
     return c.json({ images: imagesQueryResult });
   })
   .get("/", async (c) => {

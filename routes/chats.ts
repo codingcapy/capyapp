@@ -377,6 +377,7 @@ export const userChatsRouter = new Hono()
         };
       })
     );
+    console.log(unreads);
     return c.json({ unreads });
   })
   .post(

@@ -168,24 +168,6 @@ export const useUpdateMessageMutation = () => {
   });
 };
 
-async function getUnreadMessagesByUserId(userId: string) {
-  const res = await client.api.v0.messages.unreads[":userId"].$get({
-    param: { userId: userId.toString() },
-  });
-
-  if (!res.ok) {
-    throw new Error("Error getting chats by chatId");
-  }
-  const { messages } = await res.json();
-  return messages.map(mapSerializedUnreadToSchema);
-}
-
-export const getUnreadMessagesByUserIdQueryOptions = (args: string) =>
-  queryOptions({
-    queryKey: ["unreads", args],
-    queryFn: () => getUnreadMessagesByUserId(args),
-  });
-
 async function createMessageRead(args: CreateMessageReadArgs) {
   const res = await client.api.v0.messages.unreads.$post({ json: args });
   if (!res.ok) {

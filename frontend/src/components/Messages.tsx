@@ -489,6 +489,21 @@ export default function Messages(props: {
     setMessageHtml(parsed);
   };
 
+  useEffect(() => {
+    const lastMessage = messages && messages[messages.length - 1];
+    console.log("LAST MESSAGE:", lastMessage);
+    if (!lastMessage) return;
+
+    // Only update if user didn't send it
+    if (lastMessage.userId !== user?.userId) {
+      updateLastReadMessageId({
+        userId: (user && user.userId) || "",
+        chatId: (chat && chat.chatId) || 0,
+        lastReadMessageId: lastMessage.messageId,
+      });
+    }
+  }, [messages]);
+
   return (
     <div
       className="md:w-[55%] md:h-screen overflow-auto relative bg-[#15151a] md:bg-[#202020]"

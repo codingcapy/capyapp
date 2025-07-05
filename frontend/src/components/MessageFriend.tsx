@@ -306,6 +306,7 @@ export default function MessageFriend(props: {
                   <img
                     src={`https://${image.imageUrl}`}
                     className="w-[50%] mt-[10px]"
+                    key={image.imageId}
                   />
                 )
             )}
