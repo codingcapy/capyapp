@@ -1,7 +1,5 @@
 import { Hono } from "hono";
 import { messages as messagesTable } from "../schemas/messages";
-import { messageReads as messageReadsTable } from "../schemas/messagereads";
-import { userChats as userChatsTable } from "../schemas/userchats";
 import { zValidator } from "@hono/zod-validator";
 import { createInsertSchema } from "drizzle-zod";
 import { mightFail, mightFailSync } from "might-fail";

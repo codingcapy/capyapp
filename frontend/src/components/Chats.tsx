@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Dispatch, SetStateAction, useEffect, useRef } from "react";
 import { socket, UnreadStatus } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
-import { Unread } from "../lib/api/messages";
 
 export default function Chats(props: {
   chat: Chat | null;
