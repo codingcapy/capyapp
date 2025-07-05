@@ -4,9 +4,7 @@ import { Chat } from "../../../schemas/chats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
-  getreadMessagesByUserIdQueryOptions,
   useCreateMessageMutation,
-  useCreateMessageReadMutation,
   useDeleteMessageMutation,
 } from "../lib/api/messages";
 import { User } from "../../../schemas/users";
@@ -132,10 +130,6 @@ export default function Messages(props: {
   const titleInputRef = useRef<HTMLInputElement | null>(null);
   const emojisRef = useRef<HTMLDivElement>(null);
   const { setParticipants } = useParticipantStore();
-  const { mutate: createMessageRead } = useCreateMessageReadMutation();
-  const { data: reads } = useQuery(
-    getreadMessagesByUserIdQueryOptions((user && user.userId) || "")
-  );
   const [contextMenu, setContextMenu] = useState<{
     visible: boolean;
     x: number;
@@ -263,19 +257,6 @@ export default function Messages(props: {
       title: newTitle,
     });
     setEditTitleMode(false);
-  }
-
-  function handleCreateMessageRead(id: number) {
-    const userId = (user && user.userId) || "";
-    const messageId = id;
-    if (
-      reads &&
-      reads.some(
-        (unread) => unread.userId === userId && unread.messageId === messageId
-      )
-    )
-      return;
-    createMessageRead({ userId, messageId });
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
@@ -674,7 +655,6 @@ export default function Messages(props: {
                     participants={participants}
                     reactions={reactions}
                     chat={chat}
-                    handleCreateMessageRead={handleCreateMessageRead}
                     clickedFriend={clickedFriend}
                     handleCreateReaction={handleCreateReaction}
                     editMessageId={editMessageId}
@@ -683,10 +663,7 @@ export default function Messages(props: {
                   />
                 </div>
               ) : message.userId === "notification" ? (
-                <Notification
-                  message={message}
-                  handleCreateMessageRead={handleCreateMessageRead}
-                />
+                <Notification message={message} />
               ) : (
                 <div
                   onContextMenu={(e) => {
@@ -716,7 +693,6 @@ export default function Messages(props: {
                     userFriends={userFriends}
                     reactions={reactions}
                     chat={chat}
-                    handleCreateMessageRead={handleCreateMessageRead}
                     clickedFriend={clickedFriend}
                     handleCreateReaction={handleCreateReaction}
                     images={images}

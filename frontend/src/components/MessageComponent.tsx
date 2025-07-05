@@ -34,7 +34,6 @@ export default function MessageComponent(props: {
   participants: Friend[] | undefined;
   reactions: Reaction[] | undefined;
   chat: Chat | null;
-  handleCreateMessageRead: (id: number) => void;
   clickedFriend: (state: Friend) => void;
   handleCreateReaction: (
     e: React.FormEvent<HTMLFormElement>,
@@ -53,7 +52,6 @@ export default function MessageComponent(props: {
     participants,
     reactions,
     chat,
-    handleCreateMessageRead,
     clickedFriend,
     handleCreateReaction,
     editMessageId,
@@ -84,10 +82,6 @@ export default function MessageComponent(props: {
     x: number;
     y: number;
   } | null>(null);
-
-  useOnScreen(ref, () => {
-    handleCreateMessageRead(message.messageId);
-  });
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {

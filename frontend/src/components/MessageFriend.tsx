@@ -30,7 +30,6 @@ export default function MessageFriend(props: {
   userFriends: UserFriend[] | undefined;
   reactions: Reaction[] | undefined;
   chat: Chat | null;
-  handleCreateMessageRead: (id: number) => void;
   clickedFriend: (state: Friend) => void;
   handleCreateReaction: (
     e: React.FormEvent<HTMLFormElement>,
@@ -48,7 +47,6 @@ export default function MessageFriend(props: {
     userFriends,
     reactions,
     chat,
-    handleCreateMessageRead,
     clickedFriend,
     handleCreateReaction,
     images,
@@ -82,10 +80,6 @@ export default function MessageFriend(props: {
     x: number;
     y: number;
   } | null>(null);
-
-  useOnScreen(ref, () => {
-    handleCreateMessageRead(message.messageId);
-  });
 
   const handleClickOutsideEmojis = (event: MouseEvent) => {
     if (
