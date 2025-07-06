@@ -55,9 +55,13 @@ export const imagesRouter = new Hono()
     async (c) => {
       const { file, userId, chatId, messageId } = c.req.valid("form");
       try {
-        // Validate file type
         const fileType = file.type;
-        const extension = fileType.split("/")[1];
+        let extension: string;
+        if (fileType === "image/svg+xml") {
+          extension = "svg";
+        } else {
+          extension = fileType.split("/")[1];
+        }
         if (!ALLOWED_FILE_TYPES.includes(extension)) {
           return c.json<UploadResponse>(
             {
