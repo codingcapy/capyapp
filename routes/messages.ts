@@ -5,7 +5,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { mightFail, mightFailSync } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
-import { and, desc, eq, inArray, isNull, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt, ne } from "drizzle-orm";
 import z from "zod";
 
 export function assertIsParsableInt(id: string): number {
@@ -57,9 +57,15 @@ export const messagesRouter = new Hono()
     const chatId = assertIsParsableInt(chatIdString);
     const limit = Number(c.req.query("limit") || 100); // Default to 100 messages
     const cursor = Number(c.req.query("cursor") || 0); // Cursor for pagination
+    const before = c.req.query("before");
     if (!chatId) {
       return c.json({ error: "chatId parameter is required." }, 400);
     }
+    const whereConditions = [eq(messagesTable.chatId, chatId)];
+    if (before) {
+      whereConditions.push(lt(messagesTable.createdAt, new Date(before)));
+    }
+
     const { result: messagesQueryResult, error: messagesQueryError } =
       await mightFail(
         db

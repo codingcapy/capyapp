@@ -157,6 +157,9 @@ export default function Messages(props: {
   const [cursorPosition, setCursorPosition] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const [messageHtml, setMessageHtml] = useState("");
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -272,6 +275,12 @@ export default function Messages(props: {
       y,
     });
   }
+
+  useEffect(() => {
+    if (messages) {
+      setAllMessages(messages);
+    }
+  }, [messages]);
 
   useEffect(() => {
     socket.on("message", (data) => {
