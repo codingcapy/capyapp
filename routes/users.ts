@@ -86,7 +86,29 @@ export const usersRouter = new Hono()
         cause: usersQueryError,
       });
     }
-    return c.json({ users: usersQueryResult }, 200);
+    return c.json(
+      {
+        users: [
+          {
+            userId: "example",
+            username: "example",
+            email: "example",
+            password: "example",
+            profilePic: "example",
+            createdAt: new Date(),
+          },
+          {
+            userId: "example2",
+            username: "example2",
+            email: "example2",
+            password: "example2",
+            profilePic: null,
+            createdAt: new Date(),
+          },
+        ],
+      },
+      200
+    );
   })
   .post(
     "/update/profilepic",
