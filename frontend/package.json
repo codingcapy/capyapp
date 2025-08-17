@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@swan-io/boxed": "^3.2.0",
     "@tailwindcss/vite": "^4.0.7",
     "@tanstack/react-query": "^5.66.8",
     "@tanstack/react-router": "^1.109.2",
     "axios": "^1.7.9",
+    "exhaustive": "^1.1.2",
     "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -21,6 +23,7 @@
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss": "^4.0.7",
+    "ts-pattern": "^5.8.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

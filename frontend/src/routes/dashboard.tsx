@@ -32,6 +32,7 @@ import { queryClient } from "../main";
 import { useCreateMessageMutation } from "../lib/api/messages";
 import Participants from "../components/Participants";
 import { Message } from "../../../schemas/messages";
+import { match } from "ts-pattern";
 
 export const socket = io("https://capyapp-production.up.railway.app", {
   path: "/ws",
@@ -220,6 +221,105 @@ function RouteComponent() {
       socket.off("message");
     };
   }, [socket, user?.userId, tanstackQueryClient]);
+
+  function displayView(viewMode: MobileViewMode) {
+    match(viewMode)
+      .with("default", () => {
+        return (
+          <Messages
+            chat={chat}
+            setChat={setChat}
+            user={user}
+            friends={friends}
+            friend={friend}
+            setFriend={setFriend}
+            clickedFriend={clickedFriend}
+            userFriends={userFriends}
+            setLeaveMode={setLeaveMode}
+            menuMode={menuMode}
+            setMenuMode={setMenuMode}
+            editTitleMode={editTitleMode}
+            setEditTitleMode={setEditTitleMode}
+            currentMessage={currentMessage}
+            setCurrentMessage={setCurrentMessage}
+            mobileViewMode={mobileViewMode}
+          />
+        );
+      })
+      .with("friends", () => {
+        return (
+          <Friends
+            clickedAddFriend={clickedAddFriend}
+            clickedFriend={clickedFriend}
+            friends={friends}
+            userFriends={userFriends}
+            setFriend={setFriend}
+            friend={friend}
+            handleCreateChat={handleCreateChat}
+            handleBlock={handleBlock}
+            handleUnblock={handleUnblock}
+          />
+        );
+      })
+      .with("chats", () => {
+        return (
+          <Chats
+            chat={chat}
+            chats={chats}
+            clickedChat={clickedChat}
+            unreadStatus={unreadStatus}
+            setLeaveMode={setLeaveMode}
+            contextMenu={contextMenu}
+            setContextMenu={setContextMenu}
+            editTitleMode={editTitleMode}
+            setEditTitleMode={setEditTitleMode}
+          />
+        );
+      })
+      .with("profile", () => {
+        return <Profile />;
+      })
+      .with("messages", () => {
+        return (
+          <Messages
+            chat={chat}
+            setChat={setChat}
+            user={user}
+            friends={friends}
+            friend={friend}
+            setFriend={setFriend}
+            clickedFriend={clickedFriend}
+            userFriends={userFriends}
+            setLeaveMode={setLeaveMode}
+            menuMode={menuMode}
+            setMenuMode={setMenuMode}
+            editTitleMode={editTitleMode}
+            setEditTitleMode={setEditTitleMode}
+            currentMessage={currentMessage}
+            setCurrentMessage={setCurrentMessage}
+            mobileViewMode={mobileViewMode}
+          />
+        );
+      })
+      .with("friend", () => {
+        return (
+          <FriendProfile
+            friend={friend}
+            friends={friends}
+            chats={chats}
+            clickedChat={clickedChat}
+            userFriends={userFriends}
+            handleCreateChat={handleCreateChat}
+            handleBlock={handleBlock}
+            handleUnblock={handleUnblock}
+          />
+        );
+      })
+      .with("add-friend", () => {
+        return <AddFriend friends={friends} />;
+      })
+      .exhaustive();
+  }
 
   return (
     <div className="flex flex-col bg-[#15151a] text-white min-h-screen">
