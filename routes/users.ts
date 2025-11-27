@@ -269,7 +269,7 @@ export const usersRouter = new Hono()
               style="font-family: Helvetica,Arial,sans-serif;display:flex;flex-direction: column; min-height: 100vh; background-color: #040406; color: white;">
               <div style="flex:1; margin:50px auto;width:70%;padding:20px 0">
                   <div style="">
-                      <a href="https://capyapp-production.up.railway.app/"
+                      <a href="https://capyapp.up.railway.app/"
                           style="font-size:1.4em;color: rgb(19, 171, 209);text-decoration:none;font-weight:600">CapyApp</a>
                   </div>
                   <p style="padding-top: 20px;padding-bottom: 20px;">Hi ${newUserResult[0].username},</p>
@@ -278,13 +278,13 @@ export const usersRouter = new Hono()
                       ${newPassword}</h2>
                   <p>Please ensure to change to a new, more secure password after logging in by navigating to your Profile.
                   </p>
-                  <p>Please continue to enjoy <a href="https://capyapp-production.up.railway.app/"
+                  <p>Please continue to enjoy <a href="https://capyapp.up.railway.app/"
                           style="color: rgb(19, 171, 209);text-decoration:none;">CapyApp</a>
                       here :)
                   </p>
                   <p style="padding-top: 20px;padding-bottom: 20px;">Regards,</p>
                   <p style="font-size: large;">CapyApp</p>
-                  <img src="https://capyapp-production.up.railway.app/capyness.png" alt=""
+                  <img src="https://capyapp.up.railway.app/capyness.png" alt=""
                       style="width:35px;height:35px; margin-top: 10px;">
               </div>
           </div>
@@ -330,7 +330,7 @@ function sendResetPasswordEmail(
               style="font-family: Helvetica,Arial,sans-serif;display:flex;flex-direction: column; min-height: 100vh; background-color: #040406; color: white;">
               <div style="flex:1; margin:50px auto;width:70%;padding:20px 0">
                   <div style="">
-                      <a href="https://capyapp-production.up.railway.app/"
+                      <a href="https://capyapp.up.railway.app/"
                           style="font-size:1.4em;color: rgb(19, 171, 209);text-decoration:none;font-weight:600">CapyApp</a>
                   </div>
                   <p style="padding-top: 20px;padding-bottom: 20px;">Hi ${username},</p>
@@ -339,13 +339,13 @@ function sendResetPasswordEmail(
                       ${newPassword}</h2>
                   <p>Please ensure to change to a new, more secure password after logging in by navigating to your Profile.
                   </p>
-                  <p>Please continue to enjoy <a href="https://capyapp-production.up.railway.app/"
+                  <p>Please continue to enjoy <a href="https://capyapp.up.railway.app/"
                           style="color: rgb(19, 171, 209);text-decoration:none;">CapyApp</a>
                       here :)
                   </p>
                   <p style="padding-top: 20px;padding-bottom: 20px;">Regards,</p>
                   <p style="font-size: large;">CapyApp</p>
-                  <img src="https://capyapp-production.up.railway.app/capyness.png" alt=""
+                  <img src="https://capyapp.up.railway.app/capyness.png" alt=""
                       style="width:35px;height:35px; margin-top: 10px;">
               </div>
           </div>

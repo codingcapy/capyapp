@@ -11,6 +11,6 @@ export type ExtractData<T> =
   T extends ClientResponse<infer Data, any, any> ? Data : never;
 
 const devServer = "http://localhost:3333";
-const prodServer = "https://capyapp-production.up.railway.app";
+const prodServer = "https://capyapp.up.railway.app";
 
 export const client = hc<ApiRoutes>(prodServer);

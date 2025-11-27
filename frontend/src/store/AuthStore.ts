@@ -23,7 +23,7 @@ const useAuthStore = create<{
     set({ authLoading: true });
     try {
       const res = await axios.post(
-        `https://capyapp-production.up.railway.app/api/v0/user/login`,
+        `https://capyapp.up.railway.app/api/v0/user/login`,
         {
           email,
           password,
@@ -43,7 +43,7 @@ const useAuthStore = create<{
   loginWithToken: async () => {
     try {
       const res = await axios.post(
-        `https://capyapp-production.up.railway.app/api/v0/user/validation`
+        `https://capyapp.up.railway.app/api/v0/user/validation`
       );
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);

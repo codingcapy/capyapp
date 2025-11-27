@@ -34,7 +34,7 @@ import Participants from "../components/Participants";
 import { Message } from "../../../schemas/messages";
 import { match } from "ts-pattern";
 
-export const socket = io("https://capyapp-production.up.railway.app", {
+export const socket = io("https://capyapp.up.railway.app", {
   path: "/ws",
   transports: ["websocket", "polling"],
 });
