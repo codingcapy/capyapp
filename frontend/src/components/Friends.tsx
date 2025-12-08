@@ -19,7 +19,7 @@ export default function Friends(props: {
   handleUnblock: () => void;
   createChatPending: boolean;
   friendsPending: boolean;
-  friendsError: boolean;
+  friendsError: Error | null;
 }) {
   const {
     clickedAddFriend,

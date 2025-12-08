@@ -43,6 +43,7 @@ export default function FriendProfile(props: {
 
   function handleAddFriend(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (createFriendPending) return console.log("Create friend pending");
     createFriend(
       { userEmail: user!.email, friendEmail: (friend && friend.email) || "" },
       {

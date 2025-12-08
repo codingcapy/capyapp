@@ -84,7 +84,7 @@ export default function Messages(props: {
   setCurrentMessage: (state: Message | null) => void;
   mobileViewMode: MobileViewMode;
   friendsPending: boolean;
-  friendsError: boolean;
+  friendsError: Error | null;
 }) {
   const {
     chat,
@@ -105,9 +105,11 @@ export default function Messages(props: {
     friendsPending,
     friendsError,
   } = props;
-  const { data: messages } = useQuery(
-    getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")
-  );
+  const {
+    data: messages,
+    isLoading: messagesPending,
+    error: messagesError,
+  } = useQuery(getMessagesByChatIdQueryOptions(chat?.chatId.toString() || ""));
   const { data: participants } = useQuery(
     getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || "")
   );
@@ -644,76 +646,85 @@ export default function Messages(props: {
       <div
         className={`pt-[100px] pb-[150px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
       >
-        {messages
-          ?.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-          .map((message, i) => (
-            <div className="text-white" key={message.messageId || `live-${i}`}>
-              {user && message.userId === user.userId ? (
-                <div
-                  onContextMenu={(e) => {
-                    setCurrentMessage(message);
-                    setFriend(user || null);
-                    handleContextMenu(e);
-                    setReplyContent(message.content.toString());
-                    setContextMode("user");
-                  }}
-                >
-                  <MessageComponent
-                    message={message}
-                    friends={friends || []}
-                    setFriend={setFriend}
-                    replyMode={replyMode}
-                    setReplyMode={setReplyMode}
-                    setReplyContent={setReplyContent}
-                    participants={participants}
-                    reactions={reactions}
-                    chat={chat}
-                    clickedFriend={clickedFriend}
-                    handleCreateReaction={handleCreateReaction}
-                    editMessageId={editMessageId}
-                    setEditMessageId={setEditMessageId}
-                    images={images}
-                  />
-                </div>
-              ) : message.userId === "notification" ? (
-                <Notification message={message} />
-              ) : (
-                <div
-                  onContextMenu={(e) => {
-                    setCurrentMessage(message);
-                    const friend =
-                      friends?.find(
-                        (friend) => message.userId === friend.userId
-                      ) ??
-                      participants?.find(
-                        (participant) => message.userId === participant.userId
-                      ) ??
-                      null;
-                    setFriend(friend);
-                    handleContextMenu(e);
-                    setReplyContent(message.content.toString());
-                    setContextMode("friend");
-                  }}
-                >
-                  <MessageFriend
-                    message={message}
-                    friends={friends || []}
-                    setFriend={setFriend}
-                    replyMode={replyMode}
-                    setReplyMode={setReplyMode}
-                    setReplyContent={setReplyContent}
-                    participants={participants}
-                    userFriends={userFriends}
-                    reactions={reactions}
-                    chat={chat}
-                    clickedFriend={clickedFriend}
-                    handleCreateReaction={handleCreateReaction}
-                    images={images}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+        {messagesPending ? (
+          <div>Loading...</div>
+        ) : messagesError ? (
+          <div>Error loading messages</div>
+        ) : (
+          messages
+            ?.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+            .map((message, i) => (
+              <div
+                className="text-white"
+                key={message.messageId || `live-${i}`}
+              >
+                {user && message.userId === user.userId ? (
+                  <div
+                    onContextMenu={(e) => {
+                      setCurrentMessage(message);
+                      setFriend(user || null);
+                      handleContextMenu(e);
+                      setReplyContent(message.content.toString());
+                      setContextMode("user");
+                    }}
+                  >
+                    <MessageComponent
+                      message={message}
+                      friends={friends || []}
+                      setFriend={setFriend}
+                      replyMode={replyMode}
+                      setReplyMode={setReplyMode}
+                      setReplyContent={setReplyContent}
+                      participants={participants}
+                      reactions={reactions}
+                      chat={chat}
+                      clickedFriend={clickedFriend}
+                      handleCreateReaction={handleCreateReaction}
+                      editMessageId={editMessageId}
+                      setEditMessageId={setEditMessageId}
+                      images={images}
+                    />
+                  </div>
+                ) : message.userId === "notification" ? (
+                  <Notification message={message} />
+                ) : (
+                  <div
+                    onContextMenu={(e) => {
+                      setCurrentMessage(message);
+                      const friend =
+                        friends?.find(
+                          (friend) => message.userId === friend.userId
+                        ) ??
+                        participants?.find(
+                          (participant) => message.userId === participant.userId
+                        ) ??
+                        null;
+                      setFriend(friend);
+                      handleContextMenu(e);
+                      setReplyContent(message.content.toString());
+                      setContextMode("friend");
+                    }}
+                  >
+                    <MessageFriend
+                      message={message}
+                      friends={friends || []}
+                      setFriend={setFriend}
+                      replyMode={replyMode}
+                      setReplyMode={setReplyMode}
+                      setReplyContent={setReplyContent}
+                      participants={participants}
+                      userFriends={userFriends}
+                      reactions={reactions}
+                      chat={chat}
+                      clickedFriend={clickedFriend}
+                      handleCreateReaction={handleCreateReaction}
+                      images={images}
+                    />
+                  </div>
+                )}
+              </div>
+            ))
+        )}
         <div ref={lastMessageRef} />
       </div>
       <div className="text-red-400">{notification}</div>

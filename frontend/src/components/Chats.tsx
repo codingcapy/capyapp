@@ -27,7 +27,7 @@ export default function Chats(props: {
   editTitleMode: boolean;
   setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
   chatsPending: boolean;
-  chatsError: boolean;
+  chatsError: Error | null;
 }) {
   const {
     chats,

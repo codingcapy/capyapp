@@ -66,18 +66,18 @@ function RouteComponent() {
   const [chat, setChat] = useState<Chat | null>(null);
   const {
     data: friends,
-    isPending: friendsPending,
-    isError: friendsError,
+    isLoading: friendsPending,
+    error: friendsError,
   } = useQuery(getFriendsByEmailQueryOptions(user?.email || ""));
   const {
     data: userFriends,
-    isPending: userFriendsPending,
-    isError: userFriendsError,
+    isLoading: userFriendsPending,
+    error: userFriendsError,
   } = useQuery(getUserFriendsByEmailQueryOptions(user?.email || ""));
   const {
     data: chats,
-    isPending: chatsPending,
-    isError: chatsError,
+    isLoading: chatsPending,
+    error: chatsError,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
   //console.log("CHATS:", chats);
   //console.log("CHATS READ STATUS:", chatsReadStatus);
