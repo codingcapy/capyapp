@@ -17,6 +17,9 @@ export default function Friends(props: {
   handleCreateChat: () => void;
   handleBlock: () => void;
   handleUnblock: () => void;
+  createChatPending: boolean;
+  friendsPending: boolean;
+  friendsError: boolean;
 }) {
   const {
     clickedAddFriend,
@@ -28,6 +31,9 @@ export default function Friends(props: {
     handleCreateChat,
     handleBlock,
     handleUnblock,
+    createChatPending,
+    friendsPending,
+    friendsError,
   } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -84,23 +90,31 @@ export default function Friends(props: {
         </div>
       </div>
       <div className="p-5 pt-[120px]">
-        {friends?.map((f) => (
-          <div
-            onClick={() => clickedFriend(f)}
-            className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
-            onContextMenu={(e) => {
-              handleContextMenu(e);
-              setFriend(f);
-            }}
-            key={f.userId}
-          >
-            <img
-              src={f.profilePic ? f.profilePic : profilePic}
-              className="w-[40px] rounded-full"
-            />
-            <div className="ml-2 py-2">{f.username}</div>
-          </div>
-        ))}
+        {friendsPending ? (
+          <div>Loading...</div>
+        ) : friendsError ? (
+          <div>Error loading friends</div>
+        ) : friends ? (
+          friends.map((f) => (
+            <div
+              onClick={() => clickedFriend(f)}
+              className="flex py-2 px-1 cursor-pointer hover:bg-slate-600 transition-all ease duration-300"
+              onContextMenu={(e) => {
+                handleContextMenu(e);
+                setFriend(f);
+              }}
+              key={f.userId}
+            >
+              <img
+                src={f.profilePic ? f.profilePic : profilePic}
+                className="w-[40px] rounded-full"
+              />
+              <div className="ml-2 py-2">{f.username}</div>
+            </div>
+          ))
+        ) : (
+          <div>An unexpected error occured</div>
+        )}
       </div>
       {contextMenu?.visible && (
         <div
@@ -117,15 +131,19 @@ export default function Friends(props: {
           >
             Profile
           </button>
-          <button
-            className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
-            onClick={() => {
-              handleCreateChat();
-              setContextMenu(null);
-            }}
-          >
-            Start Chat
-          </button>
+          {createChatPending ? (
+            <div>Creating chat...</div>
+          ) : (
+            <button
+              className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
+              onClick={() => {
+                handleCreateChat();
+                setContextMenu(null);
+              }}
+            >
+              Start Chat
+            </button>
+          )}
           {!isBlocked ? (
             <button
               className="block px-4 py-2 hover:bg-[#373737] w-full text-left text-red-400"

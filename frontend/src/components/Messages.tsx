@@ -83,6 +83,8 @@ export default function Messages(props: {
   currentMessage: Message | null;
   setCurrentMessage: (state: Message | null) => void;
   mobileViewMode: MobileViewMode;
+  friendsPending: boolean;
+  friendsError: boolean;
 }) {
   const {
     chat,
@@ -100,6 +102,8 @@ export default function Messages(props: {
     currentMessage,
     setCurrentMessage,
     mobileViewMode,
+    friendsPending,
+    friendsError,
   } = props;
   const { data: messages } = useQuery(
     getMessagesByChatIdQueryOptions(chat?.chatId.toString() || "")

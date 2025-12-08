@@ -16,6 +16,7 @@ export default function FriendProfile(props: {
   handleCreateChat: () => void;
   handleBlock: () => void;
   handleUnblock: () => void;
+  createChatPending: boolean;
 }) {
   const {
     friend,
@@ -24,9 +25,11 @@ export default function FriendProfile(props: {
     handleCreateChat,
     handleBlock,
     handleUnblock,
+    createChatPending,
   } = props;
   const { user } = useAuthStore();
-  const { mutate: createFriend } = useCreateFriendMutation();
+  const { mutate: createFriend, isPending: createFriendPending } =
+    useCreateFriendMutation();
   const isFriend =
     friends && friends.find((x) => friend && x.userId == friend.userId);
   const isUser = friend && friend.userId === user?.userId;
@@ -66,7 +69,7 @@ export default function FriendProfile(props: {
           src={friend?.profilePic ? friend.profilePic : profilePic}
           className="max-w-30 md:max-w-xs rounded-full mx-auto pb-2"
         />
-        {isFriend && !isUser && !isBlocked && (
+        {isFriend && !isUser && !isBlocked && !createChatPending && (
           <button
             className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300"
             onClick={handleCreateChat}
@@ -74,6 +77,7 @@ export default function FriendProfile(props: {
             Start chat
           </button>
         )}
+        {createChatPending && <div>Starting chat...</div>}
         {!isFriend && !isUser && (
           <form onSubmit={handleAddFriend}>
             <button className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">

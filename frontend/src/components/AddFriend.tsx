@@ -5,7 +5,8 @@ import { useState } from "react";
 import { socket } from "../routes/dashboard";
 
 export default function AddFriend(props: { friends: Friend[] | undefined }) {
-  const { mutate: createFriend } = useCreateFriendMutation();
+  const { mutate: createFriend, isPending: createFriendPending } =
+    useCreateFriendMutation();
   const { user } = useAuthStore();
   const [notification, setNotification] = useState("");
   const [successNotification, setSuccessNotification] = useState("");
@@ -49,9 +50,13 @@ export default function AddFriend(props: { friends: Friend[] | undefined }) {
           name="email"
           required
         />
-        <button className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
-          Add
-        </button>
+        {createFriendPending ? (
+          <div>Adding friend...</div>
+        ) : (
+          <button className="border-2 border-cyan-600 text-cyan-600 font-bold px-5 py-2 my-5 w-[300px] mx-auto rounded hover:bg-cyan-600 hover:text-black ease-in-out duration-300">
+            Add
+          </button>
+        )}
       </form>
       <div className="text-red-400 text-center">{notification}</div>
       <div className="text-green-400 text-center">{successNotification}</div>

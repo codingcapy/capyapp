@@ -21,7 +21,6 @@ import { Friend } from "../lib/api/friend";
 import FriendProfile from "../components/FriendProfile";
 import {
   getChatsByUserIdQueryOptions,
-  getChatsReadStatusByUserIdQueryOptions,
   getUnreadsByUserIdQueryOptions,
   useCreateChatMutation,
   useLeaveChatMutation,
@@ -65,28 +64,30 @@ function RouteComponent() {
   );
   const [friend, setFriend] = useState<Friend | null>(null);
   const [chat, setChat] = useState<Chat | null>(null);
-  const { data: friends } = useQuery(
-    getFriendsByEmailQueryOptions(user?.email || "")
-  );
-  const { data: userFriends } = useQuery(
-    getUserFriendsByEmailQueryOptions(user?.email || "")
-  );
+  const {
+    data: friends,
+    isPending: friendsPending,
+    isError: friendsError,
+  } = useQuery(getFriendsByEmailQueryOptions(user?.email || ""));
+  const {
+    data: userFriends,
+    isPending: userFriendsPending,
+    isError: userFriendsError,
+  } = useQuery(getUserFriendsByEmailQueryOptions(user?.email || ""));
   const {
     data: chats,
-    isLoading,
-    error,
+    isPending: chatsPending,
+    isError: chatsError,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
   //console.log("CHATS:", chats);
-  const { data: chatsReadStatus } = useQuery(
-    getChatsReadStatusByUserIdQueryOptions(user?.userId || "")
-  );
   //console.log("CHATS READ STATUS:", chatsReadStatus);
   const { data: unreadStatus } = useQuery(
     getUnreadsByUserIdQueryOptions(user?.userId || "")
   );
   //console.log("UNREAD STATUS:", unreadStatus);
   const { participants } = useParticipantStore();
-  const { mutate: createChat } = useCreateChatMutation();
+  const { mutate: createChat, isPending: createChatPending } =
+    useCreateChatMutation();
   const { mutate: blockUser } = useBlockUserMutation();
   const { mutate: unblockUser } = useUnblockUserMutation();
   const { mutate: createMessage } = useCreateMessageMutation();
@@ -243,6 +244,8 @@ function RouteComponent() {
             currentMessage={currentMessage}
             setCurrentMessage={setCurrentMessage}
             mobileViewMode={mobileViewMode}
+            friendsPending={friendsPending}
+            friendsError={friendsError}
           />
         );
       })
@@ -258,6 +261,9 @@ function RouteComponent() {
             handleCreateChat={handleCreateChat}
             handleBlock={handleBlock}
             handleUnblock={handleUnblock}
+            createChatPending={createChatPending}
+            friendsPending={friendsPending}
+            friendsError={friendsError}
           />
         );
       })
@@ -273,6 +279,8 @@ function RouteComponent() {
             setContextMenu={setContextMenu}
             editTitleMode={editTitleMode}
             setEditTitleMode={setEditTitleMode}
+            chatsPending={chatsPending}
+            chatsError={chatsError}
           />
         );
       })
@@ -298,6 +306,8 @@ function RouteComponent() {
             currentMessage={currentMessage}
             setCurrentMessage={setCurrentMessage}
             mobileViewMode={mobileViewMode}
+            friendsPending={friendsPending}
+            friendsError={friendsError}
           />
         );
       })
@@ -312,6 +322,7 @@ function RouteComponent() {
             handleCreateChat={handleCreateChat}
             handleBlock={handleBlock}
             handleUnblock={handleUnblock}
+            createChatPending={createChatPending}
           />
         );
       })
@@ -367,6 +378,9 @@ function RouteComponent() {
               handleCreateChat={handleCreateChat}
               handleBlock={handleBlock}
               handleUnblock={handleUnblock}
+              createChatPending={createChatPending}
+              friendsPending={friendsPending}
+              friendsError={friendsError}
             />
           )}
           <div
@@ -387,6 +401,8 @@ function RouteComponent() {
               setContextMenu={setContextMenu}
               editTitleMode={editTitleMode}
               setEditTitleMode={setEditTitleMode}
+              chatsPending={chatsPending}
+              chatsError={chatsError}
             />
           )}
           {(mobileViewMode === "messages" || mobileViewMode === "default") && (
@@ -407,6 +423,8 @@ function RouteComponent() {
               currentMessage={currentMessage}
               setCurrentMessage={setCurrentMessage}
               mobileViewMode={mobileViewMode}
+              friendsPending={friendsPending}
+              friendsError={friendsError}
             />
           )}
           {mobileViewMode === "profile" && <Profile />}
@@ -421,6 +439,7 @@ function RouteComponent() {
               handleCreateChat={handleCreateChat}
               handleBlock={handleBlock}
               handleUnblock={handleUnblock}
+              createChatPending={createChatPending}
             />
           )}
           <div className="hidden md:block md:w-[15%] md:h-screen overflow-auto md:bg-zinc-900">

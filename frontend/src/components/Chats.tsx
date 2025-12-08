@@ -26,6 +26,8 @@ export default function Chats(props: {
   >;
   editTitleMode: boolean;
   setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
+  chatsPending: boolean;
+  chatsError: boolean;
 }) {
   const {
     chats,
@@ -37,6 +39,8 @@ export default function Chats(props: {
     editTitleMode,
     setEditTitleMode,
     chat,
+    chatsPending,
+    chatsError,
   } = props;
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -88,7 +92,11 @@ export default function Chats(props: {
         <div className="ml-2 text-xl">Chats</div>
       </div>
       <div className="p-5 pt-[70px]">
-        {chats !== undefined &&
+        {chatsPending ? (
+          <div>Loading...</div>
+        ) : chatsError ? (
+          <div>Error loading chats</div>
+        ) : chats ? (
           chats.map((c) => (
             <div
               key={c.chatId}
@@ -115,7 +123,10 @@ export default function Chats(props: {
                   )[0].unreadCount}
               </div>
             </div>
-          ))}
+          ))
+        ) : (
+          <div>An unexpected error has occurred</div>
+        )}
       </div>
       {contextMenu?.visible && (
         <div
