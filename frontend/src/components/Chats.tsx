@@ -26,7 +26,7 @@ export default function Chats(props: {
   >;
   editTitleMode: boolean;
   setEditTitleMode: React.Dispatch<React.SetStateAction<boolean>>;
-  chatsPending: boolean;
+  chatsLoading: boolean;
   chatsError: Error | null;
 }) {
   const {
@@ -39,7 +39,7 @@ export default function Chats(props: {
     editTitleMode,
     setEditTitleMode,
     chat,
-    chatsPending,
+    chatsLoading,
     chatsError,
   } = props;
   const queryClient = useQueryClient();
@@ -92,7 +92,7 @@ export default function Chats(props: {
         <div className="ml-2 text-xl">Chats</div>
       </div>
       <div className="p-5 pt-[70px]">
-        {chatsPending ? (
+        {chatsLoading ? (
           <div>Loading...</div>
         ) : chatsError ? (
           <div>Error loading chats</div>

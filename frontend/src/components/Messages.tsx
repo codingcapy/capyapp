@@ -83,7 +83,7 @@ export default function Messages(props: {
   currentMessage: Message | null;
   setCurrentMessage: (state: Message | null) => void;
   mobileViewMode: MobileViewMode;
-  friendsPending: boolean;
+  friendsLoading: boolean;
   friendsError: Error | null;
 }) {
   const {
@@ -102,12 +102,12 @@ export default function Messages(props: {
     currentMessage,
     setCurrentMessage,
     mobileViewMode,
-    friendsPending,
+    friendsLoading,
     friendsError,
   } = props;
   const {
     data: messages,
-    isLoading: messagesPending,
+    isLoading: messagesLoading,
     error: messagesError,
   } = useQuery(getMessagesByChatIdQueryOptions(chat?.chatId.toString() || ""));
   const { data: participants } = useQuery(
@@ -646,7 +646,7 @@ export default function Messages(props: {
       <div
         className={`pt-[100px] pb-[150px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
       >
-        {messagesPending ? (
+        {messagesLoading ? (
           <div>Loading...</div>
         ) : messagesError ? (
           <div>Error loading messages</div>

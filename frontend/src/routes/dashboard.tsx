@@ -66,17 +66,17 @@ function RouteComponent() {
   const [chat, setChat] = useState<Chat | null>(null);
   const {
     data: friends,
-    isLoading: friendsPending,
+    isLoading: friendsLoading,
     error: friendsError,
   } = useQuery(getFriendsByEmailQueryOptions(user?.email || ""));
   const {
     data: userFriends,
-    isLoading: userFriendsPending,
+    isLoading: userFriendsLoading,
     error: userFriendsError,
   } = useQuery(getUserFriendsByEmailQueryOptions(user?.email || ""));
   const {
     data: chats,
-    isLoading: chatsPending,
+    isLoading: chatsLoading,
     error: chatsError,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
   //console.log("CHATS:", chats);
@@ -244,7 +244,7 @@ function RouteComponent() {
             currentMessage={currentMessage}
             setCurrentMessage={setCurrentMessage}
             mobileViewMode={mobileViewMode}
-            friendsPending={friendsPending}
+            friendsLoading={friendsLoading}
             friendsError={friendsError}
           />
         );
@@ -262,7 +262,7 @@ function RouteComponent() {
             handleBlock={handleBlock}
             handleUnblock={handleUnblock}
             createChatPending={createChatPending}
-            friendsPending={friendsPending}
+            friendsLoading={friendsLoading}
             friendsError={friendsError}
           />
         );
@@ -279,7 +279,7 @@ function RouteComponent() {
             setContextMenu={setContextMenu}
             editTitleMode={editTitleMode}
             setEditTitleMode={setEditTitleMode}
-            chatsPending={chatsPending}
+            chatsLoading={chatsLoading}
             chatsError={chatsError}
           />
         );
@@ -306,7 +306,7 @@ function RouteComponent() {
             currentMessage={currentMessage}
             setCurrentMessage={setCurrentMessage}
             mobileViewMode={mobileViewMode}
-            friendsPending={friendsPending}
+            friendsLoading={friendsLoading}
             friendsError={friendsError}
           />
         );
@@ -379,7 +379,7 @@ function RouteComponent() {
               handleBlock={handleBlock}
               handleUnblock={handleUnblock}
               createChatPending={createChatPending}
-              friendsPending={friendsPending}
+              friendsLoading={friendsLoading}
               friendsError={friendsError}
             />
           )}
@@ -401,7 +401,7 @@ function RouteComponent() {
               setContextMenu={setContextMenu}
               editTitleMode={editTitleMode}
               setEditTitleMode={setEditTitleMode}
-              chatsPending={chatsPending}
+              chatsLoading={chatsLoading}
               chatsError={chatsError}
             />
           )}
@@ -423,7 +423,7 @@ function RouteComponent() {
               currentMessage={currentMessage}
               setCurrentMessage={setCurrentMessage}
               mobileViewMode={mobileViewMode}
-              friendsPending={friendsPending}
+              friendsLoading={friendsLoading}
               friendsError={friendsError}
             />
           )}

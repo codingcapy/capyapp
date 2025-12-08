@@ -18,7 +18,7 @@ export default function Friends(props: {
   handleBlock: () => void;
   handleUnblock: () => void;
   createChatPending: boolean;
-  friendsPending: boolean;
+  friendsLoading: boolean;
   friendsError: Error | null;
 }) {
   const {
@@ -32,7 +32,7 @@ export default function Friends(props: {
     handleBlock,
     handleUnblock,
     createChatPending,
-    friendsPending,
+    friendsLoading,
     friendsError,
   } = props;
   const queryClient = useQueryClient();
@@ -90,7 +90,7 @@ export default function Friends(props: {
         </div>
       </div>
       <div className="p-5 pt-[120px]">
-        {friendsPending ? (
+        {friendsLoading ? (
           <div>Loading...</div>
         ) : friendsError ? (
           <div>Error loading friends</div>
