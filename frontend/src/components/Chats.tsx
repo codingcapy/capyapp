@@ -125,7 +125,7 @@ export default function Chats(props: {
             </div>
           ))
         ) : (
-          <div>An unexpected error has occurred</div>
+          <div>No chats! Start talking with a friend!</div>
         )}
       </div>
       {contextMenu?.visible && (

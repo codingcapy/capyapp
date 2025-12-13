@@ -113,7 +113,7 @@ export default function Friends(props: {
             </div>
           ))
         ) : (
-          <div>An unexpected error occured</div>
+          <div>Add a new friend!</div>
         )}
       </div>
       {contextMenu?.visible && (
