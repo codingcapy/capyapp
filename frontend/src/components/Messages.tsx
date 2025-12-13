@@ -646,9 +646,9 @@ export default function Messages(props: {
       <div
         className={`pt-[100px] pb-[150px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
       >
-        {messagesLoading ? (
-          <div>Loading...</div>
-        ) : messagesError ? (
+        {chat && messagesLoading ? (
+          <div className="p-10">Loading...</div>
+        ) : chat && messagesError ? (
           <div>Error loading messages</div>
         ) : (
           messages
