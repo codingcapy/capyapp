@@ -128,8 +128,11 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      if (decodedUser.id !== updateValues.userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: queryError, result: newUserResult } = await mightFail(
         db
           .update(usersTable)
@@ -158,8 +161,11 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      if (decodedUser.id !== updateValues.userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const encrypted = await hashPassword(updateValues.password);
       const { error: queryError, result: newUserResult } = await mightFail(
         db
@@ -189,8 +195,11 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      if (decodedUser.id !== updateValues.userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: queryError, result: newUserResult } = await mightFail(
         db
           .update(usersTable)

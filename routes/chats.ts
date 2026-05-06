@@ -28,6 +28,9 @@ export const userChatsRouter = new Hono()
   .post("/", zValidator("json", createChatSchema), async (c) => {
     const decodedUser = requireUser(c);
     const insertValues = c.req.valid("json");
+    if (decodedUser.id !== insertValues.userId) {
+      throw new HTTPException(403, { message: "Forbidden" });
+    }
     const { error: chatInsertError, result: chatInsertResult } =
       await mightFail(
         db.insert(chatsTable).values({ title: insertValues.title }).returning(),
@@ -114,17 +117,6 @@ export const userChatsRouter = new Hono()
           .innerJoin(chatsTable, eq(userChatsTable.chatId, chatsTable.chatId))
           .where(eq(userChatsTable.userId, userId)),
       );
-    if (chatsQueryError) {
-      throw new HTTPException(500, {
-        message: "Error occurred when fetching user chats.",
-        cause: chatsQueryError,
-      });
-    }
-    return c.json({ chats: chatsQueryResult });
-  })
-  .get(async (c) => {
-    const { result: chatsQueryResult, error: chatsQueryError } =
-      await mightFail(db.select().from(chatsTable));
     if (chatsQueryError) {
       throw new HTTPException(500, {
         message: "Error occurred when fetching user chats.",
@@ -286,8 +278,11 @@ export const userChatsRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
+      if (decodedUser.id !== insertValues.userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { result: leaveChatQueryResult, error: leaveChatQueryError } =
         await mightFail(
           db

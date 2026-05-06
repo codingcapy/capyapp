@@ -51,11 +51,14 @@ export const imagesRouter = new Hono()
         chatId: z.string(),
         messageId: z.string(),
         file: z.instanceof(File),
-      })
+      }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const { file, userId, chatId, messageId } = c.req.valid("form");
+      if (decodedUser.id !== userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       try {
         const fileType = file.type;
         let extension: string;
@@ -70,7 +73,7 @@ export const imagesRouter = new Hono()
               success: false,
               error: "Invalid file type",
             },
-            400
+            400,
           );
         }
         // Validate file size
@@ -80,7 +83,7 @@ export const imagesRouter = new Hono()
               success: false,
               error: "File too large",
             },
-            400
+            400,
           );
         }
         // Use timestamp in the key itself for time-versioned images
@@ -118,10 +121,10 @@ export const imagesRouter = new Hono()
             success: false,
             error: "Failed to upload file",
           },
-          500
+          500,
         );
       }
-    }
+    },
   )
   .get("/:chatId", async (c) => {
     requireUser(c);
@@ -135,19 +138,8 @@ export const imagesRouter = new Hono()
         db
           .select()
           .from(imagesTable)
-          .where(eq(imagesTable.chatId, Number(chatId)))
+          .where(eq(imagesTable.chatId, Number(chatId))),
       );
-    if (imagesQueryError) {
-      throw new HTTPException(500, {
-        message: "Error occurred when fetching images",
-        cause: imagesQueryError,
-      });
-    }
-    return c.json({ images: imagesQueryResult });
-  })
-  .get("/", async (c) => {
-    const { result: imagesQueryResult, error: imagesQueryError } =
-      await mightFail(db.select().from(imagesTable));
     if (imagesQueryError) {
       throw new HTTPException(500, {
         message: "Error occurred when fetching images",
@@ -164,7 +156,7 @@ export const imagesRouter = new Hono()
         db
           .delete(imagesTable)
           .where(eq(imagesTable.imageId, Number(deleteValues.imageId)))
-          .returning()
+          .returning(),
       );
     if (imageDeleteError) {
       console.log("Error while deleting image");
@@ -187,7 +179,7 @@ export const imagesRouter = new Hono()
         imageUrl: true,
         posted: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       requireUser(c);
@@ -198,7 +190,7 @@ export const imagesRouter = new Hono()
             .update(imagesTable)
             .set({ messageId: updateValues.messageId, posted: true })
             .where(eq(imagesTable.imageId, Number(updateValues.imageId)))
-            .returning()
+            .returning(),
         );
       if (imageUpdateError) {
         console.log("Error while updating image");
@@ -208,7 +200,7 @@ export const imagesRouter = new Hono()
         });
       }
       return c.json({ newImage: imageUpdateResult[0] }, 200);
-    }
+    },
   );
 
 export async function deleteImageFromS3(imageUrl: string) {

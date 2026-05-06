@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { ArgumentTypes, client } from "./client";
 import { authHeaders } from "../utils";
 import { ImageMessage } from "../../../../schemas/images";
 
@@ -17,9 +17,7 @@ type UploadResponse =
       error: string;
     };
 
-type SerializeImage = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.images.$get>>
->["images"][number];
+type SerializeImage = Omit<ImageMessage, "createdAt"> & { createdAt: string };
 
 type DeleteImageArgs = ArgumentTypes<
   typeof client.api.v0.images.delete.$post
@@ -30,7 +28,7 @@ type UpdateImageArgs = ArgumentTypes<
 >[0]["json"];
 
 export function mapSerializedImageToSchema(
-  SerializedImage: SerializeImage
+  SerializedImage: SerializeImage,
 ): ImageMessage {
   return {
     ...SerializedImage,
@@ -90,7 +88,10 @@ export const getImagesByChatIdQueryOptions = (args: string) =>
   });
 
 async function deleteImage(args: DeleteImageArgs) {
-  const res = await client.api.v0.images.delete.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.images.delete.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error deleting image.");
   }
@@ -116,7 +117,10 @@ export const useDeleteImageMutation = () => {
 };
 
 async function updateImage(args: UpdateImageArgs) {
-  const res = await client.api.v0.images.update.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.images.update.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating image.");
   }

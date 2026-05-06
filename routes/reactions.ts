@@ -15,11 +15,14 @@ export const reactionsRouter = new Hono()
       "json",
       createInsertSchema(reactionsTable).omit({
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
+      if (decodedUser.id !== insertValues.userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: reactionQueryError, result: reactionQueryResult } =
         await mightFail(
           db
@@ -29,9 +32,9 @@ export const reactionsRouter = new Hono()
               and(
                 eq(reactionsTable.userId, insertValues.userId),
                 eq(reactionsTable.messageId, insertValues.messageId),
-                eq(reactionsTable.content, insertValues.content)
-              )
-            )
+                eq(reactionsTable.content, insertValues.content),
+              ),
+            ),
         );
       if (reactionQueryError)
         throw new HTTPException(500, {
@@ -45,7 +48,7 @@ export const reactionsRouter = new Hono()
           db
             .insert(reactionsTable)
             .values({ ...insertValues })
-            .returning()
+            .returning(),
         );
       if (reactionInsertError) {
         console.log("Error while creating message:", reactionInsertResult);
@@ -55,19 +58,8 @@ export const reactionsRouter = new Hono()
         });
       }
       return c.json({ reaction: reactionInsertResult[0] }, 200);
-    }
+    },
   )
-  .get(async (c) => {
-    const { result: reactionsQueryResult, error: reactionsQueryError } =
-      await mightFail(db.select().from(reactionsTable));
-    if (reactionsQueryError) {
-      throw new HTTPException(500, {
-        message: "Error occurred when fetching reactions.",
-        cause: reactionsQueryError,
-      });
-    }
-    return c.json({ reactions: reactionsQueryResult });
-  })
   .delete(
     "/",
     zValidator(
@@ -77,18 +69,33 @@ export const reactionsRouter = new Hono()
         messageId: true,
         content: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
+      const { result: reactionOwner, error: reactionOwnerError } =
+        await mightFail(
+          db
+            .select({ userId: reactionsTable.userId })
+            .from(reactionsTable)
+            .where(
+              eq(reactionsTable.reactionId, Number(insertValues.reactionId)),
+            ),
+        );
+      if (reactionOwnerError || !reactionOwner.length) {
+        throw new HTTPException(404, { message: "Reaction not found" });
+      }
+      if (reactionOwner[0].userId !== decodedUser.id) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: reactionDeleteError, result: reactionDeleteResult } =
         await mightFail(
           db
             .delete(reactionsTable)
             .where(
-              eq(reactionsTable.reactionId, Number(insertValues.reactionId))
-            )
+              eq(reactionsTable.reactionId, Number(insertValues.reactionId)),
+            ),
         );
       if (reactionDeleteError) {
         throw new HTTPException(500, {
@@ -97,7 +104,7 @@ export const reactionsRouter = new Hono()
         });
       }
       return c.json({ chatId: insertValues.chatId });
-    }
+    },
   )
   .get("/:chatId", async (c) => {
     requireUser(c);
@@ -110,7 +117,7 @@ export const reactionsRouter = new Hono()
         db
           .select()
           .from(reactionsTable)
-          .where(eq(reactionsTable.chatId, Number(chatId)))
+          .where(eq(reactionsTable.chatId, Number(chatId))),
       );
     if (reactionsQueryError) {
       throw new HTTPException(500, {

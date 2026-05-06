@@ -22,8 +22,20 @@ export const userFriendsRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
+      const { result: actorResult, error: actorError } = await mightFail(
+        db
+          .select({ email: usersTable.email })
+          .from(usersTable)
+          .where(eq(usersTable.userId, decodedUser.id)),
+      );
+      if (actorError || !actorResult.length) {
+        throw new HTTPException(401, { message: "Unauthorized" });
+      }
+      if (actorResult[0].email !== insertValues.userEmail) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: userQueryError, result: userQueryResult } =
         await mightFail(
           db
@@ -116,8 +128,20 @@ export const userFriendsRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      const { result: actorResult, error: actorError } = await mightFail(
+        db
+          .select({ email: usersTable.email })
+          .from(usersTable)
+          .where(eq(usersTable.userId, decodedUser.id)),
+      );
+      if (actorError || !actorResult.length) {
+        throw new HTTPException(401, { message: "Unauthorized" });
+      }
+      if (actorResult[0].email !== updateValues.userEmail) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: queryError, result: newUserResult } = await mightFail(
         db
           .update(userFriendsTable)
@@ -151,8 +175,20 @@ export const userFriendsRouter = new Hono()
       }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      const { result: actorResult, error: actorError } = await mightFail(
+        db
+          .select({ email: usersTable.email })
+          .from(usersTable)
+          .where(eq(usersTable.userId, decodedUser.id)),
+      );
+      if (actorError || !actorResult.length) {
+        throw new HTTPException(401, { message: "Unauthorized" });
+      }
+      if (actorResult[0].email !== updateValues.userEmail) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: queryError, result: newUserResult } = await mightFail(
         db
           .update(userFriendsTable)

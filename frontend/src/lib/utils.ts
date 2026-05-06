@@ -13,7 +13,5 @@ export function getSession() {
 
 export function authHeaders() {
   const token = getSession();
-  return token
-    ? { headers: { Authorization: `Bearer ${token}` } }
-    : undefined;
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : undefined;
 }

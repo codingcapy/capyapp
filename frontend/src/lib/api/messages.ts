@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { Message } from "../../../../schemas/messages";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { ArgumentTypes, client } from "./client";
 import { authHeaders } from "../utils";
 
 type CreateMessageArgs = ArgumentTypes<
@@ -19,12 +19,10 @@ type UpdateMessageArgs = ArgumentTypes<
   typeof client.api.v0.messages.update.$post
 >[0]["json"];
 
-type SerializeMessage = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.messages.$get>>
->["messages"][number];
+type SerializeMessage = Omit<Message, "createdAt"> & { createdAt: string };
 
 export function mapSerializedMessageToSchema(
-  SerializedMessage: SerializeMessage
+  SerializedMessage: SerializeMessage,
 ): Message {
   return {
     ...SerializedMessage,
@@ -59,7 +57,7 @@ async function createMessage(args: CreateMessageArgs) {
 }
 
 export const useCreateMessageMutation = (
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -96,7 +94,10 @@ export const getMessagesByChatIdQueryOptions = (args: string) =>
   });
 
 async function deleteMessage(args: DeleteMessageArgs) {
-  const res = await client.api.v0.messages.delete.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.messages.delete.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -122,7 +123,10 @@ export const useDeleteMessageMutation = () => {
 };
 
 async function updateMessage(args: UpdateMessageArgs) {
-  const res = await client.api.v0.messages.update.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.messages.update.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating user.");
   }

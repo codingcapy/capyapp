@@ -120,7 +120,10 @@ export const getFriendsByEmailQueryOptions = (args: string) =>
   });
 
 async function blockUser(args: BlockUserArgs) {
-  const res = await client.api.v0.friends.block.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.friends.block.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -143,7 +146,10 @@ export const useBlockUserMutation = () => {
 };
 
 async function unblockUser(args: BlockUserArgs) {
-  const res = await client.api.v0.friends.unblock.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.friends.unblock.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating user.");
   }

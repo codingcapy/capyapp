@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { Reaction } from "../../../../schemas/reactions";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { ArgumentTypes, client } from "./client";
 import { authHeaders } from "../utils";
 
 type CreateReactionArgs = ArgumentTypes<
@@ -15,12 +15,10 @@ type DeleteReactionArgs = ArgumentTypes<
   typeof client.api.v0.reactions.$delete
 >[0]["json"];
 
-type SerializeReaction = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.reactions.$get>>
->["reactions"][number];
+type SerializeReaction = Omit<Reaction, "createdAt"> & { createdAt: string };
 
 export function mapSerializedReactionToSchema(
-  SerializedMessage: SerializeReaction
+  SerializedMessage: SerializeReaction,
 ): Reaction {
   return {
     ...SerializedMessage,
@@ -29,7 +27,10 @@ export function mapSerializedReactionToSchema(
 }
 
 async function createReaction(args: CreateReactionArgs) {
-  const res = await client.api.v0.reactions.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.reactions.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     let errorMessage =
       "There was an issue creating your reaction :( We'll look into it ASAP!";
@@ -55,7 +56,7 @@ async function createReaction(args: CreateReactionArgs) {
 }
 
 export const useCreateReactionMutation = (
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -91,7 +92,10 @@ export const getReactionsByChatIdQueryOptions = (args: number) =>
   });
 
 async function deleteReaction(args: DeleteReactionArgs) {
-  const res = await client.api.v0.reactions.$delete({ json: args }, authHeaders());
+  const res = await client.api.v0.reactions.$delete(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     let errorMessage =
       "There was an issue deleting your reaction :( We'll look into it ASAP!";
@@ -113,7 +117,7 @@ async function deleteReaction(args: DeleteReactionArgs) {
 }
 
 export const useDeleteReactionMutation = (
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({

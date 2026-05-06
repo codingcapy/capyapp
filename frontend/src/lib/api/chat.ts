@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { ArgumentTypes, client } from "./client";
 import { Chat } from "../../../../schemas/chats";
 import { mapSerializedFriendToSchema } from "./friend";
 import { authHeaders } from "../utils";
@@ -24,9 +24,7 @@ type LeaveChatArgs = ArgumentTypes<
   typeof client.api.v0.chats.leave.$post
 >[0]["json"];
 
-type SerializeChat = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.chats.$get>>
->["chats"][number];
+type SerializeChat = Omit<Chat, "createdAt"> & { createdAt: string };
 
 type UpdateLastReadMessageIdArgs = ArgumentTypes<
   typeof client.api.v0.chats.unreads.update.$post
@@ -98,7 +96,10 @@ export const getChatsByUserIdQueryOptions = (args: string) =>
   });
 
 async function inviteFriend(args: InviteFriendArgs) {
-  const res = await client.api.v0.chats.add.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.chats.add.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     let errorMessage =
       "There was an issue inviting your friend :( We'll look into it ASAP!";
@@ -179,7 +180,10 @@ export const getUserByUserIdQueryOptions = (args: string) =>
   });
 
 async function updateTitle(args: UpdateTitleArgs) {
-  const res = await client.api.v0.chats.update.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.chats.update.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating chat.");
   }
@@ -205,7 +209,10 @@ export const useUpdateTitleMutation = () => {
 };
 
 async function leaveChat(args: LeaveChatArgs) {
-  const res = await client.api.v0.chats.leave.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.chats.leave.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     let errorMessage =
       "There was an issue leaving your chat :( We'll look into it ASAP!";
@@ -281,7 +288,10 @@ export const getUnreadsByUserIdQueryOptions = (args: string) =>
   });
 
 async function updateLastReadMessageId(args: UpdateLastReadMessageIdArgs) {
-  const res = await client.api.v0.chats.unreads.update.$post({ json: args }, authHeaders());
+  const res = await client.api.v0.chats.unreads.update.$post(
+    { json: args },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error updating chat.");
   }

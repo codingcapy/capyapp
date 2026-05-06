@@ -11,7 +11,7 @@ import z from "zod";
 
 export function assertIsParsableInt(id: string): number {
   const { result: parsedId, error: parseIdError } = mightFailSync(() =>
-    z.coerce.number().int().parse(id)
+    z.coerce.number().int().parse(id),
   );
 
   if (parseIdError) {
@@ -32,17 +32,20 @@ export const messagesRouter = new Hono()
       createInsertSchema(messagesTable).omit({
         messageId: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
+      if (decodedUser.id !== insertValues.userId) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: messageInsertError, result: messageInsertResult } =
         await mightFail(
           db
             .insert(messagesTable)
             .values({ ...insertValues })
-            .returning()
+            .returning(),
         );
       if (messageInsertError) {
         console.log("Error while creating message:", messageInsertResult);
@@ -52,7 +55,7 @@ export const messagesRouter = new Hono()
         });
       }
       return c.json({ message: messageInsertResult[0] }, 200);
-    }
+    },
   )
   .get("/:chatId", async (c) => {
     requireUser(c);
@@ -77,19 +80,8 @@ export const messagesRouter = new Hono()
           .where(eq(messagesTable.chatId, chatId))
           .orderBy(desc(messagesTable.createdAt)) // Order by newest first
           .limit(limit)
-          .offset(cursor) // Offset for pagination
+          .offset(cursor), // Offset for pagination
       );
-    if (messagesQueryError) {
-      throw new HTTPException(500, {
-        message: "Error occurred when fetching messages.",
-        cause: messagesQueryError,
-      });
-    }
-    return c.json({ messages: messagesQueryResult });
-  })
-  .get(async (c) => {
-    const { result: messagesQueryResult, error: messagesQueryError } =
-      await mightFail(db.select().from(messagesTable));
     if (messagesQueryError) {
       throw new HTTPException(500, {
         message: "Error occurred when fetching messages.",
@@ -107,18 +99,30 @@ export const messagesRouter = new Hono()
         userId: true,
         content: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const deleteValues = c.req.valid("json");
+      const { result: msgOwner, error: msgOwnerError } = await mightFail(
+        db
+          .select({ userId: messagesTable.userId })
+          .from(messagesTable)
+          .where(eq(messagesTable.messageId, Number(deleteValues.messageId))),
+      );
+      if (msgOwnerError || !msgOwner.length) {
+        throw new HTTPException(404, { message: "Message not found" });
+      }
+      if (msgOwner[0].userId !== decodedUser.id) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: messageDeleteError, result: messageDeleteResult } =
         await mightFail(
           db
             .update(messagesTable)
             .set({ content: "[this message has been deleted]" })
             .where(eq(messagesTable.messageId, Number(deleteValues.messageId)))
-            .returning()
+            .returning(),
         );
       if (messageDeleteError) {
         console.log("Error while creating chat");
@@ -128,7 +132,7 @@ export const messagesRouter = new Hono()
         });
       }
       return c.json({ newMessage: messageDeleteResult[0] }, 200);
-    }
+    },
   )
   .post(
     "/update",
@@ -138,18 +142,30 @@ export const messagesRouter = new Hono()
         chatId: true,
         userId: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
-      requireUser(c);
+      const decodedUser = requireUser(c);
       const updateValues = c.req.valid("json");
+      const { result: msgOwner, error: msgOwnerError } = await mightFail(
+        db
+          .select({ userId: messagesTable.userId })
+          .from(messagesTable)
+          .where(eq(messagesTable.messageId, Number(updateValues.messageId))),
+      );
+      if (msgOwnerError || !msgOwner.length) {
+        throw new HTTPException(404, { message: "Message not found" });
+      }
+      if (msgOwner[0].userId !== decodedUser.id) {
+        throw new HTTPException(403, { message: "Forbidden" });
+      }
       const { error: messageUpdateError, result: messageUpdateResult } =
         await mightFail(
           db
             .update(messagesTable)
             .set({ content: updateValues.content })
             .where(eq(messagesTable.messageId, Number(updateValues.messageId)))
-            .returning()
+            .returning(),
         );
       if (messageUpdateError) {
         console.log("Error while creating chat");
@@ -159,5 +175,5 @@ export const messagesRouter = new Hono()
         });
       }
       return c.json({ newMessage: messageUpdateResult[0] }, 200);
-    }
+    },
   );
