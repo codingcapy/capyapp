@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   email: varchar("email").notNull(),
   password: varchar("password").notNull(),
   profilePic: varchar("profile_pic"),
+  status: varchar("status").notNull().default("active"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
