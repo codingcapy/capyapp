@@ -28,7 +28,7 @@ export const userChatsRouter = new Hono()
     const insertValues = c.req.valid("json");
     const { error: chatInsertError, result: chatInsertResult } =
       await mightFail(
-        db.insert(chatsTable).values({ title: insertValues.title }).returning()
+        db.insert(chatsTable).values({ title: insertValues.title }).returning(),
       );
     if (chatInsertError) {
       console.log("Error while creating chat");
@@ -45,7 +45,7 @@ export const userChatsRouter = new Hono()
             userId: insertValues.userId,
             chatId: chatInsertResult[0].chatId,
           })
-          .returning()
+          .returning(),
       );
     if (userChatInsertError) {
       console.log("Error while creating user chat for user");
@@ -62,7 +62,7 @@ export const userChatsRouter = new Hono()
             userId: insertValues.friendId,
             chatId: chatInsertResult[0].chatId,
           })
-          .returning()
+          .returning(),
       );
     if (userChatInsertError2) {
       console.log("Error while creating user chat for friend");
@@ -83,7 +83,7 @@ export const userChatsRouter = new Hono()
           chatId: chatInsertResult[0].chatId,
           lastReadMessageId: null,
         },
-      ])
+      ]),
     );
     if (userChatReadStatusInsertError) {
       console.log("Error while creating user chat read status");
@@ -109,7 +109,7 @@ export const userChatsRouter = new Hono()
           })
           .from(userChatsTable)
           .innerJoin(chatsTable, eq(userChatsTable.chatId, chatsTable.chatId))
-          .where(eq(userChatsTable.userId, userId))
+          .where(eq(userChatsTable.userId, userId)),
       );
     if (chatsQueryError) {
       throw new HTTPException(500, {
@@ -136,7 +136,7 @@ export const userChatsRouter = new Hono()
       db
         .select()
         .from(usersTable)
-        .where(eq(usersTable.email, insertValues.email))
+        .where(eq(usersTable.email, insertValues.email)),
     );
     if (userQueryError) {
       throw new HTTPException(500, {
@@ -154,7 +154,7 @@ export const userChatsRouter = new Hono()
             userId: userQueryResult[0].userId,
             chatId: Number(insertValues.chatId),
           })
-          .returning()
+          .returning(),
       );
     if (userChatInsertError) {
       console.log("Error while creating user chat for user");
@@ -170,7 +170,7 @@ export const userChatsRouter = new Hono()
           .from(messagesTable)
           .where(eq(messagesTable.chatId, Number(insertValues.chatId)))
           .orderBy(desc(messagesTable.messageId))
-          .limit(1)
+          .limit(1),
       );
     if (lastMessageQueryError) {
       console.log("Error while fetching last message");
@@ -188,7 +188,7 @@ export const userChatsRouter = new Hono()
         userId: userQueryResult[0].userId,
         chatId: Number(insertValues.chatId),
         lastReadMessageId,
-      })
+      }),
     );
     if (userChatReadStatusInsertError) {
       console.log("Error while creating user chat read status");
@@ -206,7 +206,7 @@ export const userChatsRouter = new Hono()
             chatId: Number(insertValues.chatId),
             content: userQueryResult[0].username + " has entered the chat",
           })
-          .returning()
+          .returning(),
       );
     if (messageInsertError) {
       console.log("Error while creating chat");
@@ -231,7 +231,7 @@ export const userChatsRouter = new Hono()
             .update(chatsTable)
             .set({ title: insertValues.title })
             .where(eq(chatsTable.chatId, insertValues.chatId))
-            .returning()
+            .returning(),
         );
       if (updateChatError) {
         throw new HTTPException(500, {
@@ -240,7 +240,7 @@ export const userChatsRouter = new Hono()
         });
       }
       return c.json({ newChat: updateChatResult[0] }, 200);
-    }
+    },
   )
   .get("/participants/:chatId", async (c) => {
     const chatId = c.req.param("chatId");
@@ -255,11 +255,12 @@ export const userChatsRouter = new Hono()
             email: usersTable.email,
             username: usersTable.username,
             profilePic: usersTable.profilePic,
+            status: usersTable.status,
             createdAt: usersTable.createdAt,
           })
           .from(userChatsTable)
           .innerJoin(usersTable, eq(userChatsTable.userId, usersTable.userId))
-          .where(eq(userChatsTable.chatId, Number(chatId)))
+          .where(eq(userChatsTable.chatId, Number(chatId))),
       );
     if (participantsQueryError) {
       throw new HTTPException(500, {
@@ -276,7 +277,7 @@ export const userChatsRouter = new Hono()
       createInsertSchema(userChatsTable).omit({
         createdAt: true,
         userChatId: true,
-      })
+      }),
     ),
     async (c) => {
       const insertValues = c.req.valid("json");
@@ -287,9 +288,9 @@ export const userChatsRouter = new Hono()
             .where(
               and(
                 eq(userChatsTable.userId, insertValues.userId),
-                eq(userChatsTable.chatId, insertValues.chatId)
-              )
-            )
+                eq(userChatsTable.chatId, insertValues.chatId),
+              ),
+            ),
         );
       if (leaveChatQueryError) {
         throw new HTTPException(500, {
@@ -298,7 +299,7 @@ export const userChatsRouter = new Hono()
         });
       }
       return c.json({ participants: leaveChatQueryResult });
-    }
+    },
   )
   .get("/chatsreadstatus/:userId", async (c) => {
     const userId = c.req.param("userId");
@@ -310,7 +311,7 @@ export const userChatsRouter = new Hono()
         db
           .select()
           .from(userChatReadStatusTable)
-          .where(eq(userChatReadStatusTable.userId, userId))
+          .where(eq(userChatReadStatusTable.userId, userId)),
       );
     if (chatsReadStatusError) {
       throw new HTTPException(500, {
@@ -336,10 +337,10 @@ export const userChatsRouter = new Hono()
           userChatReadStatusTable,
           and(
             eq(userChatReadStatusTable.chatId, userChatsTable.chatId),
-            eq(userChatReadStatusTable.userId, userId)
-          )
+            eq(userChatReadStatusTable.userId, userId),
+          ),
         )
-        .where(eq(userChatsTable.userId, userId))
+        .where(eq(userChatsTable.userId, userId)),
     );
     if (userChatsError) {
       throw new HTTPException(500, {
@@ -361,9 +362,9 @@ export const userChatsRouter = new Hono()
                 lastReadMessageId !== null
                   ? gt(messagesTable.messageId, lastReadMessageId)
                   : undefined,
-                ne(messagesTable.userId, userId)
-              )
-            )
+                ne(messagesTable.userId, userId),
+              ),
+            ),
         );
 
         if (countError) {
@@ -375,7 +376,7 @@ export const userChatsRouter = new Hono()
           chatId,
           unreadCount: Number(countResult[0].count) || 0,
         };
-      })
+      }),
     );
     console.log(unreads);
     return c.json({ unreads });
@@ -395,15 +396,15 @@ export const userChatsRouter = new Hono()
           .where(
             and(
               eq(userChatReadStatusTable.userId, insertValues.userId),
-              eq(userChatReadStatusTable.chatId, insertValues.chatId)
-            )
+              eq(userChatReadStatusTable.chatId, insertValues.chatId),
+            ),
           )
-          .returning()
+          .returning(),
       );
       if (updateUnreadsQueryError) {
         console.log(
           "Error updating last read message pointer:",
-          updateUnreadsQueryError
+          updateUnreadsQueryError,
         );
         throw new HTTPException(500, {
           message: "Error updating last read message pointer",
@@ -413,5 +414,5 @@ export const userChatsRouter = new Hono()
       return c.json({
         newUnreads: updateUnreadsQueryResult,
       });
-    }
+    },
   );

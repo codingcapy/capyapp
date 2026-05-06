@@ -26,6 +26,7 @@ type SerializeFriend = {
   username: string;
   email: string;
   profilePic: string | null;
+  status: string;
   createdAt: string;
 };
 
@@ -39,7 +40,7 @@ type SerializeUserFriend = {
 };
 
 export function mapSerializedFriendToSchema(
-  SerializedFriend: SerializeFriend
+  SerializedFriend: SerializeFriend,
 ): Friend {
   return {
     ...SerializedFriend,
@@ -48,7 +49,7 @@ export function mapSerializedFriendToSchema(
 }
 
 export function mapSerializedUserFriendToSchema(
-  SerializedUserFriend: SerializeUserFriend
+  SerializedUserFriend: SerializeUserFriend,
 ): UserFriend {
   return {
     ...SerializedUserFriend,
@@ -81,7 +82,7 @@ async function createFriend(args: CreateFriendArgs) {
 }
 
 export const useCreateFriendMutation = (
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -176,7 +177,7 @@ async function getUserFriendsByEmail(email: string) {
   }
   const { userFriends } = await res.json();
   return userFriends.map((userFriend) =>
-    mapSerializedUserFriendToSchema(userFriend)
+    mapSerializedUserFriendToSchema(userFriend),
   );
 }
 

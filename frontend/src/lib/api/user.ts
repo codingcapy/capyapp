@@ -1,5 +1,7 @@
 import { User } from "../../../../schemas/users";
-import { ArgumentTypes, client, ExtractData } from "./client";
+import { ArgumentTypes, client } from "./client";
+
+type SafeUser = Omit<User, "password">;
 import {
   queryOptions,
   useMutation,
@@ -22,15 +24,14 @@ type SendPasswordEmailArgs = ArgumentTypes<
   typeof client.api.v0.users.reset.password.$post
 >[0]["json"];
 
-type SerializeUser = ExtractData<
-  Awaited<ReturnType<typeof client.api.v0.users.$get>>
->["users"][number];
-
-type UpdateProfilePicArgs = ArgumentTypes<typeof updateFunc>[0]["json"];
+type SerializedSafeUser = Omit<SafeUser, "createdAt"> & { createdAt: string };
 
 const updateFunc = client.api.v0.users.update.profilepic.$post;
+type UpdateProfilePicArgs = ArgumentTypes<typeof updateFunc>[0]["json"];
 
-export function mapSerializedUserToSchema(SerializedUser: SerializeUser): User {
+export function mapSerializedUserToSchema(
+  SerializedUser: SerializedSafeUser,
+): SafeUser {
   return {
     ...SerializedUser,
     createdAt: new Date(SerializedUser.createdAt),

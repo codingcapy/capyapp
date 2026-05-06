@@ -13,4 +13,6 @@ export type ExtractData<T> =
 const devServer = "http://localhost:3333";
 const prodServer = "https://capyapp.up.railway.app";
 
-export const client = hc<ApiRoutes>(prodServer);
+export const client = hc<ApiRoutes>(
+  import.meta.env.DEV ? devServer : prodServer,
+);

@@ -3,11 +3,17 @@ import { create } from "zustand";
 import { setSession } from "../services/jwt.service";
 import { User } from "../../../schemas/users";
 
+export type SafeUser = Omit<User, "password">;
+
+const API_BASE = import.meta.env.DEV
+  ? "http://localhost:3333"
+  : "https://capyapp.up.railway.app";
+
 const useAuthStore = create<{
-  user: User | null;
+  user: SafeUser | null;
   authLoading: boolean;
   tokenLoading: boolean;
-  setUser: (args: User) => void;
+  setUser: (args: SafeUser) => void;
   logoutService: () => void;
   loginService: (email: string, password: string) => void;
 }>((set, get) => ({
@@ -22,13 +28,10 @@ const useAuthStore = create<{
   loginService: async (email, password) => {
     set({ authLoading: true });
     try {
-      const res = await axios.post(
-        `https://capyapp.up.railway.app/api/v0/user/login`,
-        {
-          email,
-          password,
-        }
-      );
+      const res = await axios.post(`${API_BASE}/api/v0/user/login`, {
+        email,
+        password,
+      });
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);
         set({ user: res.data.result?.user, authLoading: false });
@@ -42,9 +45,7 @@ const useAuthStore = create<{
   },
   loginWithToken: async () => {
     try {
-      const res = await axios.post(
-        `https://capyapp.up.railway.app/api/v0/user/validation`
-      );
+      const res = await axios.post(`${API_BASE}/api/v0/user/validation`);
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);
         set({ user: res.data.result?.user, tokenLoading: false });

@@ -18,7 +18,7 @@ export const userFriendsRouter = new Hono()
         createdAt: true,
         blocked: true,
         muted: true,
-      })
+      }),
     ),
     async (c) => {
       const insertValues = c.req.valid("json");
@@ -27,7 +27,7 @@ export const userFriendsRouter = new Hono()
           db
             .select()
             .from(usersTable)
-            .where(eq(usersTable.email, insertValues.friendEmail))
+            .where(eq(usersTable.email, insertValues.friendEmail)),
         );
       if (userQueryError)
         throw new HTTPException(500, {
@@ -41,7 +41,7 @@ export const userFriendsRouter = new Hono()
           db
             .insert(userFriendsTable)
             .values({ ...insertValues })
-            .returning()
+            .returning(),
         );
       if (userFriendInsertError) {
         console.log("Error while creating friend");
@@ -58,7 +58,7 @@ export const userFriendsRouter = new Hono()
               userEmail: insertValues.friendEmail,
               friendEmail: insertValues.userEmail,
             })
-            .returning()
+            .returning(),
         );
       if (userFriendInsertError2) {
         console.log("Error while creating friend");
@@ -68,7 +68,7 @@ export const userFriendsRouter = new Hono()
         });
       }
       return c.json({ user: userFriendInsertResult[0] }, 200);
-    }
+    },
   )
   .get("/:userEmail", async (c) => {
     const userEmailString = c.req.param("userEmail");
@@ -83,14 +83,15 @@ export const userFriendsRouter = new Hono()
             username: usersTable.username,
             email: usersTable.email,
             profilePic: usersTable.profilePic,
+            status: usersTable.status,
             createdAt: usersTable.createdAt,
           })
           .from(userFriendsTable)
           .innerJoin(
             usersTable,
-            eq(userFriendsTable.friendEmail, usersTable.email)
+            eq(userFriendsTable.friendEmail, usersTable.email),
           )
-          .where(eq(userFriendsTable.userEmail, userEmailString))
+          .where(eq(userFriendsTable.userEmail, userEmailString)),
       );
     if (userFriendQueryError) {
       throw new HTTPException(500, {
@@ -109,7 +110,7 @@ export const userFriendsRouter = new Hono()
         muted: true,
         blocked: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
@@ -120,10 +121,10 @@ export const userFriendsRouter = new Hono()
           .where(
             and(
               eq(userFriendsTable.userEmail, updateValues.userEmail),
-              eq(userFriendsTable.friendEmail, updateValues.friendEmail)
-            )
+              eq(userFriendsTable.friendEmail, updateValues.friendEmail),
+            ),
           )
-          .returning()
+          .returning(),
       );
       if (queryError) {
         throw new HTTPException(500, {
@@ -132,7 +133,7 @@ export const userFriendsRouter = new Hono()
         });
       }
       return c.json({ newUser: newUserResult[0] }, 200);
-    }
+    },
   )
   .post(
     "/unblock",
@@ -143,7 +144,7 @@ export const userFriendsRouter = new Hono()
         muted: true,
         blocked: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
@@ -154,10 +155,10 @@ export const userFriendsRouter = new Hono()
           .where(
             and(
               eq(userFriendsTable.userEmail, updateValues.userEmail),
-              eq(userFriendsTable.friendEmail, updateValues.friendEmail)
-            )
+              eq(userFriendsTable.friendEmail, updateValues.friendEmail),
+            ),
           )
-          .returning()
+          .returning(),
       );
       if (queryError) {
         throw new HTTPException(500, {
@@ -166,7 +167,7 @@ export const userFriendsRouter = new Hono()
         });
       }
       return c.json({ newUser: newUserResult[0] }, 200);
-    }
+    },
   )
   .get("/userfriends/:userEmail", async (c) => {
     const userEmailString = c.req.param("userEmail");
@@ -178,7 +179,7 @@ export const userFriendsRouter = new Hono()
         db
           .select()
           .from(userFriendsTable)
-          .where(eq(userFriendsTable.userEmail, userEmailString))
+          .where(eq(userFriendsTable.userEmail, userEmailString)),
       );
     if (userFriendQueryError) {
       throw new HTTPException(500, {

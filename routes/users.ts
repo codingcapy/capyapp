@@ -16,6 +16,11 @@ import tls from "tls";
 const scryptAsync = promisify(scrypt);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function toSafeUser(user: typeof usersTable.$inferSelect) {
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
+
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
   const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
@@ -30,7 +35,7 @@ export const usersRouter = new Hono()
       createInsertSchema(usersTable).omit({
         userId: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const insertValues = c.req.valid("json");
@@ -39,7 +44,7 @@ export const usersRouter = new Hono()
           db
             .select()
             .from(usersTable)
-            .where(eq(usersTable.email, insertValues.email))
+            .where(eq(usersTable.email, insertValues.email)),
         );
       if (emailQueryError) {
         throw new HTTPException(500, {
@@ -50,7 +55,7 @@ export const usersRouter = new Hono()
       if (emailQueryResult.length > 0) {
         return c.json(
           { message: "An account with this email already exists" },
-          409
+          409,
         );
       }
       const encrypted = await hashPassword(insertValues.password);
@@ -65,7 +70,7 @@ export const usersRouter = new Hono()
               email: insertValues.email,
               password: encrypted,
             })
-            .returning()
+            .returning(),
         );
       if (userInsertError) {
         console.log("Error while creating user");
@@ -74,8 +79,8 @@ export const usersRouter = new Hono()
           cause: userInsertResult,
         });
       }
-      return c.json({ user: userInsertResult[0] }, 200);
-    }
+      return c.json({ user: toSafeUser(userInsertResult[0]) }, 200);
+    },
   )
   .get(async (c) => {
     const { error: usersQueryError, result: usersQueryResult } =
@@ -93,21 +98,21 @@ export const usersRouter = new Hono()
             userId: "example",
             username: "example",
             email: "example",
-            password: "example",
             profilePic: "example",
+            status: "active",
             createdAt: new Date(),
           },
           {
             userId: "example2",
             username: "example2",
             email: "example2",
-            password: "example2",
             profilePic: null,
+            status: "active",
             createdAt: new Date(),
           },
         ],
       },
-      200
+      200,
     );
   })
   .post(
@@ -119,7 +124,7 @@ export const usersRouter = new Hono()
         email: true,
         password: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
@@ -128,7 +133,7 @@ export const usersRouter = new Hono()
           .update(usersTable)
           .set({ ...updateValues })
           .where(eq(usersTable.userId, updateValues.userId))
-          .returning()
+          .returning(),
       );
       if (queryError) {
         throw new HTTPException(500, {
@@ -136,8 +141,8 @@ export const usersRouter = new Hono()
           cause: queryError,
         });
       }
-      return c.json({ newUser: newUserResult[0] }, 200);
-    }
+      return c.json({ newUser: toSafeUser(newUserResult[0]) }, 200);
+    },
   )
   .post(
     "/update/password",
@@ -148,7 +153,7 @@ export const usersRouter = new Hono()
         email: true,
         profilePic: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
@@ -158,7 +163,7 @@ export const usersRouter = new Hono()
           .update(usersTable)
           .set({ password: encrypted })
           .where(eq(usersTable.userId, updateValues.userId))
-          .returning()
+          .returning(),
       );
       if (queryError) {
         throw new HTTPException(500, {
@@ -166,8 +171,8 @@ export const usersRouter = new Hono()
           cause: queryError,
         });
       }
-      return c.json({ newUser: newUserResult[0] }, 200);
-    }
+      return c.json({ newUser: toSafeUser(newUserResult[0]) }, 200);
+    },
   )
   .post(
     "/update/username",
@@ -178,7 +183,7 @@ export const usersRouter = new Hono()
         email: true,
         profilePic: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
@@ -187,7 +192,7 @@ export const usersRouter = new Hono()
           .update(usersTable)
           .set({ username: updateValues.username })
           .where(eq(usersTable.userId, updateValues.userId))
-          .returning()
+          .returning(),
       );
       if (queryError) {
         throw new HTTPException(500, {
@@ -195,8 +200,8 @@ export const usersRouter = new Hono()
           cause: queryError,
         });
       }
-      return c.json({ newUser: newUserResult[0] }, 200);
-    }
+      return c.json({ newUser: toSafeUser(newUserResult[0]) }, 200);
+    },
   )
   .get("/:userId", async (c) => {
     const userId = c.req.param("userId");
@@ -209,12 +214,12 @@ export const usersRouter = new Hono()
           userId: usersTable.userId,
           username: usersTable.username,
           email: usersTable.email,
-          password: usersTable.password,
           profilePic: usersTable.profilePic,
+          status: usersTable.status,
           createdAt: usersTable.createdAt,
         })
         .from(usersTable)
-        .where(eq(usersTable.userId, userId))
+        .where(eq(usersTable.userId, userId)),
     );
     if (userQueryError) {
       throw new HTTPException(500, {
@@ -234,7 +239,7 @@ export const usersRouter = new Hono()
         password: true,
         profilePic: true,
         createdAt: true,
-      })
+      }),
     ),
     async (c) => {
       const updateValues = c.req.valid("json");
@@ -245,7 +250,7 @@ export const usersRouter = new Hono()
           .update(usersTable)
           .set({ password: encrypted })
           .where(eq(usersTable.email, updateValues.email))
-          .returning()
+          .returning(),
       );
       if (queryError) {
         throw new HTTPException(500, {
@@ -292,14 +297,14 @@ export const usersRouter = new Hono()
       </body>
       </html>`,
       });
-      return c.json({ newUser: newUserResult[0] }, 200);
-    }
+      return c.json({ newUser: toSafeUser(newUserResult[0]) }, 200);
+    },
   );
 
 function sendResetPasswordEmail(
   email: string,
   username: string,
-  newPassword: string
+  newPassword: string,
 ) {
   console.log("email is being sent");
   return new Promise((resolve, reject) => {

@@ -7,7 +7,7 @@ import {
   useCreateMessageMutation,
   useDeleteMessageMutation,
 } from "../lib/api/messages";
-import { User } from "../../../schemas/users";
+import { SafeUser } from "../store/AuthStore";
 import { Friend } from "../lib/api/friend";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import MessageComponent from "./MessageComponent";
@@ -69,7 +69,7 @@ export type ContextMode = "user" | "friend";
 export default function Messages(props: {
   chat: Chat | null;
   setChat: (state: Chat | null) => void;
-  user: User | null;
+  user: SafeUser | null;
   friends: Friend[] | undefined;
   friend: Friend | null;
   setFriend: (state: Friend | null) => void;
@@ -111,13 +111,13 @@ export default function Messages(props: {
     error: messagesError,
   } = useQuery(getMessagesByChatIdQueryOptions(chat?.chatId.toString() || ""));
   const { data: participants } = useQuery(
-    getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || "")
+    getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || ""),
   );
   const { data: reactions } = useQuery(
-    getReactionsByChatIdQueryOptions(chat?.chatId || 0)
+    getReactionsByChatIdQueryOptions(chat?.chatId || 0),
   );
   const { data: images } = useQuery(
-    getImagesByChatIdQueryOptions(chat?.chatId.toString() || "")
+    getImagesByChatIdQueryOptions(chat?.chatId.toString() || ""),
   );
   const { mutate: createMessage } = useCreateMessageMutation();
   const { mutate: inviteFriend } = useInviteFriendMutation();
@@ -197,10 +197,10 @@ export default function Messages(props: {
                 updateImage({
                   imageId: image.imageId,
                   messageId: args.messageId,
-                })
+                }),
             );
           },
-        }
+        },
       );
       setReplyMode(false);
     } else {
@@ -221,10 +221,10 @@ export default function Messages(props: {
                 updateImage({
                   imageId: image.imageId,
                   messageId: args.messageId,
-                })
+                }),
             );
           },
-        }
+        },
       );
     }
     setMessageContent("");
@@ -250,7 +250,7 @@ export default function Messages(props: {
             userId: user && user.userId,
             createdAt: new Date().toISOString(),
           }),
-      }
+      },
     );
     setAddFriendMode(false);
     queryClient.invalidateQueries({
@@ -376,14 +376,14 @@ export default function Messages(props: {
       (image) =>
         currentMessage &&
         image.messageId === currentMessage.messageId &&
-        deleteImage({ imageId: image.imageId })
+        deleteImage({ imageId: image.imageId }),
     );
     setDeleteMode(false);
   }
 
   function handleCreateReaction(
     e: React.FormEvent<HTMLFormElement>,
-    message: Message | null
+    message: Message | null,
   ) {
     e.preventDefault();
     if (message === null) return;
@@ -402,7 +402,7 @@ export default function Messages(props: {
         onSuccess: (result) => {
           socket.emit("reaction", result);
         },
-      }
+      },
     );
     setReactionMode(false);
   }
@@ -429,7 +429,7 @@ export default function Messages(props: {
         messageId:
           (currentMessage && currentMessage.messageId.toString()) || "",
       },
-      { onSuccess: () => setUploadMode(false) }
+      { onSuccess: () => setUploadMode(false) },
     );
 
     // Clear the input value to ensure onChange fires even with same file
@@ -693,10 +693,11 @@ export default function Messages(props: {
                       setCurrentMessage(message);
                       const friend =
                         friends?.find(
-                          (friend) => message.userId === friend.userId
+                          (friend) => message.userId === friend.userId,
                         ) ??
                         participants?.find(
-                          (participant) => message.userId === participant.userId
+                          (participant) =>
+                            message.userId === participant.userId,
                         ) ??
                         null;
                       setFriend(friend);
@@ -798,7 +799,7 @@ export default function Messages(props: {
                         className="h-[100px] px-[10px]"
                       />
                     </div>
-                  )
+                  ),
               )}
             </div>
           )}
@@ -818,7 +819,7 @@ export default function Messages(props: {
                 onChange={handleChange}
                 onClick={(e) =>
                   setCursorPosition(
-                    (e.target as HTMLInputElement).selectionStart || 0
+                    (e.target as HTMLInputElement).selectionStart || 0,
                   )
                 }
               />
