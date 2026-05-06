@@ -1,0 +1,7 @@
+providers = ["bun"]
+
+[phases.install]
+cmds = ["bun install"]
+
+[start]
+cmd = "bun app.ts"
