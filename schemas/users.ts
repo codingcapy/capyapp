@@ -1,14 +1,18 @@
-import { pgTable, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 
-export const users = pgTable("users", {
-  userId: varchar("user_id").primaryKey(),
-  username: varchar("username").notNull(),
-  email: varchar("email").notNull(),
-  password: varchar("password").notNull(),
-  profilePic: varchar("profile_pic"),
-  status: varchar("status").notNull().default("active"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const users = pgTable(
+  "users",
+  {
+    userId: varchar("user_id").primaryKey(),
+    username: varchar("username").notNull(),
+    email: varchar("email").notNull(),
+    password: varchar("password").notNull(),
+    profilePic: varchar("profile_pic"),
+    status: varchar("status").notNull().default("active"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex("users_email_idx").on(table.email)],
+);
 
 export type User = InferSelectModel<typeof users>;
