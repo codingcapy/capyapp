@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["bun", "nodejs_20", "python3", "gcc", "gnumake"]
-
-[phases.install]
-cmds = ["bun install"]
-
-[start]
-cmd = "bun app.ts"
