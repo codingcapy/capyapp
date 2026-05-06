@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ArgumentTypes, client, ExtractData } from "./client";
+import { authHeaders } from "../utils";
 import { ImageMessage } from "../../../../schemas/images";
 
 type UploadResponse =
@@ -54,9 +55,10 @@ export function useUploadImageMutation() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await client.api.v0.images.upload.$post({
-        form: { userId, file, messageId, chatId },
-      });
+      const res = await client.api.v0.images.upload.$post(
+        { form: { userId, file, messageId, chatId } },
+        authHeaders(),
+      );
 
       const data = (await res.json()) as UploadResponse;
       if (!data.success) throw new Error(data.error);
@@ -70,9 +72,10 @@ export function useUploadImageMutation() {
 }
 
 async function getImagesByChatId(chatId: string) {
-  const res = await client.api.v0.images[":chatId"].$get({
-    param: { chatId: chatId.toString() },
-  });
+  const res = await client.api.v0.images[":chatId"].$get(
+    { param: { chatId: chatId.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting images by chatId");
   }
@@ -87,9 +90,7 @@ export const getImagesByChatIdQueryOptions = (args: string) =>
   });
 
 async function deleteImage(args: DeleteImageArgs) {
-  const res = await client.api.v0.images.delete.$post({
-    json: args,
-  });
+  const res = await client.api.v0.images.delete.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error deleting image.");
   }
@@ -115,9 +116,7 @@ export const useDeleteImageMutation = () => {
 };
 
 async function updateImage(args: UpdateImageArgs) {
-  const res = await client.api.v0.images.update.$post({
-    json: args,
-  });
+  const res = await client.api.v0.images.update.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating image.");
   }

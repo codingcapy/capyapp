@@ -7,6 +7,7 @@ import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
 import { and, eq } from "drizzle-orm";
+import { requireUser } from "./utils";
 
 export const userFriendsRouter = new Hono()
   .post(
@@ -21,6 +22,7 @@ export const userFriendsRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       const { error: userQueryError, result: userQueryResult } =
         await mightFail(
@@ -71,6 +73,7 @@ export const userFriendsRouter = new Hono()
     },
   )
   .get("/:userEmail", async (c) => {
+    requireUser(c);
     const userEmailString = c.req.param("userEmail");
     if (!userEmailString) {
       return c.json({ error: "userEmail parameter is required." }, 400);
@@ -113,6 +116,7 @@ export const userFriendsRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const updateValues = c.req.valid("json");
       const { error: queryError, result: newUserResult } = await mightFail(
         db
@@ -147,6 +151,7 @@ export const userFriendsRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const updateValues = c.req.valid("json");
       const { error: queryError, result: newUserResult } = await mightFail(
         db
@@ -170,6 +175,7 @@ export const userFriendsRouter = new Hono()
     },
   )
   .get("/userfriends/:userEmail", async (c) => {
+    requireUser(c);
     const userEmailString = c.req.param("userEmail");
     if (!userEmailString) {
       return c.json({ error: "userEmail parameter is required." }, 400);

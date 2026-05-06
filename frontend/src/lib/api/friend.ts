@@ -6,6 +6,7 @@ import {
 import { ArgumentTypes, client } from "./client";
 import { User } from "../../../../schemas/users";
 import { UserFriend } from "../../../../schemas/userfriends";
+import { authHeaders } from "../utils";
 
 type CreateFriendArgs = ArgumentTypes<
   typeof client.api.v0.friends.$post
@@ -58,7 +59,7 @@ export function mapSerializedUserFriendToSchema(
 }
 
 async function createFriend(args: CreateFriendArgs) {
-  const res = await client.api.v0.friends.$post({ json: args });
+  const res = await client.api.v0.friends.$post({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue creating your friendship :( We'll look into it ASAP!";
@@ -100,9 +101,10 @@ export const useCreateFriendMutation = (
 };
 
 async function getFriendsByEmail(email: string) {
-  const res = await client.api.v0.friends[":userEmail"].$get({
-    param: { userEmail: email.toString() },
-  });
+  const res = await client.api.v0.friends[":userEmail"].$get(
+    { param: { userEmail: email.toString() } },
+    authHeaders(),
+  );
 
   if (!res.ok) {
     throw new Error("Error getting friends by userEmail");
@@ -118,9 +120,7 @@ export const getFriendsByEmailQueryOptions = (args: string) =>
   });
 
 async function blockUser(args: BlockUserArgs) {
-  const res = await client.api.v0.friends.block.$post({
-    json: args,
-  });
+  const res = await client.api.v0.friends.block.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -143,9 +143,7 @@ export const useBlockUserMutation = () => {
 };
 
 async function unblockUser(args: BlockUserArgs) {
-  const res = await client.api.v0.friends.unblock.$post({
-    json: args,
-  });
+  const res = await client.api.v0.friends.unblock.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -168,9 +166,10 @@ export const useUnblockUserMutation = () => {
 };
 
 async function getUserFriendsByEmail(email: string) {
-  const res = await client.api.v0.friends.userfriends[":userEmail"].$get({
-    param: { userEmail: email.toString() },
-  });
+  const res = await client.api.v0.friends.userfriends[":userEmail"].$get(
+    { param: { userEmail: email.toString() } },
+    authHeaders(),
+  );
 
   if (!res.ok) {
     throw new Error("Error getting friends by userEmail");

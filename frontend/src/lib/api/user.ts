@@ -1,5 +1,6 @@
 import { User } from "../../../../schemas/users";
 import { ArgumentTypes, client } from "./client";
+import { authHeaders } from "../utils";
 
 type SafeUser = Omit<User, "password">;
 import {
@@ -95,9 +96,7 @@ export const getAllUsersQueryOptions = queryOptions({
 });
 
 async function updateProfilePic(args: UpdateProfilePicArgs) {
-  const res = await client.api.v0.users.update.profilepic.$post({
-    json: args,
-  });
+  const res = await client.api.v0.users.update.profilepic.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -123,9 +122,7 @@ export const useUpdateProfilePicMutation = () => {
 };
 
 async function updatePassword(args: UpdatePasswordArgs) {
-  const res = await client.api.v0.users.update.password.$post({
-    json: args,
-  });
+  const res = await client.api.v0.users.update.password.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -151,9 +148,7 @@ export const useUpdatePasswordMutation = () => {
 };
 
 async function updateUsername(args: UpdateUsernameArgs) {
-  const res = await client.api.v0.users.update.username.$post({
-    json: args,
-  });
+  const res = await client.api.v0.users.update.username.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }

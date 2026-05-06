@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { Message } from "../../../../schemas/messages";
 import { ArgumentTypes, client, ExtractData } from "./client";
+import { authHeaders } from "../utils";
 
 type CreateMessageArgs = ArgumentTypes<
   typeof client.api.v0.messages.$post
@@ -32,7 +33,7 @@ export function mapSerializedMessageToSchema(
 }
 
 async function createMessage(args: CreateMessageArgs) {
-  const res = await client.api.v0.messages.$post({ json: args });
+  const res = await client.api.v0.messages.$post({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue creating your message :( We'll look into it ASAP!";
@@ -76,9 +77,10 @@ export const useCreateMessageMutation = (
 };
 
 async function getMessagesByChatId(chatId: string) {
-  const res = await client.api.v0.messages[":chatId"].$get({
-    param: { chatId: chatId.toString() },
-  });
+  const res = await client.api.v0.messages[":chatId"].$get(
+    { param: { chatId: chatId.toString() } },
+    authHeaders(),
+  );
 
   if (!res.ok) {
     throw new Error("Error getting chats by chatId");
@@ -94,9 +96,7 @@ export const getMessagesByChatIdQueryOptions = (args: string) =>
   });
 
 async function deleteMessage(args: DeleteMessageArgs) {
-  const res = await client.api.v0.messages.delete.$post({
-    json: args,
-  });
+  const res = await client.api.v0.messages.delete.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }
@@ -122,9 +122,7 @@ export const useDeleteMessageMutation = () => {
 };
 
 async function updateMessage(args: UpdateMessageArgs) {
-  const res = await client.api.v0.messages.update.$post({
-    json: args,
-  });
+  const res = await client.api.v0.messages.update.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating user.");
   }

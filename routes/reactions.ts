@@ -6,6 +6,7 @@ import { mightFail } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
 import { and, eq } from "drizzle-orm";
+import { requireUser } from "./utils";
 
 export const reactionsRouter = new Hono()
   .post(
@@ -17,6 +18,7 @@ export const reactionsRouter = new Hono()
       })
     ),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       const { error: reactionQueryError, result: reactionQueryResult } =
         await mightFail(
@@ -78,6 +80,7 @@ export const reactionsRouter = new Hono()
       })
     ),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       const { error: reactionDeleteError, result: reactionDeleteResult } =
         await mightFail(
@@ -97,6 +100,7 @@ export const reactionsRouter = new Hono()
     }
   )
   .get("/:chatId", async (c) => {
+    requireUser(c);
     const chatId = c.req.param("chatId");
     if (!chatId) {
       return c.json({ error: "chatId parameter is required." }, 400);

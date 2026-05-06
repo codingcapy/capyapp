@@ -12,6 +12,7 @@ import { promisify } from "util";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import tls from "tls";
+import { requireUser } from "./utils";
 
 const scryptAsync = promisify(scrypt);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -127,6 +128,7 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const updateValues = c.req.valid("json");
       const { error: queryError, result: newUserResult } = await mightFail(
         db
@@ -156,6 +158,7 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const updateValues = c.req.valid("json");
       const encrypted = await hashPassword(updateValues.password);
       const { error: queryError, result: newUserResult } = await mightFail(
@@ -186,6 +189,7 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const updateValues = c.req.valid("json");
       const { error: queryError, result: newUserResult } = await mightFail(
         db
@@ -204,6 +208,7 @@ export const usersRouter = new Hono()
     },
   )
   .get("/:userId", async (c) => {
+    requireUser(c);
     const userId = c.req.param("userId");
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);

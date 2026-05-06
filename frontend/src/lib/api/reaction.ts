@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { Reaction } from "../../../../schemas/reactions";
 import { ArgumentTypes, client, ExtractData } from "./client";
+import { authHeaders } from "../utils";
 
 type CreateReactionArgs = ArgumentTypes<
   typeof client.api.v0.reactions.$post
@@ -28,7 +29,7 @@ export function mapSerializedReactionToSchema(
 }
 
 async function createReaction(args: CreateReactionArgs) {
-  const res = await client.api.v0.reactions.$post({ json: args });
+  const res = await client.api.v0.reactions.$post({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue creating your reaction :( We'll look into it ASAP!";
@@ -72,9 +73,10 @@ export const useCreateReactionMutation = (
 };
 
 async function getReactionsByChatId(chatId: number) {
-  const res = await client.api.v0.reactions[":chatId"].$get({
-    param: { chatId: chatId.toString() },
-  });
+  const res = await client.api.v0.reactions[":chatId"].$get(
+    { param: { chatId: chatId.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting reactions by chatId");
   }
@@ -89,7 +91,7 @@ export const getReactionsByChatIdQueryOptions = (args: number) =>
   });
 
 async function deleteReaction(args: DeleteReactionArgs) {
-  const res = await client.api.v0.reactions.$delete({ json: args });
+  const res = await client.api.v0.reactions.$delete({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue deleting your reaction :( We'll look into it ASAP!";

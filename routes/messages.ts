@@ -6,6 +6,7 @@ import { mightFail, mightFailSync } from "might-fail";
 import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
 import { and, desc, eq, inArray, isNull, lt, ne } from "drizzle-orm";
+import { requireUser } from "./utils";
 import z from "zod";
 
 export function assertIsParsableInt(id: string): number {
@@ -34,6 +35,7 @@ export const messagesRouter = new Hono()
       })
     ),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       const { error: messageInsertError, result: messageInsertResult } =
         await mightFail(
@@ -53,6 +55,7 @@ export const messagesRouter = new Hono()
     }
   )
   .get("/:chatId", async (c) => {
+    requireUser(c);
     const { chatId: chatIdString } = c.req.param();
     const chatId = assertIsParsableInt(chatIdString);
     const limit = Number(c.req.query("limit") || 100); // Default to 100 messages
@@ -107,6 +110,7 @@ export const messagesRouter = new Hono()
       })
     ),
     async (c) => {
+      requireUser(c);
       const deleteValues = c.req.valid("json");
       const { error: messageDeleteError, result: messageDeleteResult } =
         await mightFail(
@@ -137,6 +141,7 @@ export const messagesRouter = new Hono()
       })
     ),
     async (c) => {
+      requireUser(c);
       const updateValues = c.req.valid("json");
       const { error: messageUpdateError, result: messageUpdateResult } =
         await mightFail(

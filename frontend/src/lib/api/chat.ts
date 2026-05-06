@@ -6,6 +6,7 @@ import {
 import { ArgumentTypes, client, ExtractData } from "./client";
 import { Chat } from "../../../../schemas/chats";
 import { mapSerializedFriendToSchema } from "./friend";
+import { authHeaders } from "../utils";
 
 type CreateChatArgs = ArgumentTypes<
   typeof client.api.v0.chats.$post
@@ -39,7 +40,7 @@ export function mapSerializedChatToSchema(SerializedChat: SerializeChat): Chat {
 }
 
 async function createChat(args: CreateChatArgs) {
-  const res = await client.api.v0.chats.$post({ json: args });
+  const res = await client.api.v0.chats.$post({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue creating your chat :( We'll look into it ASAP!";
@@ -79,9 +80,10 @@ export const useCreateChatMutation = (onError?: (message: string) => void) => {
 };
 
 async function getChatsByUserId(userId: string) {
-  const res = await client.api.v0.chats[":userId"].$get({
-    param: { userId: userId.toString() },
-  });
+  const res = await client.api.v0.chats[":userId"].$get(
+    { param: { userId: userId.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting chats by userId");
   }
@@ -96,7 +98,7 @@ export const getChatsByUserIdQueryOptions = (args: string) =>
   });
 
 async function inviteFriend(args: InviteFriendArgs) {
-  const res = await client.api.v0.chats.add.$post({ json: args });
+  const res = await client.api.v0.chats.add.$post({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue inviting your friend :( We'll look into it ASAP!";
@@ -120,7 +122,7 @@ async function inviteFriend(args: InviteFriendArgs) {
 }
 
 export const useInviteFriendMutation = (
-  onError?: (message: string) => void
+  onError?: (message: string) => void,
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -139,15 +141,16 @@ export const useInviteFriendMutation = (
 };
 
 async function getParticipantsByChatId(id: string) {
-  const res = await client.api.v0.chats.participants[":chatId"].$get({
-    param: { chatId: id.toString() },
-  });
+  const res = await client.api.v0.chats.participants[":chatId"].$get(
+    { param: { chatId: id.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting friends by userEmail");
   }
   const { participants } = await res.json();
   return participants.map((participant) =>
-    mapSerializedFriendToSchema(participant)
+    mapSerializedFriendToSchema(participant),
   );
 }
 
@@ -158,9 +161,10 @@ export const getParticipantsByChatIdQueryOptions = (args: string) =>
   });
 
 async function getUserByUserId(id: string) {
-  const res = await client.api.v0.users[":userId"].$get({
-    param: { userId: id.toString() },
-  });
+  const res = await client.api.v0.users[":userId"].$get(
+    { param: { userId: id.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting user by userId");
   }
@@ -175,9 +179,7 @@ export const getUserByUserIdQueryOptions = (args: string) =>
   });
 
 async function updateTitle(args: UpdateTitleArgs) {
-  const res = await client.api.v0.chats.update.$post({
-    json: args,
-  });
+  const res = await client.api.v0.chats.update.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating chat.");
   }
@@ -203,7 +205,7 @@ export const useUpdateTitleMutation = () => {
 };
 
 async function leaveChat(args: LeaveChatArgs) {
-  const res = await client.api.v0.chats.leave.$post({ json: args });
+  const res = await client.api.v0.chats.leave.$post({ json: args }, authHeaders());
   if (!res.ok) {
     let errorMessage =
       "There was an issue leaving your chat :( We'll look into it ASAP!";
@@ -243,9 +245,10 @@ export const useLeaveChatMutation = (onError?: (message: string) => void) => {
 };
 
 async function getChatsReadStatusByUserId(userId: string) {
-  const res = await client.api.v0.chats.chatsreadstatus[":userId"].$get({
-    param: { userId: userId.toString() },
-  });
+  const res = await client.api.v0.chats.chatsreadstatus[":userId"].$get(
+    { param: { userId: userId.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting user chats read status by userId");
   }
@@ -260,9 +263,10 @@ export const getChatsReadStatusByUserIdQueryOptions = (args: string) =>
   });
 
 async function getUnreadsByUserId(userId: string) {
-  const res = await client.api.v0.chats.unreads[":userId"].$get({
-    param: { userId: userId.toString() },
-  });
+  const res = await client.api.v0.chats.unreads[":userId"].$get(
+    { param: { userId: userId.toString() } },
+    authHeaders(),
+  );
   if (!res.ok) {
     throw new Error("Error getting chats by userId");
   }
@@ -277,9 +281,7 @@ export const getUnreadsByUserIdQueryOptions = (args: string) =>
   });
 
 async function updateLastReadMessageId(args: UpdateLastReadMessageIdArgs) {
-  const res = await client.api.v0.chats.unreads.update.$post({
-    json: args,
-  });
+  const res = await client.api.v0.chats.unreads.update.$post({ json: args }, authHeaders());
   if (!res.ok) {
     throw new Error("Error updating chat.");
   }

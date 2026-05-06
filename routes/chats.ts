@@ -11,6 +11,7 @@ import { and, desc, eq, gt, ne, sql } from "drizzle-orm";
 import { chats as chatsTable } from "../schemas/chats";
 import { userChatReadStatus as userChatReadStatusTable } from "../schemas/userchatreadstatus";
 import { z } from "zod";
+import { requireUser } from "./utils";
 
 const createChatSchema = z.object({
   title: z.string(),
@@ -25,6 +26,7 @@ const addFriendSchema = z.object({
 
 export const userChatsRouter = new Hono()
   .post("/", zValidator("json", createChatSchema), async (c) => {
+    const decodedUser = requireUser(c);
     const insertValues = c.req.valid("json");
     const { error: chatInsertError, result: chatInsertResult } =
       await mightFail(
@@ -95,6 +97,7 @@ export const userChatsRouter = new Hono()
     return c.json({ user: userChatInsertResult[0] }, 200);
   })
   .get("/:userId", async (c) => {
+    requireUser(c);
     const userId = c.req.param("userId");
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
@@ -131,6 +134,7 @@ export const userChatsRouter = new Hono()
     return c.json({ chats: chatsQueryResult });
   })
   .post("/add", zValidator("json", addFriendSchema), async (c) => {
+    requireUser(c);
     const insertValues = c.req.valid("json");
     const { error: userQueryError, result: userQueryResult } = await mightFail(
       db
@@ -221,6 +225,7 @@ export const userChatsRouter = new Hono()
     "/update",
     zValidator("json", createInsertSchema(chatsTable)),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       if (insertValues.chatId === undefined) {
         throw new HTTPException(400, { message: "chatId is required" });
@@ -243,6 +248,7 @@ export const userChatsRouter = new Hono()
     },
   )
   .get("/participants/:chatId", async (c) => {
+    requireUser(c);
     const chatId = c.req.param("chatId");
     if (!chatId) {
       return c.json({ error: "chatId parameter is required." }, 400);
@@ -280,6 +286,7 @@ export const userChatsRouter = new Hono()
       }),
     ),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       const { result: leaveChatQueryResult, error: leaveChatQueryError } =
         await mightFail(
@@ -302,6 +309,7 @@ export const userChatsRouter = new Hono()
     },
   )
   .get("/chatsreadstatus/:userId", async (c) => {
+    requireUser(c);
     const userId = c.req.param("userId");
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
@@ -322,6 +330,7 @@ export const userChatsRouter = new Hono()
     return c.json({ chatsReadStatus: chatsReadStatusResult });
   })
   .get("/unreads/:userId", async (c) => {
+    requireUser(c);
     const userId = c.req.param("userId");
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
@@ -385,6 +394,7 @@ export const userChatsRouter = new Hono()
     "/unreads/update",
     zValidator("json", createInsertSchema(userChatReadStatusTable)),
     async (c) => {
+      requireUser(c);
       const insertValues = c.req.valid("json");
       const {
         result: updateUnreadsQueryResult,
