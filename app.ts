@@ -6,7 +6,6 @@ import { usersRouter } from "./routes/users";
 import { userRouter } from "./routes/user";
 import { userFriendsRouter } from "./routes/friends";
 import { Server as SocketServer } from "socket.io";
-import { serve } from "@hono/node-server";
 import { attachSocketEventListeners } from "./ws";
 import { userChatsRouter } from "./routes/chats";
 import { messagesRouter } from "./routes/messages";
@@ -52,7 +51,7 @@ export default app;
 
 const PORT = parseInt(process.env.PORT!) || 3333;
 
-const server = serve({
+const server = Bun.serve({
   port: PORT,
   fetch: app.fetch,
 });
