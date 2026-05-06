@@ -1,4 +1,5 @@
-providers = ["bun"]
+[phases.setup]
+nixPkgs = ["bun"]
 
 [phases.install]
 cmds = ["bun install"]
