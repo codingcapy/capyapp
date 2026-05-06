@@ -16,7 +16,15 @@ import { imagesRouter } from "./routes/images";
 const app = new Hono();
 
 app.use("*", logger());
-app.use("*", cors());
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:5173", "https://capyapp.up.railway.app"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 const apiRoutes = app
   .basePath("/api/v0")
