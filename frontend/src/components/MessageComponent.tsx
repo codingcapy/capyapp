@@ -98,7 +98,17 @@ export default function MessageComponent(props: {
 
   function handleDelete(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    deleteMessage({ messageId: (message && message.messageId) || 0 });
+    deleteMessage(
+      { messageId: (message && message.messageId) || 0 },
+      {
+        onSuccess: () => {
+          socket.emit("message", {
+            chatId: chat?.chatId,
+            userId: user?.userId,
+          });
+        },
+      },
+    );
     setDeleteMode(false);
     images?.map(
       (image) =>
@@ -110,10 +120,20 @@ export default function MessageComponent(props: {
   function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const messageContent = (e.target as HTMLFormElement).content.value;
-    updateMessage({
-      messageId: (message && message.messageId) || 0,
-      content: messageContent,
-    });
+    updateMessage(
+      {
+        messageId: (message && message.messageId) || 0,
+        content: messageContent,
+      },
+      {
+        onSuccess: () => {
+          socket.emit("message", {
+            chatId: chat?.chatId,
+            userId: user?.userId,
+          });
+        },
+      },
+    );
     setEditMode(false);
     setEditMessageId(null);
   }
@@ -402,12 +422,19 @@ export default function MessageComponent(props: {
                     if (userReaction) {
                       handleDeleteReaction(userReaction.reactionId);
                     } else {
-                      createReaction({
-                        messageId,
-                        chatId,
-                        userId,
-                        content,
-                      });
+                      createReaction(
+                        {
+                          messageId,
+                          chatId,
+                          userId,
+                          content,
+                        },
+                        {
+                          onSuccess: () => {
+                            socket.emit("reaction", { chatId });
+                          },
+                        },
+                      );
                     }
                   }}
                   className={`flex items-center px-2 py-[1px] rounded m-1 cursor-pointer ${

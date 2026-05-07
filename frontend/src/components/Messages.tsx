@@ -157,7 +157,7 @@ export default function Messages(props: {
   } = useUploadImageMutation();
   const { mutate: updateLastReadMessageId } =
     useUpdateLastReadMessageIdMutation();
-  const { mutate: updateImage } = useUpdateImageMutation();
+  const { mutateAsync: updateImageAsync } = useUpdateImageMutation();
   const [preview, setPreview] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
@@ -183,22 +183,25 @@ export default function Messages(props: {
           replyContent: replyContent,
         },
         {
-          onSuccess: (args) => {
+          onSuccess: async (args) => {
+            const pendingImages =
+              images?.filter(
+                (image) => image.userId === user.userId && !image.posted,
+              ) ?? [];
+            await Promise.all(
+              pendingImages.map((image) =>
+                updateImageAsync({
+                  imageId: image.imageId,
+                  messageId: args.messageId,
+                }),
+              ),
+            );
             socket.emit("message", {
               content,
               chatId: chat.chatId,
               userId: user.userId,
               createdAt: new Date().toISOString(),
             });
-            images?.map(
-              (image) =>
-                image.userId === user.userId &&
-                !image.posted &&
-                updateImage({
-                  imageId: image.imageId,
-                  messageId: args.messageId,
-                }),
-            );
           },
         },
       );
@@ -207,22 +210,25 @@ export default function Messages(props: {
       createMessage(
         { content, chatId: chat.chatId, userId: user.userId },
         {
-          onSuccess: (args) => {
+          onSuccess: async (args) => {
+            const pendingImages =
+              images?.filter(
+                (image) => image.userId === user.userId && !image.posted,
+              ) ?? [];
+            await Promise.all(
+              pendingImages.map((image) =>
+                updateImageAsync({
+                  imageId: image.imageId,
+                  messageId: args.messageId,
+                }),
+              ),
+            );
             socket.emit("message", {
               content,
               chatId: chat.chatId,
               userId: user.userId,
               createdAt: new Date().toISOString(),
             });
-            images?.map(
-              (image) =>
-                image.userId === user.userId &&
-                !image.posted &&
-                updateImage({
-                  imageId: image.imageId,
-                  messageId: args.messageId,
-                }),
-            );
           },
         },
       );
@@ -270,10 +276,17 @@ export default function Messages(props: {
   function handleUpdateTitle(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const newTitle = (e.target as HTMLFormElement).chattitle.value;
-    updateTitle({
-      chatId: (chat && chat.chatId) || 0,
-      title: newTitle,
-    });
+    updateTitle(
+      {
+        chatId: (chat && chat.chatId) || 0,
+        title: newTitle,
+      },
+      {
+        onSuccess: () => {
+          socket.emit("chatUpdate", { chatId: chat?.chatId });
+        },
+      },
+    );
     setEditTitleMode(false);
   }
 
@@ -301,6 +314,9 @@ export default function Messages(props: {
     const messageHandler = (data: { chatId: number }) => {
       queryClient.invalidateQueries({
         queryKey: ["messages", data.chatId.toString()],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["images", data.chatId.toString()],
       });
     };
     socket.on("message", messageHandler);
@@ -378,9 +394,17 @@ export default function Messages(props: {
 
   function handleDelete(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    deleteMessage({
-      messageId: (currentMessage && currentMessage.messageId) || 0,
-    });
+    deleteMessage(
+      { messageId: (currentMessage && currentMessage.messageId) || 0 },
+      {
+        onSuccess: () => {
+          socket.emit("message", {
+            chatId: chat?.chatId,
+            userId: user?.userId,
+          });
+        },
+      },
+    );
     images?.map(
       (image) =>
         currentMessage &&
@@ -446,9 +470,17 @@ export default function Messages(props: {
   }
 
   function handleDeleteImage(imageId: number) {
-    deleteImage({
-      imageId: imageId,
-    });
+    deleteImage(
+      { imageId: imageId },
+      {
+        onSuccess: () => {
+          socket.emit("message", {
+            chatId: chat?.chatId,
+            userId: user?.userId,
+          });
+        },
+      },
+    );
   }
 
   useEffect(() => {

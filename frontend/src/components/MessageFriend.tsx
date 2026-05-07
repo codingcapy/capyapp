@@ -328,12 +328,19 @@ export default function MessageFriend(props: {
                     if (userReaction) {
                       handleDeleteReaction(userReaction.reactionId);
                     } else {
-                      createReaction({
-                        messageId,
-                        chatId,
-                        userId,
-                        content,
-                      });
+                      createReaction(
+                        {
+                          messageId,
+                          chatId,
+                          userId,
+                          content,
+                        },
+                        {
+                          onSuccess: () => {
+                            socket.emit("reaction", { chatId });
+                          },
+                        },
+                      );
                     }
                   }}
                   className={`flex items-center px-2 py-[1px] rounded m-1 cursor-pointer ${

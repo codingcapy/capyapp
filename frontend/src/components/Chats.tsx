@@ -52,8 +52,10 @@ export default function Chats(props: {
       queryClient.invalidateQueries({ queryKey: ["chats", user?.userId] });
     };
     socket.on("chat", chatHandler);
+    socket.on("chatUpdate", chatHandler);
     return () => {
       socket.off("chat", chatHandler);
+      socket.off("chatUpdate", chatHandler);
     };
   }, []);
 

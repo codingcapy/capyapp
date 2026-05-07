@@ -27,7 +27,6 @@ import {
 } from "../lib/api/chat";
 import { Chat } from "../../../schemas/chats";
 import useParticipantStore from "../store/ParticipantStore";
-import { queryClient } from "../main";
 import { useCreateMessageMutation } from "../lib/api/messages";
 import Participants from "../components/Participants";
 import { Message } from "../../../schemas/messages";
@@ -151,19 +150,21 @@ function RouteComponent() {
     createChat(
       { title, userId, friendId },
       {
-        onSuccess: (result) => {
-          const targetChatId = result.chatId ?? result.chatId;
-          setTimeout(() => {
-            const updatedChats = queryClient.getQueryData<Chat[]>([
-              "chats",
-              userId,
-            ]);
-            const newChat = updatedChats?.find(
-              (chat) => chat.chatId === targetChatId,
-            );
-            if (newChat) clickedChat(newChat);
-          }, 150);
+        onSuccess: async (result) => {
+          const targetChatId = result.chatId;
           socket.emit("chat", { title, userId, friendId });
+          // Wait for the refetch to actually complete before looking in the cache
+          await tanstackQueryClient.refetchQueries({
+            queryKey: ["chats", userId],
+          });
+          const updatedChats = tanstackQueryClient.getQueryData<Chat[]>([
+            "chats",
+            userId,
+          ]);
+          const newChat = updatedChats?.find(
+            (chat) => chat.chatId === targetChatId,
+          );
+          if (newChat) clickedChat(newChat);
         },
       },
     );
@@ -188,21 +189,25 @@ function RouteComponent() {
     createMessage(
       {
         userId: "notification",
-        chatId: (chat && chat.chatId) || 0,
+        chatId,
         content: `${user?.username} has left the chat`,
       },
       {
-        onSuccess: () =>
+        onSuccess: () => {
           socket.emit("message", {
             content: `${user?.username} has left the chat`,
-            chatId: chat && chat.chatId,
-            userId: user && user.userId,
+            chatId,
+            userId: "notification",
             createdAt: new Date().toISOString(),
-          }),
+          });
+        },
+        onSettled: () => {
+          // Always leave, even if the notification message failed
+          leaveChat({ userId, chatId });
+          socket.emit("leaveRoom", `chat:${chatId}`);
+        },
       },
     );
-    leaveChat({ userId, chatId });
-    socket.emit("leaveRoom", `chat:${chatId}`);
     setLeaveMode(false);
     setChat(null);
     setContextMenu(null);

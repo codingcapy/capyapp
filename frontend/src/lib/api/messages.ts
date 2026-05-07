@@ -113,10 +113,7 @@ export const useDeleteMessageMutation = () => {
     onSettled: (newMessage) => {
       if (!newMessage) return;
       queryClient.invalidateQueries({
-        queryKey: ["messages", newMessage.messageId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["messages"],
+        queryKey: ["messages", newMessage.chatId.toString()],
       });
     },
   });
@@ -142,10 +139,7 @@ export const useUpdateMessageMutation = () => {
     onSettled: (newMessage) => {
       if (!newMessage) return;
       queryClient.invalidateQueries({
-        queryKey: ["messages", newMessage.messageId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["messages"],
+        queryKey: ["messages", newMessage.chatId.toString()],
       });
     },
   });

@@ -23,7 +23,14 @@ export function attachListeners(io: Server) {
 
     socket.on("chat", (body) => {
       // body = { title, userId, friendId }
-      socket.to(`user:${body.friendId}`).emit("chat", body);
+      // Notify both the friend AND the creator so their sidebars update immediately
+      io.to(`user:${body.friendId}`).to(`user:${body.userId}`).emit("chat", body);
+    });
+
+    socket.on("chatUpdate", (body) => {
+      // body = { chatId }
+      // Notify all other participants in the chat room about a title change
+      socket.to(`chat:${body.chatId}`).emit("chatUpdate", body);
     });
 
     socket.on("reaction", (body) => {

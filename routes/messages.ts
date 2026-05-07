@@ -37,7 +37,8 @@ export const messagesRouter = new Hono()
     async (c) => {
       const decodedUser = requireUser(c);
       const insertValues = c.req.valid("json");
-      if (decodedUser.id !== insertValues.userId) {
+      // Allow "notification" as a special system userId for chat event messages
+      if (insertValues.userId !== "notification" && decodedUser.id !== insertValues.userId) {
         throw new HTTPException(403, { message: "Forbidden" });
       }
       const { error: messageInsertError, result: messageInsertResult } =
