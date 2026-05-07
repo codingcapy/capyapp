@@ -1,5 +1,5 @@
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
-import { Chat } from "../../../schemas/chats";
+import { Chat } from "@server/schemas/chats";
 import profilePic from "/capypaul01.jpg";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dispatch, SetStateAction, useEffect, useRef } from "react";

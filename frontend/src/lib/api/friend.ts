@@ -4,8 +4,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ArgumentTypes, client } from "./client";
-import { User } from "../../../../schemas/users";
-import { UserFriend } from "../../../../schemas/userfriends";
+import { User } from "@server/schemas/users";
+import { UserFriend } from "@server/schemas/userfriends";
 import { authHeaders } from "../utils";
 
 type CreateFriendArgs = ArgumentTypes<

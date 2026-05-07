@@ -59,8 +59,17 @@ export const imagesRouter = new Hono()
       if (decodedUser.id !== userId) {
         throw new HTTPException(403, { message: "Forbidden" });
       }
-      if (!process.env.AWS_CLOUDFRONT_URL || !process.env.AWS_IMAGE_BUCKET_NAME) {
-        return c.json<UploadResponse>({ success: false, error: "Image uploads are not configured on this server." }, 503);
+      if (
+        !process.env.AWS_CLOUDFRONT_URL ||
+        !process.env.AWS_IMAGE_BUCKET_NAME
+      ) {
+        return c.json<UploadResponse>(
+          {
+            success: false,
+            error: "Image uploads are not configured on this server.",
+          },
+          503,
+        );
       }
       try {
         const fileType = file.type;

@@ -1,6 +1,6 @@
 import { IoChatbubbleOutline } from "react-icons/io5";
 import { LuSendHorizontal } from "react-icons/lu";
-import { Chat } from "../../../schemas/chats";
+import { Chat } from "@server/schemas/chats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMessagesByChatIdQueryOptions,
@@ -25,13 +25,13 @@ import capyness from "/capyness.png";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
 import useParticipantStore from "../store/ParticipantStore";
-import { UserFriend } from "../../../schemas/userfriends";
+import { UserFriend } from "@server/schemas/userfriends";
 import {
   getReactionsByChatIdQueryOptions,
   useCreateReactionMutation,
 } from "../lib/api/reaction";
 import Notification from "./Notification";
-import { Message } from "../../../schemas/messages";
+import { Message } from "@server/schemas/messages";
 import { FaPlusCircle } from "react-icons/fa";
 import { FaImage } from "react-icons/fa6";
 import {

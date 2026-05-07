@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { ArgumentTypes, client } from "./client";
 import { authHeaders } from "../utils";
-import { ImageMessage } from "../../../../schemas/images";
+import { ImageMessage } from "@server/schemas/images";
 
 type UploadResponse =
   | {

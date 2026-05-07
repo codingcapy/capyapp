@@ -24,7 +24,9 @@ export function attachListeners(io: Server) {
     socket.on("chat", (body) => {
       // body = { title, userId, friendId }
       // Notify both the friend AND the creator so their sidebars update immediately
-      io.to(`user:${body.friendId}`).to(`user:${body.userId}`).emit("chat", body);
+      io.to(`user:${body.friendId}`)
+        .to(`user:${body.userId}`)
+        .emit("chat", body);
     });
 
     socket.on("chatUpdate", (body) => {

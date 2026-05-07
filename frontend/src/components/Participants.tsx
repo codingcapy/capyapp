@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { UserFriend } from "../../../schemas/userfriends";
+import { UserFriend } from "@server/schemas/userfriends";
 import { Friend } from "../lib/api/friend";
 import profilePic from "/capypaul01.jpg";
 

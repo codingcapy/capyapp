@@ -1,4 +1,4 @@
-import { Message } from "../../../schemas/messages";
+import { Message } from "@server/schemas/messages";
 import { Friend } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import profilePic from "/capypaul01.jpg";
@@ -12,15 +12,15 @@ import {
 } from "../lib/api/messages";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
-import { Reaction } from "../../../schemas/reactions";
-import { Chat } from "../../../schemas/chats";
+import { Reaction } from "@server/schemas/reactions";
+import { Chat } from "@server/schemas/chats";
 import {
   useCreateReactionMutation,
   useDeleteReactionMutation,
 } from "../lib/api/reaction";
 import { socket } from "../routes/dashboard";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImageMessage } from "../../../schemas/images";
+import { ImageMessage } from "@server/schemas/images";
 import { useDeleteImageMutation } from "../lib/api/images";
 
 export default function MessageComponent(props: {

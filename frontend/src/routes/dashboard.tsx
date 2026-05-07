@@ -25,11 +25,11 @@ import {
   useCreateChatMutation,
   useLeaveChatMutation,
 } from "../lib/api/chat";
-import { Chat } from "../../../schemas/chats";
+import { Chat } from "@server/schemas/chats";
 import useParticipantStore from "../store/ParticipantStore";
 import { useCreateMessageMutation } from "../lib/api/messages";
 import Participants from "../components/Participants";
-import { Message } from "../../../schemas/messages";
+import { Message } from "@server/schemas/messages";
 import { match } from "ts-pattern";
 
 const SERVER_URL = import.meta.env.DEV

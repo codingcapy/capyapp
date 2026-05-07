@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Message } from "../../../../schemas/messages";
+import { Message } from "@server/schemas/messages";
 import { ArgumentTypes, client } from "./client";
 import { authHeaders } from "../utils";
 

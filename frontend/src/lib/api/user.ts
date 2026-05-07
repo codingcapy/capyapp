@@ -1,4 +1,4 @@
-import { User } from "../../../../schemas/users";
+import { User } from "@server/schemas/users";
 import { ArgumentTypes, client } from "./client";
 import { authHeaders } from "../utils";
 

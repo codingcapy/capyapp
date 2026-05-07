@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ArgumentTypes, client } from "./client";
-import { Chat } from "../../../../schemas/chats";
+import { Chat } from "@server/schemas/chats";
 import { mapSerializedFriendToSchema } from "./friend";
 import { authHeaders } from "../utils";
 

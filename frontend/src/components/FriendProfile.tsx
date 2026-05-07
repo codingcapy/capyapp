@@ -3,9 +3,9 @@ import { CgProfile } from "react-icons/cg";
 import profilePic from "/capypaul01.jpg";
 import useAuthStore from "../store/AuthStore";
 import { socket } from "../routes/dashboard";
-import { Chat } from "../../../schemas/chats";
+import { Chat } from "@server/schemas/chats";
 import { useState } from "react";
-import { UserFriend } from "../../../schemas/userfriends";
+import { UserFriend } from "@server/schemas/userfriends";
 
 export default function FriendProfile(props: {
   friend: Friend | null;

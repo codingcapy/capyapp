@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Message } from "../../../schemas/messages";
+import { Message } from "@server/schemas/messages";
 
 export default function Notification(props: { message: Message }) {
   const { message } = props;

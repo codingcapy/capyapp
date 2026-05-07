@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { Message } from "../../../schemas/messages";
+import { Message } from "@server/schemas/messages";
 import { Friend } from "../lib/api/friend";
 import useAuthStore from "../store/AuthStore";
 import profilePic from "/capypaul01.jpg";
 import { FaReply } from "react-icons/fa";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserByUserIdQueryOptions } from "../lib/api/chat";
-import { UserFriend } from "../../../schemas/userfriends";
+import { UserFriend } from "@server/schemas/userfriends";
 import { PiSmiley } from "react-icons/pi";
 import emojis from "../emojis/emojis";
 import {
   useCreateReactionMutation,
   useDeleteReactionMutation,
 } from "../lib/api/reaction";
-import { Reaction } from "../../../schemas/reactions";
-import { Chat } from "../../../schemas/chats";
+import { Reaction } from "@server/schemas/reactions";
+import { Chat } from "@server/schemas/chats";
 import { socket } from "../routes/dashboard";
-import { ImageMessage } from "../../../schemas/images";
+import { ImageMessage } from "@server/schemas/images";
 
 export default function MessageFriend(props: {
   message: Message;

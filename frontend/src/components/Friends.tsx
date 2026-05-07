@@ -5,7 +5,7 @@ import { socket } from "../routes/dashboard";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import useAuthStore from "../store/AuthStore";
-import { UserFriend } from "../../../schemas/userfriends";
+import { UserFriend } from "@server/schemas/userfriends";
 
 export default function Friends(props: {
   clickedAddFriend: () => void;
