@@ -49,13 +49,13 @@ export default function FriendProfile(props: {
       {
         onSuccess: (result) => {
           setSuccessNotification("Friend added successfully!");
-          socket.emit("friend", result);
+          socket.emit("friend", { targetUserId: result.friendId });
         },
         onError: (errorMessage) => {
           setNotification("");
           setNotification(errorMessage.toString());
         },
-      }
+      },
     );
   }
 

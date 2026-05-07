@@ -32,7 +32,7 @@ export default function MessageFriend(props: {
   clickedFriend: (state: Friend) => void;
   handleCreateReaction: (
     e: React.FormEvent<HTMLFormElement>,
-    message: Message | null
+    message: Message | null,
   ) => void;
   images: ImageMessage[] | undefined;
 }) {
@@ -52,10 +52,10 @@ export default function MessageFriend(props: {
   } = props;
   const friend = friends.find((friend) => friend.userId === message.userId);
   const participantReply = participants?.find(
-    (participant) => participant.userId === message.replyUserId
+    (participant) => participant.userId === message.replyUserId,
   );
   const participant = participants?.find(
-    (participant) => participant.userId === message.userId
+    (participant) => participant.userId === message.userId,
   );
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
@@ -97,10 +97,10 @@ export default function MessageFriend(props: {
         reactionId,
       },
       {
-        onSuccess: (result) => {
-          socket.emit("reaction", result);
+        onSuccess: () => {
+          socket.emit("reaction", { chatId: chat!.chatId });
         },
-      }
+      },
     );
     setEmojiMode(false);
   }
@@ -131,12 +131,12 @@ export default function MessageFriend(props: {
   }, []);
 
   useEffect(() => {
-    socket.on("reaction", (data) => {
-      queryClient.invalidateQueries({ queryKey: ["reactions", chat?.chatId] });
-    });
+    const reactionHandler = (data: { chatId: number }) => {
+      queryClient.invalidateQueries({ queryKey: ["reactions", data.chatId] });
+    };
+    socket.on("reaction", reactionHandler);
     return () => {
-      socket.off("connect");
-      socket.off("reaction");
+      socket.off("reaction", reactionHandler);
     };
   }, []);
 
@@ -165,7 +165,7 @@ export default function MessageFriend(props: {
             className="text-[#06b6d4] hover:cursor-pointer"
           >
             {fullMatch}
-          </span>
+          </span>,
         );
       } else {
         // If no participant found, render as plain text
@@ -301,7 +301,7 @@ export default function MessageFriend(props: {
                     className="w-[50%] mt-[10px]"
                     key={image.imageId}
                   />
-                )
+                ),
             )}
           <div className="flex">
             {Object.entries(
@@ -311,11 +311,11 @@ export default function MessageFriend(props: {
                   if (!acc[reaction.content]) acc[reaction.content] = [];
                   acc[reaction.content].push(reaction);
                   return acc;
-                }, {}) || {}
+                }, {}) || {},
             ).map(([content, groupedReactions]) => {
               const count = groupedReactions.length;
               const userReaction = groupedReactions.find(
-                (r) => r.userId === user?.userId
+                (r) => r.userId === user?.userId,
               );
               return (
                 <div

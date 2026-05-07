@@ -79,7 +79,10 @@ async function createFriend(args: CreateFriendArgs) {
   }
   const result = await res.json();
   console.log("Parsed API Response:", result);
-  return result.user.userEmail;
+  return {
+    userEmail: result.user.userEmail,
+    friendId: result.friendId as string,
+  };
 }
 
 export const useCreateFriendMutation = (

@@ -81,7 +81,13 @@ export const userFriendsRouter = new Hono()
           cause: userFriendInsertResult,
         });
       }
-      return c.json({ user: userFriendInsertResult[0] }, 200);
+      return c.json(
+        {
+          user: userFriendInsertResult[0],
+          friendId: userQueryResult[0].userId,
+        },
+        200,
+      );
     },
   )
   .get("/:userEmail", async (c) => {

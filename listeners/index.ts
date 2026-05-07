@@ -2,29 +2,33 @@ import type { Server } from "socket.io";
 
 export function attachListeners(io: Server) {
   io.on("connection", (socket) => {
+    socket.on("joinRoom", (room: string) => {
+      socket.join(room);
+    });
+
+    socket.on("leaveRoom", (room: string) => {
+      socket.leave(room);
+    });
+
     socket.on("message", (body) => {
-      socket.broadcast.emit("message", {
-        body,
-        from: socket.id.slice(6),
-      });
+      // body = { content, chatId, userId, createdAt }
+      // socket.to excludes the sender (same behaviour as the old broadcast)
+      socket.to(`chat:${body.chatId}`).emit("message", body);
     });
+
     socket.on("friend", (body) => {
-      socket.broadcast.emit("friend", {
-        body,
-        from: socket.id.slice(6),
-      });
+      // body = { targetUserId }
+      socket.to(`user:${body.targetUserId}`).emit("friend", body);
     });
+
     socket.on("chat", (body) => {
-      socket.broadcast.emit("chat", {
-        body,
-        from: socket.id.slice(6),
-      });
+      // body = { title, userId, friendId }
+      socket.to(`user:${body.friendId}`).emit("chat", body);
     });
+
     socket.on("reaction", (body) => {
-      socket.broadcast.emit("reaction", {
-        body,
-        from: socket.id.slice(6),
-      });
+      // body = Reaction object with chatId
+      socket.to(`chat:${body.chatId}`).emit("reaction", body);
     });
   });
 }

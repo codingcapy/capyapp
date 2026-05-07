@@ -48,12 +48,12 @@ export default function Chats(props: {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    socket.on("chat", (data) => {
+    const chatHandler = () => {
       queryClient.invalidateQueries({ queryKey: ["chats", user?.userId] });
-    });
+    };
+    socket.on("chat", chatHandler);
     return () => {
-      socket.off("connect");
-      socket.off("chat");
+      socket.off("chat", chatHandler);
     };
   }, []);
 
@@ -116,10 +116,10 @@ export default function Chats(props: {
                   unreadStatus?.filter((unread) => unread.chatId === c.chatId)
                     .length > 0 &&
                   unreadStatus?.filter(
-                    (unread) => unread.chatId === c.chatId
+                    (unread) => unread.chatId === c.chatId,
                   )[0].unreadCount > 0 &&
                   unreadStatus?.filter(
-                    (unread) => unread.chatId === c.chatId
+                    (unread) => unread.chatId === c.chatId,
                   )[0].unreadCount}
               </div>
             </div>

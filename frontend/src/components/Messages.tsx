@@ -243,13 +243,22 @@ export default function Messages(props: {
         chatId: chat.chatId,
       },
       {
-        onSuccess: () =>
+        onSuccess: () => {
           socket.emit("message", {
             content: `user has entered the chat`,
             chatId: chat && chat.chatId,
             userId: user && user.userId,
             createdAt: new Date().toISOString(),
-          }),
+          });
+          const invitedFriend = friends?.find((f) => f.email === email);
+          if (invitedFriend) {
+            socket.emit("chat", {
+              title: chat.title,
+              userId: user?.userId,
+              friendId: invitedFriend.userId,
+            });
+          }
+        },
       },
     );
     setAddFriendMode(false);
@@ -289,14 +298,14 @@ export default function Messages(props: {
   }, [messages]);
 
   useEffect(() => {
-    socket.on("message", (data) => {
+    const messageHandler = (data: { chatId: number }) => {
       queryClient.invalidateQueries({
-        queryKey: ["messages", chat?.chatId.toString()],
+        queryKey: ["messages", data.chatId.toString()],
       });
-    });
+    };
+    socket.on("message", messageHandler);
     return () => {
-      socket.off("connect");
-      socket.off("message");
+      socket.off("message", messageHandler);
     };
   }, []);
 

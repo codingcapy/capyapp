@@ -50,12 +50,12 @@ export default function Friends(props: {
   const isBlocked = userFriend && userFriend.blocked;
 
   useEffect(() => {
-    socket.on("friend", (data) => {
+    const friendHandler = () => {
       queryClient.invalidateQueries({ queryKey: ["friends", user?.email] });
-    });
+    };
+    socket.on("friend", friendHandler);
     return () => {
-      socket.off("connect");
-      socket.off("friend");
+      socket.off("friend", friendHandler);
     };
   }, []);
 

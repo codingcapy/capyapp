@@ -3,7 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import { IoExitOutline, IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { FaUserFriends } from "react-icons/fa";
 import useAuthStore from "../store/AuthStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Friends from "../components/Friends";
 import Chats from "../components/Chats";
 import Messages from "../components/Messages";
@@ -33,7 +33,11 @@ import Participants from "../components/Participants";
 import { Message } from "../../../schemas/messages";
 import { match } from "ts-pattern";
 
-export const socket = io("https://capyapp.up.railway.app", {
+const SERVER_URL = import.meta.env.DEV
+  ? "http://localhost:3333"
+  : "https://capyapp.up.railway.app";
+
+export const socket = io(SERVER_URL, {
   path: "/ws",
   transports: ["websocket", "polling"],
 });
@@ -60,7 +64,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const { user, logoutService } = useAuthStore((state) => state);
   const [mobileViewMode, setMobileViewMode] = useState<MobileViewMode>(
-    window.innerWidth > 700 ? "default" : "chats"
+    window.innerWidth > 700 ? "default" : "chats",
   );
   const [friend, setFriend] = useState<Friend | null>(null);
   const [chat, setChat] = useState<Chat | null>(null);
@@ -82,7 +86,7 @@ function RouteComponent() {
   //console.log("CHATS:", chats);
   //console.log("CHATS READ STATUS:", chatsReadStatus);
   const { data: unreadStatus } = useQuery(
-    getUnreadsByUserIdQueryOptions(user?.userId || "")
+    getUnreadsByUserIdQueryOptions(user?.userId || ""),
   );
   //console.log("UNREAD STATUS:", unreadStatus);
   const { participants } = useParticipantStore();
@@ -107,6 +111,39 @@ function RouteComponent() {
     if (!user) navigate({ to: "/" });
   }, []);
 
+  // Join user room so we receive friend/chat notifications targeted at this user
+  useEffect(() => {
+    if (!user?.userId) return;
+    const joinUserRoom = () => socket.emit("joinRoom", `user:${user.userId}`);
+    joinUserRoom();
+    socket.on("connect", joinUserRoom);
+    return () => {
+      socket.off("connect", joinUserRoom);
+    };
+  }, [user?.userId]);
+
+  // Keep a ref to latest chats so the reconnect handler can always access the current list
+  const chatsRef = useRef(chats);
+  useEffect(() => {
+    chatsRef.current = chats;
+  }, [chats]);
+
+  // Join all chat rooms so we receive message/reaction events (keeps unread badge working).
+  // Also re-join on socket reconnect so room membership survives network drops.
+  useEffect(() => {
+    if (!chats) return;
+    const joinChatRooms = () => {
+      chatsRef.current?.forEach((c) =>
+        socket.emit("joinRoom", `chat:${c.chatId}`),
+      );
+    };
+    joinChatRooms();
+    socket.on("connect", joinChatRooms);
+    return () => {
+      socket.off("connect", joinChatRooms);
+    };
+  }, [chats]);
+
   function handleCreateChat() {
     const title = `${user && user.username}, ${friend && friend.username}`;
     const userId = user!.userId;
@@ -122,13 +159,13 @@ function RouteComponent() {
               userId,
             ]);
             const newChat = updatedChats?.find(
-              (chat) => chat.chatId === targetChatId
+              (chat) => chat.chatId === targetChatId,
             );
             if (newChat) clickedChat(newChat);
           }, 150);
           socket.emit("chat", { title, userId, friendId });
         },
-      }
+      },
     );
   }
 
@@ -162,9 +199,10 @@ function RouteComponent() {
             userId: user && user.userId,
             createdAt: new Date().toISOString(),
           }),
-      }
+      },
     );
     leaveChat({ userId, chatId });
+    socket.emit("leaveRoom", `chat:${chatId}`);
     setLeaveMode(false);
     setChat(null);
     setContextMenu(null);
@@ -207,21 +245,20 @@ function RouteComponent() {
   }
 
   useEffect(() => {
-    socket.on("message", (data) => {
-      // data = { content, chatId, userId, createdAt }
-
+    const messageHandler = (data: { userId: string; chatId: number }) => {
       // Only refetch if message is from another user
       if (data.userId !== user?.userId) {
         tanstackQueryClient.invalidateQueries({
           queryKey: ["unreadstatus", user?.userId || ""],
         });
       }
-    });
+    };
+    socket.on("message", messageHandler);
 
     return () => {
-      socket.off("message");
+      socket.off("message", messageHandler);
     };
-  }, [socket, user?.userId, tanstackQueryClient]);
+  }, [user?.userId, tanstackQueryClient]);
 
   function displayView(viewMode: MobileViewMode) {
     match(viewMode)
