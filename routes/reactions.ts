@@ -125,5 +125,5 @@ export const reactionsRouter = new Hono()
         cause: reactionsQueryResult,
       });
     }
-    return c.json({ chats: reactionsQueryResult });
+    return c.json({ reactions: reactionsQueryResult });
   });

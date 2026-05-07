@@ -13,6 +13,7 @@ import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import tls from "tls";
 import { requireUser } from "./utils";
+import { enforceRateLimit } from "./rateLimit";
 
 const scryptAsync = promisify(scrypt);
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -39,6 +40,7 @@ export const usersRouter = new Hono()
       }),
     ),
     async (c) => {
+      enforceRateLimit(c, "signup", 5, 60_000);
       const insertValues = c.req.valid("json");
       const { error: emailQueryError, result: emailQueryResult } =
         await mightFail(

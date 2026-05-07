@@ -330,59 +330,37 @@ export const userChatsRouter = new Hono()
     if (!userId) {
       return c.json({ error: "userId parameter is required." }, 400);
     }
-    const { result: userChatsResult, error: userChatsError } = await mightFail(
+    const { result: unreadsResult, error: unreadsError } = await mightFail(
       db
         .select({
           chatId: userChatsTable.chatId,
-          lastReadMessageId: userChatReadStatusTable.lastReadMessageId,
+          unreadCount: sql<number>`COUNT(CASE WHEN ${messagesTable.messageId} > COALESCE(${userChatReadStatusTable.lastReadMessageId}, 0) AND ${messagesTable.userId} != ${userId} THEN 1 END)`,
         })
         .from(userChatsTable)
-        .innerJoin(
+        .leftJoin(
           userChatReadStatusTable,
           and(
             eq(userChatReadStatusTable.chatId, userChatsTable.chatId),
             eq(userChatReadStatusTable.userId, userId),
           ),
         )
-        .where(eq(userChatsTable.userId, userId)),
+        .leftJoin(
+          messagesTable,
+          eq(messagesTable.chatId, userChatsTable.chatId),
+        )
+        .where(eq(userChatsTable.userId, userId))
+        .groupBy(userChatsTable.chatId),
     );
-    if (userChatsError) {
+    if (unreadsError) {
       throw new HTTPException(500, {
-        message: "Error occurred when fetching user chats.",
-        cause: userChatsError,
+        message: "Error occurred when fetching unread counts.",
+        cause: unreadsError,
       });
     }
-    const unreads = await Promise.all(
-      userChatsResult.map(async (row) => {
-        const { chatId, lastReadMessageId } = row;
-
-        const { result: countResult, error: countError } = await mightFail(
-          db
-            .select({ count: sql<number>`COUNT(*)` })
-            .from(messagesTable)
-            .where(
-              and(
-                eq(messagesTable.chatId, chatId),
-                lastReadMessageId !== null
-                  ? gt(messagesTable.messageId, lastReadMessageId)
-                  : undefined,
-                ne(messagesTable.userId, userId),
-              ),
-            ),
-        );
-
-        if (countError) {
-          console.log(`Error fetching unread count for chatId ${chatId}`);
-          return { chatId, unreadCount: 0 };
-        }
-
-        return {
-          chatId,
-          unreadCount: Number(countResult[0].count) || 0,
-        };
-      }),
-    );
-    console.log(unreads);
+    const unreads = unreadsResult.map((row) => ({
+      chatId: row.chatId,
+      unreadCount: Number(row.unreadCount) || 0,
+    }));
     return c.json({ unreads });
   })
   .post(

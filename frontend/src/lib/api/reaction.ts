@@ -18,11 +18,11 @@ type DeleteReactionArgs = ArgumentTypes<
 type SerializeReaction = Omit<Reaction, "createdAt"> & { createdAt: string };
 
 export function mapSerializedReactionToSchema(
-  SerializedMessage: SerializeReaction,
+  SerializedReaction: SerializeReaction,
 ): Reaction {
   return {
-    ...SerializedMessage,
-    createdAt: new Date(SerializedMessage.createdAt),
+    ...SerializedReaction,
+    createdAt: new Date(SerializedReaction.createdAt),
   };
 }
 
@@ -81,8 +81,8 @@ async function getReactionsByChatId(chatId: number) {
   if (!res.ok) {
     throw new Error("Error getting reactions by chatId");
   }
-  const { chats } = await res.json();
-  return chats.map(mapSerializedReactionToSchema);
+  const { reactions } = await res.json();
+  return reactions.map(mapSerializedReactionToSchema);
 }
 
 export const getReactionsByChatIdQueryOptions = (args: number) =>
