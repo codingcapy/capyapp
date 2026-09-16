@@ -334,16 +334,9 @@ export const userChatsRouter = new Hono()
       db
         .select({
           chatId: userChatsTable.chatId,
-          unreadCount: sql<number>`COUNT(CASE WHEN ${messagesTable.messageId} > COALESCE(${userChatReadStatusTable.lastReadMessageId}, 0) AND ${messagesTable.userId} != ${userId} THEN 1 END)`,
+          unreadCount: sql<number>`COUNT(CASE WHEN ${messagesTable.messageId} > COALESCE(${userChatsTable.lastReadMessageId}, 0) AND ${messagesTable.userId} != ${userId} THEN 1 END)`,
         })
         .from(userChatsTable)
-        .leftJoin(
-          userChatReadStatusTable,
-          and(
-            eq(userChatReadStatusTable.chatId, userChatsTable.chatId),
-            eq(userChatReadStatusTable.userId, userId),
-          ),
-        )
         .leftJoin(
           messagesTable,
           eq(messagesTable.chatId, userChatsTable.chatId),

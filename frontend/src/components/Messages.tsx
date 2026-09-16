@@ -1,21 +1,32 @@
-import { IoChatbubbleOutline } from "react-icons/io5";
+import { IoArrowBack, IoChatbubbleOutline } from "react-icons/io5";
 import { LuSendHorizontal } from "react-icons/lu";
 import { Chat } from "@server/schemas/chats";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  getMessagesByChatIdQueryOptions,
+  appendMessageToChatCache,
+  mapSerializedMessageToSchema,
   useCreateMessageMutation,
   useDeleteMessageMutation,
+  useMarkMessageReadMutation,
+  useMessagesQuery,
+  type SerializedMessage,
 } from "../lib/api/messages";
 import { SafeUser } from "../store/AuthStore";
 import { Friend } from "../lib/api/friend";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import MessageComponent from "./MessageComponent";
 import MessageFriend from "./MessageFriend";
 import {
   getParticipantsByChatIdQueryOptions,
   useInviteFriendMutation,
-  useUpdateLastReadMessageIdMutation,
   useUpdateTitleMutation,
 } from "../lib/api/chat";
 import { FaEllipsis } from "react-icons/fa6";
@@ -85,6 +96,7 @@ export default function Messages(props: {
   mobileViewMode: MobileViewMode;
   friendsLoading: boolean;
   friendsError: Error | null;
+  onBack?: () => void;
 }) {
   const {
     chat,
@@ -104,12 +116,19 @@ export default function Messages(props: {
     mobileViewMode,
     friendsLoading,
     friendsError,
+    onBack,
   } = props;
   const {
-    data: messages,
-    isLoading: messagesLoading,
+    data,
+    fetchNextPage,
+    fetchPreviousPage,
+    hasNextPage,
+    hasPreviousPage,
+    isFetchingNextPage,
+    isFetchingPreviousPage,
+    isPending: messagesLoading,
     error: messagesError,
-  } = useQuery(getMessagesByChatIdQueryOptions(chat?.chatId.toString() || ""));
+  } = useMessagesQuery(chat?.chatId ?? -1, { enabled: chat != null });
   const { data: participants } = useQuery(
     getParticipantsByChatIdQueryOptions(chat?.chatId.toString() || ""),
   );
@@ -125,7 +144,6 @@ export default function Messages(props: {
   const { mutate: deleteImage } = useDeleteImageMutation();
   const [notification, setNotification] = useState("");
   const [messageContent, setMessageContent] = useState("");
-  const lastMessageRef = useRef<HTMLDivElement>(null);
   const [addFriendMode, setAddFriendMode] = useState(false);
   const [addFriendNotification, setAddFriendNotification] = useState("");
   const [replyMode, setReplyMode] = useState(false);
@@ -143,6 +161,7 @@ export default function Messages(props: {
   } | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [contextMode, setContextMode] = useState<ContextMode>("user");
   const [deleteMode, setDeleteMode] = useState(false);
   const { mutate: deleteMessage } = useDeleteMessageMutation();
@@ -155,17 +174,72 @@ export default function Messages(props: {
     isPending: isUploading,
     error: uploadError,
   } = useUploadImageMutation();
-  const { mutate: updateLastReadMessageId } =
-    useUpdateLastReadMessageIdMutation();
+  const { mutate: markMessageRead } = useMarkMessageReadMutation();
   const { mutateAsync: updateImageAsync } = useUpdateImageMutation();
   const [preview, setPreview] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const [messageHtml, setMessageHtml] = useState("");
-  const [allMessages, setAllMessages] = useState<Message[]>([]);
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+
+  const messages = useMemo(() => {
+    const flat = data?.pages.flatMap((page) => page.messages) ?? [];
+    // Defensive dedupe: page windows shouldn't overlap in normal operation,
+    // but a stale refetch or cache race could momentarily produce the same
+    // messageId in two pages. Keep the first occurrence so ordering stays
+    // stable.
+    const seen = new Set<number>();
+    return flat.filter((message) => {
+      if (seen.has(message.messageId)) return false;
+      seen.add(message.messageId);
+      return true;
+    });
+  }, [data]);
+  // anchorId only comes back on the initial/anchor-centered page, i.e. the
+  // first page ever fetched for this chat — later before/after pages don't
+  // carry one, so this stays stable once set.
+  const anchorId = data?.pages[0]?.anchorId ?? null;
+
+  const topSentinelRef = useRef<HTMLDivElement>(null);
+  const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const messageElementRefs = useRef(new Map<number, HTMLDivElement>());
+  const hasDoneInitialScrollRef = useRef(false);
+  const lastMarkedReadIdRef = useRef<number | null>(null);
+  // Set to true when we've decided a new message should scroll the view
+  // down, but haven't actually scrolled yet. Cache updates don't commit
+  // synchronously, so a layout effect does the scroll after React paints.
+  const pendingScrollToBottomRef = useRef(false);
+
+  function scrollToBottom(behavior: ScrollBehavior = "smooth") {
+    // scrollIntoView (rather than containerRef.scrollTo) so this still works
+    // regardless of which ancestor actually ends up scrollable at the
+    // current viewport width (containerRef only gets a bounded height at
+    // the md: breakpoint).
+    bottomSentinelRef.current?.scrollIntoView({ behavior, block: "end" });
+  }
+
+  // Synchronous check (rather than relying on the IntersectionObserver's
+  // last-known state, which updates asynchronously and can lag behind a
+  // socket message that just arrived) for whether the user is already
+  // close enough to the bottom that a new message should be revealed.
+  function isNearBottom(threshold = 150) {
+    const container = scrollContainerRef.current;
+    if (!container) return false;
+    return (
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      threshold
+    );
+  }
+
+  function setMessageElementRef(messageId: number) {
+    return (el: HTMLDivElement | null) => {
+      if (el) {
+        messageElementRefs.current.set(messageId, el);
+      } else {
+        messageElementRefs.current.delete(messageId);
+      }
+    };
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -196,12 +270,12 @@ export default function Messages(props: {
                 }),
               ),
             );
-            socket.emit("message", {
-              content,
-              chatId: chat.chatId,
-              userId: user.userId,
-              createdAt: new Date().toISOString(),
-            });
+            appendMessageToChatCache(queryClient, chat.chatId, args);
+            pendingScrollToBottomRef.current = true;
+            lastMarkedReadIdRef.current = args.messageId;
+            // Broadcast the real persisted row (with its messageId) so every
+            // recipient can dedupe and append it reliably.
+            socket.emit("message", args);
           },
         },
       );
@@ -223,12 +297,10 @@ export default function Messages(props: {
                 }),
               ),
             );
-            socket.emit("message", {
-              content,
-              chatId: chat.chatId,
-              userId: user.userId,
-              createdAt: new Date().toISOString(),
-            });
+            appendMessageToChatCache(queryClient, chat.chatId, args);
+            pendingScrollToBottomRef.current = true;
+            lastMarkedReadIdRef.current = args.messageId;
+            socket.emit("message", args);
           },
         },
       );
@@ -268,9 +340,11 @@ export default function Messages(props: {
       },
     );
     setAddFriendMode(false);
-    queryClient.invalidateQueries({
-      queryKey: ["messages", chat?.chatId.toString()],
-    });
+    if (chat) {
+      queryClient.invalidateQueries({
+        queryKey: ["messages", chat.chatId],
+      });
+    }
   }
 
   function handleUpdateTitle(e: React.FormEvent<HTMLFormElement>) {
@@ -304,32 +378,148 @@ export default function Messages(props: {
     });
   }
 
-  useEffect(() => {
-    if (messages) {
-      setAllMessages(messages);
+  // Runs after every commit that changed the message list. Only acts when
+  // something upstream actually asked for a scroll (via the pending flag),
+  // so this doesn't interfere with e.g. loading older pages.
+  useLayoutEffect(() => {
+    if (pendingScrollToBottomRef.current) {
+      pendingScrollToBottomRef.current = false;
+      scrollToBottom();
     }
   }, [messages]);
 
+  // Reset per-chat state when switching chats, so stale refs/flags from the
+  // previous chat don't leak into the new one.
   useEffect(() => {
-    const messageHandler = (data: { chatId: number }) => {
+    hasDoneInitialScrollRef.current = false;
+    lastMarkedReadIdRef.current = null;
+    pendingScrollToBottomRef.current = false;
+    messageElementRefs.current.clear();
+  }, [chat?.chatId]);
+
+  // Live updates over the socket. The message payload is the actual
+  // persisted row (with its messageId) — see the emit in handleSubmit above
+  // — so every recipient, including a sender that gets its own message
+  // echoed back, can dedupe against it reliably.
+  useEffect(() => {
+    if (chat == null) return;
+    const chatId = chat.chatId;
+
+    function handleIncomingMessage(raw: SerializedMessage) {
+      if (raw.chatId !== chatId) return;
       queryClient.invalidateQueries({
-        queryKey: ["messages", data.chatId.toString()],
+        queryKey: ["images", chatId.toString()],
       });
-      queryClient.invalidateQueries({
-        queryKey: ["images", data.chatId.toString()],
-      });
-    };
-    socket.on("message", messageHandler);
+      const wasNearBottom = isNearBottom();
+      const message = mapSerializedMessageToSchema(raw);
+      appendMessageToChatCache(queryClient, chatId, message);
+
+      const isOwnMessage = user != null && message.userId === user.userId;
+      if (isOwnMessage || wasNearBottom) {
+        // Either it's something we just sent ourselves, or we're already
+        // viewing the newest message — reveal it once the DOM catches up
+        // with the cache update above.
+        pendingScrollToBottomRef.current = true;
+        if (!isOwnMessage) {
+          lastMarkedReadIdRef.current = message.messageId;
+          markMessageRead({ chatId, messageId: message.messageId });
+        }
+      }
+    }
+
+    socket.on("message", handleIncomingMessage);
     return () => {
-      socket.off("message", messageHandler);
+      socket.off("message", handleIncomingMessage);
     };
-  }, []);
+  }, [chat, queryClient, user, markMessageRead]);
 
-  useEffect(() => {
-    if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+  // Initial positioning: jump to the anchor message (the user's last read
+  // position) if one came back, otherwise land at the bottom (newest
+  // messages, or a brand-new chat with nothing read yet).
+  useLayoutEffect(() => {
+    if (hasDoneInitialScrollRef.current) return;
+    if (messagesLoading || messages.length === 0) return;
+
+    if (anchorId != null) {
+      const anchorEl = messageElementRefs.current.get(anchorId);
+      anchorEl?.scrollIntoView({ block: "center" });
+    } else {
+      scrollToBottom("auto");
     }
-  }, [messages]);
+    hasDoneInitialScrollRef.current = true;
+  }, [messagesLoading, messages.length, anchorId]);
+
+  // Preserve scroll position when older messages are prepended above the
+  // current view — without this, prepending content shoves the viewport
+  // down and the user loses their place.
+  const prependAdjustmentRef = useRef<{ scrollHeight: number } | null>(null);
+  useLayoutEffect(() => {
+    if (isFetchingPreviousPage) {
+      prependAdjustmentRef.current = {
+        scrollHeight: scrollContainerRef.current?.scrollHeight ?? 0,
+      };
+    } else if (prependAdjustmentRef.current) {
+      const container = scrollContainerRef.current;
+      const prevHeight = prependAdjustmentRef.current.scrollHeight;
+      prependAdjustmentRef.current = null;
+      if (container) {
+        container.scrollTop += container.scrollHeight - prevHeight;
+      }
+    }
+  }, [isFetchingPreviousPage]);
+
+  // Scroll-triggered pagination: watch top/bottom sentinels rather than
+  // computing scroll math by hand on every scroll event. Also records the
+  // read position once the user actually reaches the bottom.
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    const topSentinel = topSentinelRef.current;
+    const bottomSentinel = bottomSentinelRef.current;
+    if (!container || !topSentinel || !bottomSentinel || !chat) return;
+    const chatId = chat.chatId;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target === topSentinel) {
+            if (
+              entry.isIntersecting &&
+              hasPreviousPage &&
+              !isFetchingPreviousPage
+            ) {
+              fetchPreviousPage();
+            }
+          } else if (entry.target === bottomSentinel) {
+            const atBottom = entry.isIntersecting && !hasNextPage;
+
+            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            } else if (atBottom) {
+              const latest = messages[messages.length - 1];
+              if (latest && latest.messageId !== lastMarkedReadIdRef.current) {
+                lastMarkedReadIdRef.current = latest.messageId;
+                markMessageRead({ chatId, messageId: latest.messageId });
+              }
+            }
+          }
+        }
+      },
+      { root: container, threshold: 0 },
+    );
+    observer.observe(topSentinel);
+    observer.observe(bottomSentinel);
+    return () => observer.disconnect();
+  }, [
+    chat,
+    hasPreviousPage,
+    hasNextPage,
+    isFetchingPreviousPage,
+    isFetchingNextPage,
+    fetchPreviousPage,
+    fetchNextPage,
+    messages,
+    markMessageRead,
+  ]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -526,24 +716,9 @@ export default function Messages(props: {
     setMessageHtml(parsed);
   };
 
-  useEffect(() => {
-    const lastMessage = messages && messages[messages.length - 1];
-    console.log("LAST MESSAGE:", lastMessage);
-    if (!lastMessage) return;
-
-    // Only update if user didn't send it
-    if (lastMessage.userId !== user?.userId) {
-      updateLastReadMessageId({
-        userId: (user && user.userId) || "",
-        chatId: (chat && chat.chatId) || 0,
-        lastReadMessageId: lastMessage.messageId,
-      });
-    }
-  }, [messages]);
-
   return (
     <div
-      className="md:w-[55%] md:h-screen overflow-auto relative bg-[#15151a] md:bg-[#202020]"
+      className="w-full h-screen md:w-[55%] flex flex-col relative bg-[#15151a] md:bg-[#202020]"
       ref={containerRef}
     >
       {deleteMode && (
@@ -577,9 +752,16 @@ export default function Messages(props: {
           <div className="fixed top-0 left-0 bg-black opacity-50 w-screen h-screen z-0"></div>
         </div>
       )}
-      <div className="fixed top-0 left-0 md:left-[30%] bg-[#15151a] md:bg-[#202020] px-5 pt-5 w-screen md:w-[53.9%]">
+      <div className="shrink-0 relative px-5 pt-5">
         <div className="flex justify-between">
-          <div className="flex">
+          <div className="flex items-center">
+            {chat && (
+              <IoArrowBack
+                size={22}
+                className="md:hidden mr-2 cursor-pointer"
+                onClick={() => onBack?.()}
+              />
+            )}
             <IoChatbubbleOutline size={25} className="" />
             {!editTitleMode && (
               <div
@@ -625,7 +807,7 @@ export default function Messages(props: {
           </div>
         )}
         {menuMode && (
-          <div className="absolute top-10 right-0 bg-[#202020] px-10 pb-5">
+          <div className="absolute top-10 right-0 bg-[#202020] px-10 pb-5 z-40">
             <div
               onClick={() => setLeaveMode(true)}
               className="my-3 p-2 text-red-400  hover:bg-zinc-800 cursor-pointer"
@@ -684,20 +866,19 @@ export default function Messages(props: {
         )}
         <div className="text-red-400">{addFriendNotification}</div>
       </div>
-      <div
-        className={`pt-[100px] pb-[150px] ${replyMode ? "md:pb-[120px]" : "md:pb-[100px]"}`}
-      >
-        {chat && messagesLoading ? (
-          <div className="p-10">Loading...</div>
-        ) : chat && messagesError ? (
-          <div>Error loading messages</div>
-        ) : (
-          messages
-            ?.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-            .map((message, i) => (
+      <div className="relative flex-1 min-h-0">
+        <div ref={scrollContainerRef} className="h-full overflow-auto px-5">
+          <div ref={topSentinelRef} />
+          {chat && messagesLoading ? (
+            <div className="p-10">Loading...</div>
+          ) : chat && messagesError ? (
+            <div>Error loading messages</div>
+          ) : (
+            messages.map((message, i) => (
               <div
                 className="text-white"
                 key={message.messageId || `live-${i}`}
+                ref={setMessageElementRef(message.messageId)}
               >
                 {user && message.userId === user.userId ? (
                   <div
@@ -766,63 +947,27 @@ export default function Messages(props: {
                 )}
               </div>
             ))
-        )}
-        <div ref={lastMessageRef} />
+          )}
+          <div ref={bottomSentinelRef} />
+        </div>
       </div>
-      <div className="text-red-400">{notification}</div>
-      {emojiMode && (
-        <div
-          className={`fixed ${replyMode ? "bottom-[170px] md:bottom-[150px]" : "bottom-[150px] md:bottom-[100px]"} right-[13%] md:right-[18%] z-50 grid grid-cols-5 md:grid-cols-9 gap-2 text-xl bg-zinc-800 p-3 rounded`}
-          ref={emojisRef}
-        >
-          {emojis.map((emoji) => (
-            <div
-              className="cursor-pointer hover:bg-zinc-700"
-              onClick={() =>
-                setMessageContent(messageContent.toString() + emoji)
-              }
-            >
-              {emoji}
-            </div>
-          ))}
-        </div>
-      )}
-      {uploadMode && (
-        <div
-          className={`fixed ${replyMode ? "bottom-[170px] md:bottom-[150px]" : "bottom-[150px] md:bottom-[100px]"} left-[13%] md:left-[31%] w-[15%] z-50 bg-zinc-800 p-3 rounded`}
-        >
-          <label className="flex cursor-pointer hover:bg-zinc-700 p-3">
-            <FaImage size={25} />
-            <div className="pl-4">Upload image</div>
-            <input
-              id="imageUpload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageUpload}
-              // disabled={isUploading}
-            />
-          </label>
-        </div>
-      )}
-      {chat && replyMode && (
-        <div className="fixed bottom-[150px] md:bottom-[100px] left-0 w-[100%] md:left-[30%] md:w-[54%] flex justify-between px-6 pb-2 bg-gray-700">
-          <div className="pt-2 block">
-            Replying to{" "}
-            <span className="font-bold">{friend && friend.username}</span>
-          </div>
-          <div
-            onClick={() => setReplyMode(false)}
-            className="cursor-pointer pt-1"
-          >
-            x
-          </div>
-        </div>
-      )}
+      <div className="text-red-400 px-5">{notification}</div>
       {chat && (
-        <div
-          className={`fixed bottom-[80px] md:bottom-0 left-0 w-[100%] ${images && images.find((image) => image.userId === user!.userId && !image.posted) ? "h-[200px]" : "md:h-[100px]"} md:left-[30%] md:w-[54%] h-[70px] bg-[#15151a] md:bg-[#202020] `}
-        >
+        <div className="shrink-0 relative bg-[#15151a] md:bg-[#202020]">
+          {replyMode && (
+            <div className="flex justify-between px-6 py-2 bg-gray-700">
+              <div className="pt-2 block">
+                Replying to{" "}
+                <span className="font-bold">{friend && friend.username}</span>
+              </div>
+              <div
+                onClick={() => setReplyMode(false)}
+                className="cursor-pointer pt-1"
+              >
+                x
+              </div>
+            </div>
+          )}
           {images && (
             <div className="flex px-[20px] pt-[10px]">
               {images.map(
@@ -844,8 +989,8 @@ export default function Messages(props: {
               )}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="flex m-5 w-[100%]">
-            <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-[80%] md:w-[95%] mr-3 flex">
+          <form onSubmit={handleSubmit} className="flex m-5">
+            <div className="bg-[#1b1b1b] border border-[#636363] rounded p-1 md:p-3 w-full mr-3 md:mr-0 flex">
               <FaPlusCircle
                 size={27}
                 onClick={() => setUploadMode(!uploadMode)}
@@ -874,30 +1019,61 @@ export default function Messages(props: {
               <LuSendHorizontal size={25} className="md:hidden text-cyan-600" />
             </button>
           </form>
-        </div>
-      )}
-      {showSuggestions && (
-        <ul
-          className={`fixed bottom-[90px] left-[13%] md:left-[32%] z-50 bg-zinc-800 p-3 rounded`}
-        >
-          {participants &&
-            participants.map((p) => (
-              <li
-                key={p.username}
-                className="flex pl-1 hover:bg-zinc-700 cursor-pointer"
-                onMouseDown={(e) => {
-                  e.preventDefault(); // Prevent input blur
-                  handleSelect(p.username);
-                }}
-              >
-                <img
-                  src={p.profilePic || profilePic}
-                  className="w-[25px] h-[25px] rounded-full mt-2"
+          {emojiMode && (
+            <div
+              className="absolute bottom-full right-4 mb-2 z-50 grid grid-cols-5 md:grid-cols-9 gap-2 text-xl bg-zinc-800 p-3 rounded"
+              ref={emojisRef}
+            >
+              {emojis.map((emoji) => (
+                <div
+                  className="cursor-pointer hover:bg-zinc-700"
+                  onClick={() =>
+                    setMessageContent(messageContent.toString() + emoji)
+                  }
+                >
+                  {emoji}
+                </div>
+              ))}
+            </div>
+          )}
+          {uploadMode && (
+            <div className="absolute bottom-full left-4 mb-2 z-50 w-[220px] bg-zinc-800 p-3 rounded">
+              <label className="flex cursor-pointer hover:bg-zinc-700 p-3">
+                <FaImage size={25} />
+                <div className="pl-4">Upload image</div>
+                <input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  // disabled={isUploading}
                 />
-                <div className="p-2">{p.username}</div>
-              </li>
-            ))}
-        </ul>
+              </label>
+            </div>
+          )}
+          {showSuggestions && (
+            <ul className="absolute bottom-full left-4 mb-2 z-50 bg-zinc-800 p-3 rounded">
+              {participants &&
+                participants.map((p) => (
+                  <li
+                    key={p.username}
+                    className="flex pl-1 hover:bg-zinc-700 cursor-pointer"
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // Prevent input blur
+                      handleSelect(p.username);
+                    }}
+                  >
+                    <img
+                      src={p.profilePic || profilePic}
+                      className="w-[25px] h-[25px] rounded-full mt-2"
+                    />
+                    <div className="p-2">{p.username}</div>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
       )}
       {contextMenu?.visible && contextMode === "user" && (
         <div

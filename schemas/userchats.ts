@@ -10,6 +10,7 @@ import {
 import type { InferSelectModel } from "drizzle-orm";
 import { users } from "./users";
 import { chats } from "./chats";
+import { messages } from "./messages";
 
 export const userChats = pgTable(
   "user_chats",
@@ -21,6 +22,11 @@ export const userChats = pgTable(
     chatId: integer("chat_id")
       .notNull()
       .references(() => chats.chatId),
+    lastReadMessageId: integer("last_read_message_id").references(
+      () => messages.messageId,
+      { onDelete: "set null" },
+    ),
+    lastReadAt: timestamp("last_read_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [

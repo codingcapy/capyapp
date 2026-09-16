@@ -467,6 +467,7 @@ function RouteComponent() {
               mobileViewMode={mobileViewMode}
               friendsLoading={friendsLoading}
               friendsError={friendsError}
+              onBack={tappedChats}
             />
           )}
           {mobileViewMode === "profile" && <Profile />}
@@ -509,7 +510,9 @@ function RouteComponent() {
           </div>
         </div>
       </main>
-      <div className="md:hidden fixed flex justify-between py-5 px-5 z-90  bottom-0 w-screen bg-[#27272c]">
+      <div
+        className={`md:hidden fixed flex justify-between py-5 px-5 z-90  bottom-0 w-screen bg-[#27272c] ${mobileViewMode === "messages" ? "hidden" : ""}`}
+      >
         <div className="" onClick={() => tappedFriends()}>
           <FaUserFriends size={25} className="text-center mx-2" />
           <p className="text-center text-xs">Friends</p>

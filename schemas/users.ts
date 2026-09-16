@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, varchar, timestamp, unique } from "drizzle-orm/pg-core";
 import type { InferSelectModel } from "drizzle-orm";
 
 export const users = pgTable(
@@ -12,7 +12,10 @@ export const users = pgTable(
     status: varchar("status").notNull().default("active"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [uniqueIndex("users_email_idx").on(table.email)],
+  // A real UNIQUE constraint (not just a unique index) so other tables can
+  // have a foreign key reference users.email (Postgres requires a unique
+  // constraint/PK, not merely a unique index, as an FK target).
+  (table) => [unique("users_email_unique").on(table.email)],
 );
 
 export type User = InferSelectModel<typeof users>;

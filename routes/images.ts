@@ -61,7 +61,10 @@ export const imagesRouter = new Hono()
       }
       if (
         !process.env.AWS_CLOUDFRONT_URL ||
-        !process.env.AWS_IMAGE_BUCKET_NAME
+        !process.env.AWS_IMAGE_BUCKET_NAME ||
+        !process.env.AWS_IMAGE_BUCKET_REGION ||
+        !process.env.AWS_ACCESS_KEY ||
+        !process.env.AWS_SECRET_ACCESS_KEY
       ) {
         return c.json<UploadResponse>(
           {
@@ -116,10 +119,13 @@ export const imagesRouter = new Hono()
         // "Generate" CloudFront URL
         const cloudFrontUrl = `${process.env.AWS_CLOUDFRONT_URL}/${key}`;
         // Update the shape with the CloudFront URL
+        // messageId is only known once the message itself has been created
+        // (e.g. attaching an image before sending) — Number("") coerces to 0,
+        // which violates the FK to messages, so treat empty as unset.
         await db.insert(imagesTable).values({
           imageUrl: cloudFrontUrl,
           userId: userId,
-          messageId: Number(messageId),
+          messageId: messageId ? Number(messageId) : null,
           chatId: Number(chatId),
         });
         return c.json<UploadResponse>({
