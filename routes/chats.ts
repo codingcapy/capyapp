@@ -142,6 +142,10 @@ export const userChatsRouter = new Hono()
     }
     if (userQueryResult.length < 1)
       return c.json({ message: "Error adding friend" }, 500);
+
+    // onConflictDoNothing: if this user previously left this chat and is
+    // rejoining, a stale row here would otherwise 500 on the unique
+    // (userId, chatId) constraint. Safe no-op on a genuine re-invite too.
     const { error: userChatInsertError, result: userChatInsertResult } =
       await mightFail(
         db
@@ -150,6 +154,7 @@ export const userChatsRouter = new Hono()
             userId: userQueryResult[0].userId,
             chatId: Number(insertValues.chatId),
           })
+          .onConflictDoNothing()
           .returning(),
       );
     if (userChatInsertError) {
@@ -159,6 +164,7 @@ export const userChatsRouter = new Hono()
         cause: userChatInsertError,
       });
     }
+
     const { error: lastMessageQueryError, result: lastMessageQueryResult } =
       await mightFail(
         db
@@ -179,12 +185,24 @@ export const userChatsRouter = new Hono()
       lastMessageQueryResult.length > 0
         ? lastMessageQueryResult[0].messageId
         : null;
+
+    // onConflictDoUpdate: same rejoin scenario — /leave clears this row,
+    // but this makes /add resilient even if that ever doesn't happen.
     const { error: userChatReadStatusInsertError } = await mightFail(
-      db.insert(userChatReadStatusTable).values({
-        userId: userQueryResult[0].userId,
-        chatId: Number(insertValues.chatId),
-        lastReadMessageId,
-      }),
+      db
+        .insert(userChatReadStatusTable)
+        .values({
+          userId: userQueryResult[0].userId,
+          chatId: Number(insertValues.chatId),
+          lastReadMessageId,
+        })
+        .onConflictDoUpdate({
+          target: [
+            userChatReadStatusTable.userId,
+            userChatReadStatusTable.chatId,
+          ],
+          set: { lastReadMessageId },
+        }),
     );
     if (userChatReadStatusInsertError) {
       console.log("Error while creating user chat read status");
@@ -193,6 +211,7 @@ export const userChatsRouter = new Hono()
         cause: userChatReadStatusInsertError,
       });
     }
+
     const { error: messageInsertError, result: messageInsertResult } =
       await mightFail(
         db
@@ -211,6 +230,7 @@ export const userChatsRouter = new Hono()
         cause: messageInsertResult,
       });
     }
+
     return c.json({ user: userChatInsertResult[0] }, 200);
   })
   .post(
@@ -300,6 +320,22 @@ export const userChatsRouter = new Hono()
           cause: leaveChatQueryError,
         });
       }
+
+      // Clean up the read-status row too, so a later rejoin (via /add)
+      // doesn't hit a stale (userId, chatId) row. This used to be left
+      // behind, which caused /add to 500 with a unique-constraint error
+      // whenever someone rejoined a chat they'd previously left.
+      await mightFail(
+        db
+          .delete(userChatReadStatusTable)
+          .where(
+            and(
+              eq(userChatReadStatusTable.userId, insertValues.userId),
+              eq(userChatReadStatusTable.chatId, insertValues.chatId),
+            ),
+          ),
+      );
+
       return c.json({ participants: leaveChatQueryResult });
     },
   )

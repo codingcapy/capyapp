@@ -14,7 +14,7 @@ import { chats } from "./chats";
 export const userChatReadStatus = pgTable(
   "user_chat_read_status",
   {
-    UserChatReadStatusId: serial("user_chat_read_status_id").primaryKey(),
+    userChatReadStatusId: serial("user_chat_read_status_id").primaryKey(),
     userId: varchar("user_id")
       .notNull()
       .references(() => users.userId),
