@@ -101,11 +101,8 @@ export default function MessageComponent(props: {
     deleteMessage(
       { messageId: (message && message.messageId) || 0 },
       {
-        onSuccess: () => {
-          socket.emit("message", {
-            chatId: chat?.chatId,
-            userId: user?.userId,
-          });
+        onSuccess: (deletedMessage) => {
+          socket.emit("message", deletedMessage);
         },
       },
     );
@@ -126,11 +123,8 @@ export default function MessageComponent(props: {
         content: messageContent,
       },
       {
-        onSuccess: () => {
-          socket.emit("message", {
-            chatId: chat?.chatId,
-            userId: user?.userId,
-          });
+        onSuccess: (updatedMessage) => {
+          socket.emit("message", updatedMessage);
         },
       },
     );

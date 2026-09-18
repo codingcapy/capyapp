@@ -168,7 +168,19 @@ export function appendMessageToChatCache(
       const exists = oldData.pages.some((page) =>
         page.messages.some((m) => m.messageId === message.messageId),
       );
-      if (exists) return oldData;
+      if (exists) {
+        // Already present (e.g. an edit/delete broadcast) — update its
+        // content in place instead of leaving the stale copy in the cache.
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            messages: page.messages.map((m) =>
+              m.messageId === message.messageId ? message : m,
+            ),
+          })),
+        };
+      }
 
       const newPages = [...oldData.pages];
       const lastPageIndex = newPages.length - 1;

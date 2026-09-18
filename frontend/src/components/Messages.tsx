@@ -407,6 +407,10 @@ export default function Messages(props: {
 
     function handleIncomingMessage(raw: SerializedMessage) {
       if (raw.chatId !== chatId) return;
+      // Some socket "message" events only carry { chatId, userId } as a
+      // "something changed, go refetch" ping (e.g. edit/delete broadcasts) —
+      // they aren't a real message row, so don't cache/render them.
+      if (raw.content == null) return;
       queryClient.invalidateQueries({
         queryKey: ["images", chatId.toString()],
       });
