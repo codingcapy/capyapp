@@ -26,10 +26,6 @@ type LeaveChatArgs = ArgumentTypes<
 
 type SerializeChat = Omit<Chat, "createdAt"> & { createdAt: string };
 
-type UpdateLastReadMessageIdArgs = ArgumentTypes<
-  typeof client.api.v0.chats.unreads.update.$post
->[0]["json"];
-
 export function mapSerializedChatToSchema(SerializedChat: SerializeChat): Chat {
   return {
     ...SerializedChat,
@@ -251,24 +247,6 @@ export const useLeaveChatMutation = (onError?: (message: string) => void) => {
   });
 };
 
-async function getChatsReadStatusByUserId(userId: string) {
-  const res = await client.api.v0.chats.chatsreadstatus[":userId"].$get(
-    { param: { userId: userId.toString() } },
-    authHeaders(),
-  );
-  if (!res.ok) {
-    throw new Error("Error getting user chats read status by userId");
-  }
-  const { chatsReadStatus } = await res.json();
-  return chatsReadStatus;
-}
-
-export const getChatsReadStatusByUserIdQueryOptions = (args: string) =>
-  queryOptions({
-    queryKey: ["chatsreadstatus", args],
-    queryFn: () => getChatsReadStatusByUserId(args),
-  });
-
 async function getUnreadsByUserId(userId: string) {
   const res = await client.api.v0.chats.unreads[":userId"].$get(
     { param: { userId: userId.toString() } },
@@ -286,29 +264,3 @@ export const getUnreadsByUserIdQueryOptions = (args: string) =>
     queryKey: ["unreadstatus", args],
     queryFn: () => getUnreadsByUserId(args),
   });
-
-async function updateLastReadMessageId(args: UpdateLastReadMessageIdArgs) {
-  const res = await client.api.v0.chats.unreads.update.$post(
-    { json: args },
-    authHeaders(),
-  );
-  if (!res.ok) {
-    throw new Error("Error updating chat.");
-  }
-  const { newUnreads } = await res.json();
-  console.log(newUnreads);
-  return newUnreads;
-}
-
-export const useUpdateLastReadMessageIdMutation = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: updateLastReadMessageId,
-    onSettled: (newUnreads) => {
-      if (!newUnreads) return;
-      queryClient.invalidateQueries({
-        queryKey: ["unreadstatus", newUnreads[0].userId],
-      });
-    },
-  });
-};

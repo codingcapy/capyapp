@@ -83,7 +83,6 @@ function RouteComponent() {
     error: chatsError,
   } = useQuery(getChatsByUserIdQueryOptions(user?.userId || ""));
   //console.log("CHATS:", chats);
-  //console.log("CHATS READ STATUS:", chatsReadStatus);
   const { data: unreadStatus } = useQuery(
     getUnreadsByUserIdQueryOptions(user?.userId || ""),
   );

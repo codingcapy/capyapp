@@ -9,7 +9,6 @@ import { db } from "../db";
 import { HTTPException } from "hono/http-exception";
 import { and, desc, eq, gt, ne, sql } from "drizzle-orm";
 import { chats as chatsTable } from "../schemas/chats";
-import { userChatReadStatus as userChatReadStatusTable } from "../schemas/userchatreadstatus";
 import { z } from "zod";
 import { requireUser } from "./utils";
 
@@ -74,27 +73,6 @@ export const userChatsRouter = new Hono()
       throw new HTTPException(500, {
         message: "Error while creating user chat",
         cause: userChatInsertError2,
-      });
-    }
-    const { error: userChatReadStatusInsertError } = await mightFail(
-      db.insert(userChatReadStatusTable).values([
-        {
-          userId: insertValues.userId,
-          chatId: chatInsertResult[0].chatId,
-          lastReadMessageId: null,
-        },
-        {
-          userId: insertValues.friendId,
-          chatId: chatInsertResult[0].chatId,
-          lastReadMessageId: null,
-        },
-      ]),
-    );
-    if (userChatReadStatusInsertError) {
-      console.log("Error while creating user chat read status");
-      throw new HTTPException(500, {
-        message: "Error while creating user chat read status",
-        cause: userChatReadStatusInsertError,
       });
     }
     return c.json({ user: userChatInsertResult[0] }, 200);
@@ -186,29 +164,25 @@ export const userChatsRouter = new Hono()
         ? lastMessageQueryResult[0].messageId
         : null;
 
-    // onConflictDoUpdate: same rejoin scenario — /leave clears this row,
-    // but this makes /add resilient even if that ever doesn't happen.
-    const { error: userChatReadStatusInsertError } = await mightFail(
+    // Seed the new participant's read pointer to the chat's current last
+    // message so pre-existing history isn't counted as unread. This has to
+    // land on userChatsTable itself — that's the table /unreads reads from.
+    const { error: userChatReadPointerError } = await mightFail(
       db
-        .insert(userChatReadStatusTable)
-        .values({
-          userId: userQueryResult[0].userId,
-          chatId: Number(insertValues.chatId),
-          lastReadMessageId,
-        })
-        .onConflictDoUpdate({
-          target: [
-            userChatReadStatusTable.userId,
-            userChatReadStatusTable.chatId,
-          ],
-          set: { lastReadMessageId },
-        }),
+        .update(userChatsTable)
+        .set({ lastReadMessageId, lastReadAt: new Date() })
+        .where(
+          and(
+            eq(userChatsTable.userId, userQueryResult[0].userId),
+            eq(userChatsTable.chatId, Number(insertValues.chatId)),
+          ),
+        ),
     );
-    if (userChatReadStatusInsertError) {
-      console.log("Error while creating user chat read status");
+    if (userChatReadPointerError) {
+      console.log("Error while seeding user chat read pointer");
       throw new HTTPException(500, {
-        message: "Error while creating user chat read status",
-        cause: userChatReadStatusInsertError,
+        message: "Error while seeding user chat read pointer",
+        cause: userChatReadPointerError,
       });
     }
 
@@ -321,45 +295,9 @@ export const userChatsRouter = new Hono()
         });
       }
 
-      // Clean up the read-status row too, so a later rejoin (via /add)
-      // doesn't hit a stale (userId, chatId) row. This used to be left
-      // behind, which caused /add to 500 with a unique-constraint error
-      // whenever someone rejoined a chat they'd previously left.
-      await mightFail(
-        db
-          .delete(userChatReadStatusTable)
-          .where(
-            and(
-              eq(userChatReadStatusTable.userId, insertValues.userId),
-              eq(userChatReadStatusTable.chatId, insertValues.chatId),
-            ),
-          ),
-      );
-
       return c.json({ participants: leaveChatQueryResult });
     },
   )
-  .get("/chatsreadstatus/:userId", async (c) => {
-    requireUser(c);
-    const userId = c.req.param("userId");
-    if (!userId) {
-      return c.json({ error: "userId parameter is required." }, 400);
-    }
-    const { result: chatsReadStatusResult, error: chatsReadStatusError } =
-      await mightFail(
-        db
-          .select()
-          .from(userChatReadStatusTable)
-          .where(eq(userChatReadStatusTable.userId, userId)),
-      );
-    if (chatsReadStatusError) {
-      throw new HTTPException(500, {
-        message: "Error occurred when fetching user chats read status.",
-        cause: chatsReadStatusError,
-      });
-    }
-    return c.json({ chatsReadStatus: chatsReadStatusResult });
-  })
   .get("/unreads/:userId", async (c) => {
     requireUser(c);
     const userId = c.req.param("userId");
@@ -391,40 +329,4 @@ export const userChatsRouter = new Hono()
       unreadCount: Number(row.unreadCount) || 0,
     }));
     return c.json({ unreads });
-  })
-  .post(
-    "/unreads/update",
-    zValidator("json", createInsertSchema(userChatReadStatusTable)),
-    async (c) => {
-      requireUser(c);
-      const insertValues = c.req.valid("json");
-      const {
-        result: updateUnreadsQueryResult,
-        error: updateUnreadsQueryError,
-      } = await mightFail(
-        db
-          .update(userChatReadStatusTable)
-          .set({ lastReadMessageId: insertValues.lastReadMessageId })
-          .where(
-            and(
-              eq(userChatReadStatusTable.userId, insertValues.userId),
-              eq(userChatReadStatusTable.chatId, insertValues.chatId),
-            ),
-          )
-          .returning(),
-      );
-      if (updateUnreadsQueryError) {
-        console.log(
-          "Error updating last read message pointer:",
-          updateUnreadsQueryError,
-        );
-        throw new HTTPException(500, {
-          message: "Error updating last read message pointer",
-          cause: updateUnreadsQueryError,
-        });
-      }
-      return c.json({
-        newUnreads: updateUnreadsQueryResult,
-      });
-    },
-  );
+  });

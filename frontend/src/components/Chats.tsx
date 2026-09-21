@@ -99,36 +99,36 @@ export default function Chats(props: {
         ) : chatsError ? (
           <div>Error loading chats</div>
         ) : chats ? (
-          chats.map((c) => (
-            <div
-              key={c.chatId}
-              className={`relative flex py-2 px-1 cursor-pointer hover:bg-zinc-800 transition-all ease duration-300 ${chat && chat.chatId === c.chatId && "bg-zinc-700"}`}
-              onClick={() => clickedChat(c)}
-              onContextMenu={(e) => {
-                handleContextMenu(e);
-              }}
-            >
-              <img
-                src={profilePic}
-                className="w-[40px] h-[40px] rounded-full"
-              />
-              <div className="ml-2 py-2">{c.title}</div>
-              <div className="absolute top-[35px] left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
-                {unreadStatus &&
-                  unreadStatus?.filter((unread) => unread.chatId === c.chatId)
-                    .length > 0 &&
-                  unreadStatus?.filter(
-                    (unread) => unread.chatId === c.chatId,
-                  )[0].unreadCount > 0 &&
-                  unreadStatus?.filter(
-                    (unread) => unread.chatId === c.chatId,
-                  )[0].unreadCount}
+          chats.map((c) => {
+            const unread = unreadStatus?.find(
+              (status) => status.chatId === c.chatId,
+            );
+            return (
+              <div
+                key={c.chatId}
+                className={`relative flex py-2 px-1 cursor-pointer hover:bg-zinc-800 transition-all ease duration-300 ${chat && chat.chatId === c.chatId && "bg-zinc-700"}`}
+                onClick={() => clickedChat(c)}
+                onContextMenu={(e) => {
+                  handleContextMenu(e);
+                }}
+              >
+                <img
+                  src={profilePic}
+                  className="w-[40px] h-[40px] rounded-full"
+                />
+                <div className="ml-2 py-2">{c.title}</div>
+                {unread && unread.unreadCount > 0 && (
+                  <div className="absolute top-[35px] left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
+                    {unread.unreadCount}
+                  </div>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div>No chats! Start talking with a friend!</div>
         )}
+
       </div>
       {contextMenu?.visible && (
         <div
