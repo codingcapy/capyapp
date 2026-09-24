@@ -374,7 +374,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="flex flex-col bg-[#15151a] text-white min-h-screen">
+    <div className="flex flex-col bg-[#15151a] text-white min-h-dvh">
       {leaveMode && (
         <div>
           <form
@@ -490,7 +490,9 @@ function RouteComponent() {
               onClick={clickedProfile}
             >
               <CgProfile size={25} className="" />
-              <div className="ml-2 text-xl">{user && user.username}</div>
+              <div className="ml-2 text-xl truncate">
+                {user && user.username}
+              </div>
             </div>
             {chat && (
               <Participants

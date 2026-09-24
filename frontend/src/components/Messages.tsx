@@ -722,7 +722,7 @@ export default function Messages(props: {
 
   return (
     <div
-      className="w-full h-screen md:w-[55%] flex flex-col relative bg-[#15151a] md:bg-[#202020]"
+      className="w-full h-dvh md:w-[55%] flex flex-col relative bg-[#15151a] md:bg-[#202020]"
       ref={containerRef}
     >
       {deleteMode && (
