@@ -31,10 +31,7 @@ import { useCreateMessageMutation } from "../lib/api/messages";
 import Participants from "../components/Participants";
 import { Message } from "@server/schemas/messages";
 import { match } from "ts-pattern";
-
-const SERVER_URL = import.meta.env.DEV
-  ? "http://localhost:3333"
-  : "https://capyapp.up.railway.app";
+import { SERVER_URL } from "../lib/serverUrl";
 
 export const socket = io(SERVER_URL, {
   path: "/ws",

@@ -1,5 +1,6 @@
 import { ClientResponse, hc } from "hono/client";
 import { ApiRoutes } from "@server/app";
+import { SERVER_URL } from "../serverUrl";
 
 export type ArgumentTypes<F extends Function> = F extends (
   ...args: infer A
@@ -10,9 +11,4 @@ export type ArgumentTypes<F extends Function> = F extends (
 export type ExtractData<T> =
   T extends ClientResponse<infer Data, any, any> ? Data : never;
 
-const devServer = "http://localhost:3333";
-const prodServer = "https://capyapp.up.railway.app";
-
-export const client = hc<ApiRoutes>(
-  import.meta.env.DEV ? devServer : prodServer,
-);
+export const client = hc<ApiRoutes>(SERVER_URL);

@@ -10,7 +10,7 @@ function RouteComponent() {
   const navigate = useNavigate();
   const [loadingNotification, setLoadingNotification] = useState("");
   const [notification, setNotification] = useState("");
-  const { loginService, authLoading, user } = useAuthStore((state) => state);
+  const { loginService, user } = useAuthStore((state) => state);
 
   useEffect(() => {
     if (!!user) {
@@ -22,12 +22,12 @@ function RouteComponent() {
     e.preventDefault();
     const email = (e.target as HTMLFormElement).email.value;
     const password = (e.target as HTMLFormElement).password.value;
-    loginService(email, password);
-    if (authLoading) setLoadingNotification("Loading...");
-    if (!user) {
-      setTimeout(() => {
-        setNotification("Invalid login credentials");
-      }, 700);
+    setNotification("");
+    setLoadingNotification("Loading...");
+    const success = await loginService(email, password);
+    setLoadingNotification("");
+    if (!success) {
+      setNotification("Invalid login credentials");
     }
   }
 

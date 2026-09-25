@@ -2,12 +2,11 @@ import axios from "axios";
 import { create } from "zustand";
 import { setSession } from "../services/jwt.service";
 import { User } from "@server/schemas/users";
+import { SERVER_URL } from "../lib/serverUrl";
 
 export type SafeUser = Omit<User, "password">;
 
-const API_BASE = import.meta.env.DEV
-  ? "http://localhost:3333"
-  : "https://capyapp.up.railway.app";
+const API_BASE = SERVER_URL;
 
 const useAuthStore = create<{
   user: SafeUser | null;
@@ -15,7 +14,7 @@ const useAuthStore = create<{
   tokenLoading: boolean;
   setUser: (args: SafeUser) => void;
   logoutService: () => void;
-  loginService: (email: string, password: string) => void;
+  loginService: (email: string, password: string) => Promise<boolean>;
 }>((set, get) => ({
   user: null,
   authLoading: false,
@@ -35,12 +34,15 @@ const useAuthStore = create<{
       if (res.data.result?.user && res.data.result?.token) {
         setSession(res.data.result?.token);
         set({ user: res.data.result?.user, authLoading: false });
+        return true;
       } else {
         set({ authLoading: false, user: null });
+        return false;
       }
     } catch (err) {
       console.log(err);
       set({ authLoading: false });
+      return false;
     }
   },
   loginWithToken: async () => {
