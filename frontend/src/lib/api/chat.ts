@@ -124,10 +124,15 @@ export const useInviteFriendMutation = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: inviteFriend,
-    onSettled: (args) => {
+    onSettled: (args, _error, variables) => {
       if (!args) return console.log(args, "create args, returning");
       queryClient.invalidateQueries({ queryKey: ["chats"], args });
       queryClient.invalidateQueries({ queryKey: ["messages"], args });
+      if (variables) {
+        queryClient.invalidateQueries({
+          queryKey: ["participants", variables.chatId.toString()],
+        });
+      }
     },
     onError: (error) => {
       if (onError) {

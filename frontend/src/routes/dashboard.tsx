@@ -148,7 +148,12 @@ function RouteComponent() {
       {
         onSuccess: async (result) => {
           const targetChatId = result.chatId;
-          socket.emit("chat", { title, userId, friendId });
+          socket.emit("chat", {
+            title,
+            userId,
+            friendId,
+            chatId: targetChatId,
+          });
           // Wait for the refetch to actually complete before looking in the cache
           await tanstackQueryClient.refetchQueries({
             queryKey: ["chats", userId],
@@ -201,6 +206,9 @@ function RouteComponent() {
           // Always leave, even if the notification message failed
           leaveChat({ userId, chatId });
           socket.emit("leaveRoom", `chat:${chatId}`);
+          // Let remaining participants refresh their participant list / any
+          // empty-title display that depends on it.
+          socket.emit("chatUpdate", { chatId });
           setMobileViewMode("chats");
         },
       },

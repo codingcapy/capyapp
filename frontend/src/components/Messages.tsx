@@ -52,6 +52,7 @@ import {
   useUploadImageMutation,
 } from "../lib/api/images";
 import { FaTrashCan } from "react-icons/fa6";
+import { getChatDisplayTitle } from "../lib/utils";
 
 export type ContextMode = "user" | "friend";
 
@@ -334,8 +335,12 @@ export default function Messages(props: {
               title: chat.title,
               userId: user?.userId,
               friendId: invitedFriend.userId,
+              chatId: chat.chatId,
             });
           }
+          // Let existing participants (already in the chat room) know to
+          // refresh their participant list / empty-title display.
+          socket.emit("chatUpdate", { chatId: chat.chatId });
         },
       },
     );
@@ -436,6 +441,25 @@ export default function Messages(props: {
       socket.off("message", handleIncomingMessage);
     };
   }, [chat, queryClient, user, markMessageRead]);
+
+  // Refresh participants (and thus any empty-title fallback display) when
+  // someone joins or leaves this chat.
+  useEffect(() => {
+    if (chat == null) return;
+    const chatId = chat.chatId;
+
+    function handleChatUpdate(body: { chatId?: number }) {
+      if (body?.chatId !== chatId) return;
+      queryClient.invalidateQueries({
+        queryKey: ["participants", chatId.toString()],
+      });
+    }
+
+    socket.on("chatUpdate", handleChatUpdate);
+    return () => {
+      socket.off("chatUpdate", handleChatUpdate);
+    };
+  }, [chat, queryClient]);
 
   // Initial positioning: jump to the anchor message (the user's last read
   // position) if one came back, otherwise land at the bottom (newest
@@ -775,7 +799,9 @@ export default function Messages(props: {
                 }}
                 className="ml-2 text-xl"
               >
-                {!chat ? "Messages" : chat.title}
+                {!chat
+                  ? "Messages"
+                  : getChatDisplayTitle(chat.title, participants, user)}
               </div>
             )}
             {editTitleMode && (

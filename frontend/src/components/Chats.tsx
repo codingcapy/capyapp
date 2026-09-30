@@ -6,6 +6,7 @@ import { Dispatch, SetStateAction, useEffect, useRef } from "react";
 import { socket, UnreadStatus } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
 import { getParticipantsByChatIdQueryOptions } from "../lib/api/chat";
+import { getChatDisplayTitle } from "../lib/utils";
 
 export default function Chats(props: {
   chat: Chat | null;
@@ -49,8 +50,13 @@ export default function Chats(props: {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const chatHandler = () => {
+    const chatHandler = (body?: { chatId?: number }) => {
       queryClient.invalidateQueries({ queryKey: ["chats", user?.userId] });
+      if (body?.chatId != null) {
+        queryClient.invalidateQueries({
+          queryKey: ["participants", body.chatId.toString()],
+        });
+      }
     };
     socket.on("chat", chatHandler);
     socket.on("chatUpdate", chatHandler);
@@ -160,13 +166,7 @@ function ChatListItem(props: {
     enabled: !chat.title,
   });
 
-  const displayTitle =
-    chat.title ||
-    participants
-      ?.filter((participant) => participant.userId !== user?.userId)
-      .map((participant) => participant.username)
-      .join(", ") ||
-    "";
+  const displayTitle = getChatDisplayTitle(chat.title, participants, user);
 
   return (
     <div
