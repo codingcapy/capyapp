@@ -30,6 +30,50 @@ export const userChatsRouter = new Hono()
     if (decodedUser.id !== insertValues.userId) {
       throw new HTTPException(403, { message: "Forbidden" });
     }
+
+    // Untitled chats are deduped by exact participant set so the same pair
+    // of friends doesn't end up with multiple empty-title DMs. Titled chats
+    // are exempt, and solo (everyone-else-left) chats are never matched
+    // here since this query only ever looks for a 2-participant chat.
+    if (!insertValues.title) {
+      const { error: existingChatError, result: existingChatResult } =
+        await mightFail(
+          db
+            .select({
+              userChatId: userChatsTable.userChatId,
+              userId: userChatsTable.userId,
+              chatId: userChatsTable.chatId,
+              lastReadMessageId: userChatsTable.lastReadMessageId,
+              lastReadAt: userChatsTable.lastReadAt,
+              createdAt: userChatsTable.createdAt,
+            })
+            .from(userChatsTable)
+            .innerJoin(chatsTable, eq(userChatsTable.chatId, chatsTable.chatId))
+            .where(
+              and(
+                eq(userChatsTable.userId, insertValues.userId),
+                eq(chatsTable.title, ""),
+                sql`${userChatsTable.chatId} IN (
+                  SELECT chat_id FROM user_chats WHERE user_id = ${insertValues.friendId}
+                )`,
+                sql`(
+                  SELECT COUNT(*) FROM user_chats uc WHERE uc.chat_id = ${userChatsTable.chatId}
+                ) = 2`,
+              ),
+            )
+            .limit(1),
+        );
+      if (existingChatError) {
+        throw new HTTPException(500, {
+          message: "Error while checking for an existing chat",
+          cause: existingChatError,
+        });
+      }
+      if (existingChatResult.length > 0) {
+        return c.json({ user: existingChatResult[0] }, 200);
+      }
+    }
+
     const { error: chatInsertError, result: chatInsertResult } =
       await mightFail(
         db.insert(chatsTable).values({ title: insertValues.title }).returning(),
@@ -77,6 +121,7 @@ export const userChatsRouter = new Hono()
     }
     return c.json({ user: userChatInsertResult[0] }, 200);
   })
+
   .get("/:userId", async (c) => {
     requireUser(c);
     const userId = c.req.param("userId");

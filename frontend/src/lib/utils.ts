@@ -33,4 +33,3 @@ export function getChatDisplayTitle(
   }
   return currentUser?.username ?? "";
 }
-
