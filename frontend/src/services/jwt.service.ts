@@ -1,32 +1,12 @@
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+// The access token is kept in memory only (never persisted to localStorage
+// or a JS-readable cookie) so it cannot be exfiltrated via XSS. It is
+// re-obtained on page load via the httpOnly refresh-token cookie.
+let accessToken: string | null = null;
 
-export function setSession(token: any) {
-  if (token) {
-    localStorage.setItem("jwt_access_token", token);
-    axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-  } else {
-    localStorage.removeItem("jwt_access_token");
-    delete axios.defaults.headers.common["Authorization"];
-  }
+export function setAccessToken(token: string | null) {
+  accessToken = token;
 }
 
 export function getAccessToken() {
-  return window.localStorage.getItem("jwt_access_token");
-}
-
-export function getUserIdFromToken() {
-  const token = getAccessToken();
-  if (token) {
-    try {
-      const decodedToken = jwtDecode(token);
-      //@ts-ignore
-      return decodedToken.id;
-    } catch (err) {
-      console.log("Error decoding token: ", err);
-      return null;
-    }
-  } else {
-    return null;
-  }
+  return accessToken;
 }

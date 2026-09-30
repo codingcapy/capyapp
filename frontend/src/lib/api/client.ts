@@ -11,4 +11,8 @@ export type ArgumentTypes<F extends Function> = F extends (
 export type ExtractData<T> =
   T extends ClientResponse<infer Data, any, any> ? Data : never;
 
-export const client = hc<ApiRoutes>(SERVER_URL);
+// credentials: "include" ensures the httpOnly refresh-token cookie is sent
+// on cross-origin requests during local dev (frontend and API on different ports).
+export const client = hc<ApiRoutes>(SERVER_URL, {
+  init: { credentials: "include" },
+});
