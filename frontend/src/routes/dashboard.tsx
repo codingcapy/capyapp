@@ -140,7 +140,7 @@ function RouteComponent() {
   }, [chats]);
 
   function handleCreateChat() {
-    const title = `${user && user.username}, ${friend && friend.username}`;
+    const title = "";
     const userId = user!.userId;
     const friendId = friend!.userId;
     createChat(
@@ -201,6 +201,7 @@ function RouteComponent() {
           // Always leave, even if the notification message failed
           leaveChat({ userId, chatId });
           socket.emit("leaveRoom", `chat:${chatId}`);
+          setMobileViewMode("chats");
         },
       },
     );

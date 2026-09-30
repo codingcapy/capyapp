@@ -1,10 +1,11 @@
 import { IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { Chat } from "@server/schemas/chats";
 import profilePic from "/capypaul01.jpg";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dispatch, SetStateAction, useEffect, useRef } from "react";
 import { socket, UnreadStatus } from "../routes/dashboard";
 import useAuthStore from "../store/AuthStore";
+import { getParticipantsByChatIdQueryOptions } from "../lib/api/chat";
 
 export default function Chats(props: {
   chat: Chat | null;
@@ -104,31 +105,19 @@ export default function Chats(props: {
               (status) => status.chatId === c.chatId,
             );
             return (
-              <div
+              <ChatListItem
                 key={c.chatId}
-                className={`relative flex py-2 px-1 cursor-pointer hover:bg-zinc-800 transition-all ease duration-300 ${chat && chat.chatId === c.chatId && "bg-zinc-700"}`}
-                onClick={() => clickedChat(c)}
-                onContextMenu={(e) => {
-                  handleContextMenu(e);
-                }}
-              >
-                <img
-                  src={profilePic}
-                  className="w-[40px] h-[40px] rounded-full"
-                />
-                <div className="ml-2 py-2">{c.title}</div>
-                {unread && unread.unreadCount > 0 && (
-                  <div className="absolute top-[35px] left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
-                    {unread.unreadCount}
-                  </div>
-                )}
-              </div>
+                chat={c}
+                selected={!!chat && chat.chatId === c.chatId}
+                unreadCount={unread?.unreadCount}
+                clickedChat={clickedChat}
+                handleContextMenu={handleContextMenu}
+              />
             );
           })
         ) : (
           <div>No chats! Start talking with a friend!</div>
         )}
-
       </div>
       {contextMenu?.visible && (
         <div
@@ -151,6 +140,47 @@ export default function Chats(props: {
           >
             Leave
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChatListItem(props: {
+  chat: Chat;
+  selected: boolean;
+  unreadCount: number | undefined;
+  clickedChat: (currentChat: Chat) => void;
+  handleContextMenu: (event: React.MouseEvent<HTMLDivElement>) => void;
+}) {
+  const { chat, selected, unreadCount, clickedChat, handleContextMenu } = props;
+  const { user } = useAuthStore();
+  const { data: participants } = useQuery({
+    ...getParticipantsByChatIdQueryOptions(chat.chatId.toString()),
+    enabled: !chat.title,
+  });
+
+  const displayTitle =
+    chat.title ||
+    participants
+      ?.filter((participant) => participant.userId !== user?.userId)
+      .map((participant) => participant.username)
+      .join(", ") ||
+    "";
+
+  return (
+    <div
+      className={`relative flex py-2 px-1 cursor-pointer hover:bg-zinc-800 transition-all ease duration-300 ${selected && "bg-zinc-700"}`}
+      onClick={() => clickedChat(chat)}
+      onContextMenu={(e) => {
+        handleContextMenu(e);
+      }}
+    >
+      <img src={profilePic} className="w-[40px] h-[40px] rounded-full" />
+      <div className="ml-2 py-2 truncate">{displayTitle}</div>
+      {unreadCount !== undefined && unreadCount > 0 && (
+        <div className="absolute top-[35px] left-[30px] px-1 bg-[#ac3b3b] rounded-full text-sm">
+          {unreadCount}
         </div>
       )}
     </div>
