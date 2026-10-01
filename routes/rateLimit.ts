@@ -27,6 +27,9 @@ export function enforceRateLimit(
   limit: number,
   windowMs: number,
 ) {
+  // Escape hatch for e2e runs (set via Playwright's webServer env) which log
+  // in many seed accounts in quick succession from the same dev-server IP.
+  if (process.env.DISABLE_RATE_LIMIT === "true") return;
   const now = Date.now();
   const ip = getClientIp(c);
   const bucketKey = `${routeKey}:${ip}`;
