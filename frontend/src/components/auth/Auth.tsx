@@ -11,4 +11,3 @@ export default function Auth({ children }) {
 
   return <div>{tokenLoading ? "" : children}</div>;
 }
-

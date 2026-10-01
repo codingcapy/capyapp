@@ -75,11 +75,9 @@ const useAuthStore = create<{
   // httpOnly refresh-token cookie for a fresh in-memory access token.
   refreshSession: async () => {
     try {
-      const res = await axios.post(
-        `${API_BASE}/api/v0/user/refresh`,
-        null,
-        { withCredentials: true },
-      );
+      const res = await axios.post(`${API_BASE}/api/v0/user/refresh`, null, {
+        withCredentials: true,
+      });
       if (res.data.result?.user && res.data.result?.accessToken) {
         setAccessToken(res.data.result.accessToken);
         scheduleRefresh(() => get().refreshSession());
@@ -95,4 +93,3 @@ const useAuthStore = create<{
 }));
 
 export default useAuthStore;
-
