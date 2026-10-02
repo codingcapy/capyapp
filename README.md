@@ -30,4 +30,8 @@ cd frontend
 bun dev
 ```
 
+Ensure to have the following users created in your local db for the e2e playwright tests to pass:
+test1 through to test6
+notification
+
 This project was created using `bun init` in bun v1.1.39. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
