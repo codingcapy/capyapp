@@ -5,6 +5,7 @@ import { users as usersTable } from "../schemas/users";
 import { userFriends as userFriendsTable } from "../schemas/userfriends";
 import { userChats as userChatsTable } from "../schemas/userchats";
 import { messages as messagesTable } from "../schemas/messages";
+import { chats as chatsTable } from "../schemas/chats";
 
 const HOST = { email: "test5@t.t", username: "test5", password: "tttttttt" };
 const EXISTING_PARTICIPANT = {
@@ -40,7 +41,7 @@ function participantsPanelEntry(page: Page, username: string) {
     .getByText(username, { exact: true });
 }
 
-test("inviting a friend to a chat updates participants and the empty title live over the websocket", async ({
+test("inviting a friend to a 1:1 chat forks a new chat room instead of exposing the original history", async ({
   browser,
 }) => {
   const contextHost = await browser.newContext();
@@ -49,6 +50,7 @@ test("inviting a friend to a chat updates participants and the empty title live 
   const pageHost = await contextHost.newPage();
   const pageExisting = await contextExisting.newPage();
   const pageInvitee = await contextInvitee.newPage();
+  let forkedChatId: number | undefined;
 
   // The invite form only lets the host pick from their own friends, so make
   // sure the host and invitee are friends; only tear this down afterwards if
@@ -73,8 +75,7 @@ test("inviting a friend to a chat updates participants and the empty title live 
       .onConflictDoNothing();
   }
 
-  // Resolve the shared chat's id directly from the DB (rather than off the
-  // invite response) so cleanup doesn't depend on reading the fetch body.
+  // Resolve the shared (1:1) chat's id directly from the DB.
   const [hostUser] = await db
     .select()
     .from(usersTable)
@@ -83,10 +84,6 @@ test("inviting a friend to a chat updates participants and the empty title live 
     .select()
     .from(usersTable)
     .where(eq(usersTable.email, EXISTING_PARTICIPANT.email));
-  const [inviteeUser] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, INVITEE.email));
   const hostChatIds = (
     await db
       .select({ chatId: userChatsTable.chatId })
@@ -101,8 +98,8 @@ test("inviting a friend to a chat updates participants and the empty title live 
         .where(eq(userChatsTable.userId, existingUser.userId))
     ).map((row) => row.chatId),
   );
-  const chatId = hostChatIds.find((id) => existingChatIds.has(id));
-  if (chatId === undefined) {
+  const originalChatId = hostChatIds.find((id) => existingChatIds.has(id));
+  if (originalChatId === undefined) {
     throw new Error(
       `No shared chat found between ${HOST.email} and ${EXISTING_PARTICIPANT.email}`,
     );
@@ -117,26 +114,49 @@ test("inviting a friend to a chat updates participants and the empty title live 
     );
     await login(pageInvitee, INVITEE.email, INVITEE.password);
 
-    // Host and the existing participant both open their shared chat so the
-    // existing participant's view is mounted and listening for "chatUpdate"
+    // Host and the existing participant both open their shared 1:1 chat so
+    // the existing participant's view is mounted and listening for socket
+    // events on it.
     await chatListEntry(pageHost, EXISTING_PARTICIPANT.username).click();
     await chatListEntry(pageExisting, HOST.username).click();
 
     await pageHost.getByText("+ Invite a friend").click();
     await pageHost.locator('input[name="email"]').fill(INVITEE.email);
-    await pageHost.getByRole("button", { name: "Add friend" }).click();
+    const [addFriendResponse] = await Promise.all([
+      pageHost.waitForResponse(
+        (res) =>
+          res.url().includes("/api/v0/chats/add") &&
+          res.request().method() === "POST",
+      ),
+      pageHost.getByRole("button", { name: "Add friend" }).click(),
+    ]);
+    const { chat: forkedChat } = await addFriendResponse.json();
+    expect(forkedChat).toBeTruthy();
+    forkedChatId = forkedChat.chatId as number;
+    expect(forkedChatId).not.toBe(originalChatId);
 
-    // The existing participant (not the one performing the invite) sees the
-    // new participant, and the previously-empty title updates to include
-    // them, purely via the "chatUpdate" websocket event invalidating their
-    // participants query. A longer timeout absorbs socket/query-invalidation
-    // latency when the whole suite is running under load.
+    // The original 1:1 chat is protected: its participants stay exactly the
+    // host and the existing participant, and the invitee never shows up in
+    // its participants panel.
     await expect(
       participantsPanelEntry(pageExisting, INVITEE.username),
+    ).toBeHidden();
+
+    // The host's own view is switched straight over to the newly forked
+    // chat, which now shows the other two participants in its title.
+    await expect(
+      chatTitleHeader(pageHost, EXISTING_PARTICIPANT.username),
     ).toBeVisible({ timeout: 10_000 });
-    await expect(chatTitleHeader(pageExisting, INVITEE.username)).toBeVisible({
+    await expect(chatTitleHeader(pageHost, INVITEE.username)).toBeVisible({
       timeout: 10_000,
     });
+
+    // The existing participant (not the one performing the invite) sees a
+    // brand-new chat appear in their sidebar — not a change to the original
+    // chat — purely via the "chat" websocket event.
+    await expect(
+      chatListEntry(pageExisting, INVITEE.username),
+    ).toBeVisible({ timeout: 10_000 });
 
     // The invitee sees the new chat appear in their own sidebar without
     // reloading, via the "chat" websocket event
@@ -144,23 +164,15 @@ test("inviting a friend to a chat updates participants and the empty title live 
       timeout: 10_000,
     });
   } finally {
-    await db
-      .delete(messagesTable)
-      .where(
-        and(
-          eq(messagesTable.chatId, chatId),
-          eq(messagesTable.userId, "notification"),
-          eq(messagesTable.content, `${INVITEE.username} has entered the chat`),
-        ),
-      );
-    await db
-      .delete(userChatsTable)
-      .where(
-        and(
-          eq(userChatsTable.chatId, chatId),
-          eq(userChatsTable.userId, inviteeUser.userId),
-        ),
-      );
+    if (forkedChatId !== undefined) {
+      await db
+        .delete(messagesTable)
+        .where(eq(messagesTable.chatId, forkedChatId));
+      await db
+        .delete(userChatsTable)
+        .where(eq(userChatsTable.chatId, forkedChatId));
+      await db.delete(chatsTable).where(eq(chatsTable.chatId, forkedChatId));
+    }
     if (createdFriendship) {
       await db
         .delete(userFriendsTable)

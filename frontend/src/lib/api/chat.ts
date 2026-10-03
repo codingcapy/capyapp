@@ -115,7 +115,10 @@ async function inviteFriend(args: InviteFriendArgs) {
   }
   const result = await res.json();
   console.log("Parsed API Response:", result);
-  return result;
+  return {
+    ...result,
+    chat: result.chat ? mapSerializedChatToSchema(result.chat) : null,
+  };
 }
 
 export const useInviteFriendMutation = (
@@ -131,6 +134,13 @@ export const useInviteFriendMutation = (
       if (variables) {
         queryClient.invalidateQueries({
           queryKey: ["participants", variables.chatId.toString()],
+        });
+      }
+      // Inviting into a 1:1 chat forks a brand-new chat room (see
+      // routes/chats.ts), so its own participants need fetching too.
+      if (args.chat) {
+        queryClient.invalidateQueries({
+          queryKey: ["participants", args.chat.chatId.toString()],
         });
       }
     },

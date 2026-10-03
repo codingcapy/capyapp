@@ -101,6 +101,7 @@ export default function Messages(props: {
 }) {
   const {
     chat,
+    setChat,
     user,
     friends,
     friend,
@@ -316,40 +317,69 @@ export default function Messages(props: {
     if (!validEmail || validEmail.length < 1)
       return setAddFriendNotification("Invalid email address");
     if (!chat) return;
+    const originalChat = chat;
+    const invitedFriend = friends?.find((f) => f.email === email);
     inviteFriend(
       {
         email: email,
-        chatId: chat.chatId,
+        chatId: originalChat.chatId,
       },
       {
-        onSuccess: () => {
-          socket.emit("message", {
-            content: `user has entered the chat`,
-            chatId: chat && chat.chatId,
-            userId: user && user.userId,
-            createdAt: new Date().toISOString(),
-          });
-          const invitedFriend = friends?.find((f) => f.email === email);
-          if (invitedFriend) {
-            socket.emit("chat", {
-              title: chat.title,
-              userId: user?.userId,
-              friendId: invitedFriend.userId,
-              chatId: chat.chatId,
+        onSuccess: (result) => {
+          if (result.chat) {
+            // The original chat had 2 (or fewer) participants, so a
+            // brand-new chat room was forked instead of adding the invitee
+            // directly into it (see routes/chats.ts's "/add" handler).
+            // Switch this user's own view over to the new room and let
+            // everyone else involved know it now exists.
+            const newChat = result.chat;
+            setChat(newChat);
+            socket.emit("message", {
+              content: `user has entered the chat`,
+              chatId: newChat.chatId,
+              userId: user && user.userId,
+              createdAt: new Date().toISOString(),
             });
+            const otherOriginalParticipants = (participants ?? []).filter(
+              (participant) => participant.userId !== user?.userId,
+            );
+            const notifyTargets = invitedFriend
+              ? [...otherOriginalParticipants, invitedFriend]
+              : otherOriginalParticipants;
+            notifyTargets.forEach((participant) => {
+              socket.emit("chat", {
+                title: newChat.title,
+                userId: user?.userId,
+                friendId: participant.userId,
+                chatId: newChat.chatId,
+              });
+            });
+          } else {
+            socket.emit("message", {
+              content: `user has entered the chat`,
+              chatId: originalChat.chatId,
+              userId: user && user.userId,
+              createdAt: new Date().toISOString(),
+            });
+            if (invitedFriend) {
+              socket.emit("chat", {
+                title: originalChat.title,
+                userId: user?.userId,
+                friendId: invitedFriend.userId,
+                chatId: originalChat.chatId,
+              });
+            }
+            // Let existing participants (already in the chat room) know to
+            // refresh their participant list / empty-title display.
+            socket.emit("chatUpdate", { chatId: originalChat.chatId });
           }
-          // Let existing participants (already in the chat room) know to
-          // refresh their participant list / empty-title display.
-          socket.emit("chatUpdate", { chatId: chat.chatId });
         },
       },
     );
     setAddFriendMode(false);
-    if (chat) {
-      queryClient.invalidateQueries({
-        queryKey: ["messages", chat.chatId],
-      });
-    }
+    queryClient.invalidateQueries({
+      queryKey: ["messages", originalChat.chatId],
+    });
   }
 
   function handleUpdateTitle(e: React.FormEvent<HTMLFormElement>) {

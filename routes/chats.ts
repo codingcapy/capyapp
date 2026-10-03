@@ -165,6 +165,85 @@ export const userChatsRouter = new Hono()
     }
     if (userQueryResult.length < 1)
       return c.json({ message: "Error adding friend" }, 500);
+    const invitedUser = userQueryResult[0];
+
+    const { error: existingParticipantsError, result: existingParticipants } =
+      await mightFail(
+        db
+          .select({ userId: userChatsTable.userId })
+          .from(userChatsTable)
+          .where(eq(userChatsTable.chatId, Number(insertValues.chatId))),
+      );
+    if (existingParticipantsError) {
+      throw new HTTPException(500, {
+        message: "Error while fetching chat participants",
+        cause: existingParticipantsError,
+      });
+    }
+
+    // 1:1 (and solo, everyone-else-left) chats are protected: inviting a
+    // new participant forks a brand-new chat room containing the existing
+    // participants plus the invitee, rather than adding them into the
+    // original room and exposing its private history. Chats that already
+    // have more than two participants are already shared group chats, so
+    // further invites just join the existing room (handled below).
+    if (existingParticipants.length <= 2) {
+      const { error: forkedChatInsertError, result: forkedChatInsertResult } =
+        await mightFail(
+          db.insert(chatsTable).values({ title: "" }).returning(),
+        );
+      if (forkedChatInsertError) {
+        throw new HTTPException(500, {
+          message: "Error while creating chat",
+          cause: forkedChatInsertError,
+        });
+      }
+      const forkedChat = forkedChatInsertResult[0];
+
+      const participantIds = [
+        ...new Set([
+          ...existingParticipants.map((participant) => participant.userId),
+          invitedUser.userId,
+        ]),
+      ];
+      const { error: forkedUserChatInsertError, result: forkedUserChats } =
+        await mightFail(
+          db
+            .insert(userChatsTable)
+            .values(
+              participantIds.map((userId) => ({
+                userId,
+                chatId: forkedChat.chatId,
+              })),
+            )
+            .returning(),
+        );
+      if (forkedUserChatInsertError) {
+        throw new HTTPException(500, {
+          message: "Error while creating user chats",
+          cause: forkedUserChatInsertError,
+        });
+      }
+
+      const { error: forkedMessageInsertError } = await mightFail(
+        db.insert(messagesTable).values({
+          userId: "notification",
+          chatId: forkedChat.chatId,
+          content: invitedUser.username + " has entered the chat",
+        }),
+      );
+      if (forkedMessageInsertError) {
+        throw new HTTPException(500, {
+          message: "Error while creating chat notification",
+          cause: forkedMessageInsertError,
+        });
+      }
+
+      const invitedUserChat = forkedUserChats.find(
+        (userChat) => userChat.userId === invitedUser.userId,
+      );
+      return c.json({ user: invitedUserChat, chat: forkedChat }, 200);
+    }
 
     // onConflictDoNothing: if this user previously left this chat and is
     // rejoining, a stale row here would otherwise 500 on the unique
@@ -250,7 +329,7 @@ export const userChatsRouter = new Hono()
       });
     }
 
-    return c.json({ user: userChatInsertResult[0] }, 200);
+    return c.json({ user: userChatInsertResult[0], chat: null }, 200);
   })
   .post(
     "/update",
