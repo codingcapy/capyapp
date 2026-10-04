@@ -64,6 +64,7 @@ export default function MessageComponent(props: {
     (participant) => participant.userId === message.userId,
   );
   const username = user && user.username.toString();
+  const isDeleted = message.status === "deleted";
   const [editMode, setEditMode] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -116,6 +117,7 @@ export default function MessageComponent(props: {
 
   function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (isDeleted) return;
     const messageContent = (e.target as HTMLFormElement).content.value;
     updateMessage(
       {
@@ -337,12 +339,14 @@ export default function MessageComponent(props: {
               >
                 <FaReply size={20} className="" />
               </div>
-              <div
-                onClick={() => setEditMode(true)}
-                className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
-              >
-                <MdModeEditOutline size={20} className="" />
-              </div>
+              {!isDeleted && (
+                <div
+                  onClick={() => setEditMode(true)}
+                  className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
+                >
+                  <MdModeEditOutline size={20} className="" />
+                </div>
+              )}
               <div
                 onClick={() => setDeleteMode(true)}
                 className="cursor-pointer px-2 hidden group-hover:flex opacity-100 transition-opacity"
@@ -351,7 +355,7 @@ export default function MessageComponent(props: {
               </div>
             </div>
           </div>
-          {editMode || editMessageId === message.messageId ? (
+          {!isDeleted && (editMode || editMessageId === message.messageId) ? (
             <form onSubmit={handleUpdate}>
               <input
                 type="text"

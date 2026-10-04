@@ -24,6 +24,7 @@ export const messages = pgTable(
     content: varchar("content", { length: 25000 }).notNull(),
     replyUserId: varchar("reply_user_id", { length: 100 }),
     replyContent: varchar("reply_content", { length: 25000 }),
+    status: varchar("status").default("default"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [index("messages_chat_id_idx").on(table.chatId)],

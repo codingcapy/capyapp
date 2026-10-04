@@ -21,6 +21,7 @@ CREATE TABLE "messages" (
 	"content" varchar(25000) NOT NULL,
 	"reply_user_id" varchar(100),
 	"reply_content" varchar(25000),
+	"status" varchar DEFAULT 'default',
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -33,11 +34,12 @@ CREATE TABLE "reactions" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "user_chat_read_status" (
-	"user_chat_read_status_id" serial PRIMARY KEY NOT NULL,
+CREATE TABLE "refresh_tokens" (
+	"id" varchar PRIMARY KEY NOT NULL,
 	"user_id" varchar NOT NULL,
-	"chat_id" integer NOT NULL,
-	"last_read_message_id" integer,
+	"token_hash" varchar NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"revoked_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -78,8 +80,7 @@ ALTER TABLE "messages" ADD CONSTRAINT "messages_user_id_users_user_id_fk" FOREIG
 ALTER TABLE "reactions" ADD CONSTRAINT "reactions_message_id_messages_message_id_fk" FOREIGN KEY ("message_id") REFERENCES "public"."messages"("message_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reactions" ADD CONSTRAINT "reactions_chat_id_chats_chat_id_fk" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("chat_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reactions" ADD CONSTRAINT "reactions_user_id_users_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_chat_read_status" ADD CONSTRAINT "user_chat_read_status_user_id_users_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_chat_read_status" ADD CONSTRAINT "user_chat_read_status_chat_id_chats_chat_id_fk" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("chat_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_id_users_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_chats" ADD CONSTRAINT "user_chats_user_id_users_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_chats" ADD CONSTRAINT "user_chats_chat_id_chats_chat_id_fk" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("chat_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_chats" ADD CONSTRAINT "user_chats_last_read_message_id_messages_message_id_fk" FOREIGN KEY ("last_read_message_id") REFERENCES "public"."messages"("message_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -89,8 +90,7 @@ CREATE INDEX "images_message_id_idx" ON "images" USING btree ("message_id");--> 
 CREATE INDEX "messages_chat_id_idx" ON "messages" USING btree ("chat_id");--> statement-breakpoint
 CREATE INDEX "reactions_message_id_idx" ON "reactions" USING btree ("message_id");--> statement-breakpoint
 CREATE INDEX "reactions_chat_id_idx" ON "reactions" USING btree ("chat_id");--> statement-breakpoint
-CREATE INDEX "user_chat_read_status_user_id_idx" ON "user_chat_read_status" USING btree ("user_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "user_chat_read_status_user_chat_unique_idx" ON "user_chat_read_status" USING btree ("user_id","chat_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "refresh_tokens_token_hash_idx" ON "refresh_tokens" USING btree ("token_hash");--> statement-breakpoint
 CREATE INDEX "user_chats_user_id_idx" ON "user_chats" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "user_chats_chat_id_idx" ON "user_chats" USING btree ("chat_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "user_chats_user_chat_unique_idx" ON "user_chats" USING btree ("user_id","chat_id");--> statement-breakpoint

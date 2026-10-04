@@ -645,11 +645,8 @@ export default function Messages(props: {
     deleteMessage(
       { messageId: (currentMessage && currentMessage.messageId) || 0 },
       {
-        onSuccess: () => {
-          socket.emit("message", {
-            chatId: chat?.chatId,
-            userId: user?.userId,
-          });
+        onSuccess: (deletedMessage) => {
+          socket.emit("message", deletedMessage);
         },
       },
     );
@@ -1151,15 +1148,17 @@ export default function Messages(props: {
           >
             Reply
           </button>
-          <button
-            className="block px-4 py-2 hover:bg-[#373737] w-full text-left "
-            onClick={() => {
-              setEditMessageId(currentMessage?.messageId || null);
-              setContextMenu(null);
-            }}
-          >
-            Edit
-          </button>
+          {currentMessage?.status !== "deleted" && (
+            <button
+              className="block px-4 py-2 hover:bg-[#373737] w-full text-left "
+              onClick={() => {
+                setEditMessageId(currentMessage?.messageId || null);
+                setContextMenu(null);
+              }}
+            >
+              Edit
+            </button>
+          )}
           <button
             className="block px-4 py-2 hover:bg-[#373737] w-full text-left"
             onClick={() => {

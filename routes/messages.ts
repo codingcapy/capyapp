@@ -462,7 +462,10 @@ export const messagesRouter = new Hono()
         await mightFail(
           db
             .update(messagesTable)
-            .set({ content: "[this message has been deleted]" })
+            .set({
+              content: "[this message has been deleted]",
+              status: "deleted",
+            })
             .where(eq(messagesTable.messageId, Number(deleteValues.messageId)))
             .returning(),
         );
@@ -491,7 +494,10 @@ export const messagesRouter = new Hono()
       const updateValues = c.req.valid("json");
       const { result: msgOwner, error: msgOwnerError } = await mightFail(
         db
-          .select({ userId: messagesTable.userId })
+          .select({
+            userId: messagesTable.userId,
+            status: messagesTable.status,
+          })
           .from(messagesTable)
           .where(eq(messagesTable.messageId, Number(updateValues.messageId))),
       );
@@ -500,6 +506,11 @@ export const messagesRouter = new Hono()
       }
       if (msgOwner[0].userId !== decodedUser.id) {
         throw new HTTPException(403, { message: "Forbidden" });
+      }
+      if (msgOwner[0].status === "deleted") {
+        throw new HTTPException(403, {
+          message: "Cannot edit a deleted message",
+        });
       }
       const { error: messageUpdateError, result: messageUpdateResult } =
         await mightFail(
